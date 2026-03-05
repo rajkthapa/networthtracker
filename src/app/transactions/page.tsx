@@ -1,0 +1,187 @@
+'use client';
+
+import { useState, useMemo } from 'react';
+import { Search, Trash2, Calendar, ChevronDown } from 'lucide-react';
+import { useApp } from '@/lib/store';
+import { formatCurrency, EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '@/lib/utils';
+
+export default function TransactionsPage() {
+  const { transactions, deleteTransaction, getMonthTotals, availableMonths, selectedMonth, setSelectedMonth } = useApp();
+  const [filter, setFilter] = useState<'all' | 'income' | 'expense'>('all');
+  const [search, setSearch] = useState('');
+  const [viewMonth, setViewMonth] = useState(selectedMonth);
+
+  const allCategories = [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES];
+  const monthTotals = getMonthTotals(viewMonth);
+
+  const filtered = useMemo(() => {
+    return transactions
+      .filter(t => t.date.startsWith(viewMonth))
+      .filter(t => filter === 'all' || t.type === filter)
+      .filter(t => !search || t.description.toLowerCase().includes(search.toLowerCase()) || t.category.toLowerCase().includes(search.toLowerCase()))
+      .sort((a, b) => b.date.localeCompare(a.date));
+  }, [transactions, filter, search, viewMonth]);
+
+  const groupedByDate = useMemo(() => {
+    const groups: Record<string, typeof filtered> = {};
+    filtered.forEach(t => {
+      if (!groups[t.date]) groups[t.date] = [];
+      groups[t.date].push(t);
+    });
+    return groups;
+  }, [filtered]);
+
+  // Daily totals
+  const dailyTotals = useMemo(() => {
+    const result: Record<string, { income: number; expenses: number }> = {};
+    filtered.forEach(t => {
+      if (!result[t.date]) result[t.date] = { income: 0, expenses: 0 };
+      if (t.type === 'income') result[t.date].income += t.amount;
+      else result[t.date].expenses += t.amount;
+    });
+    return result;
+  }, [filtered]);
+
+  const handleMonthChange = (m: string) => {
+    setViewMonth(m);
+    setSelectedMonth(m);
+  };
+
+  return (
+    <div className="space-y-6 animate-fade-in">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="page-header">Transactions</h1>
+          <p className="text-sm text-surface-500 mt-1">{filtered.length} transactions</p>
+        </div>
+      </div>
+
+      {/* Month Summary Bar */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="stat-card">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-success-400 to-success-500" />
+          <p className="text-xs text-surface-500">Income</p>
+          <p className="text-lg font-bold text-success-600">{formatCurrency(monthTotals.income)}</p>
+        </div>
+        <div className="stat-card">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-danger-400 to-danger-500" />
+          <p className="text-xs text-surface-500">Expenses</p>
+          <p className="text-lg font-bold text-danger-600">{formatCurrency(monthTotals.expenses)}</p>
+        </div>
+        <div className="stat-card">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary-400 to-primary-500" />
+          <p className="text-xs text-surface-500">Net Savings</p>
+          <p className={`text-lg font-bold ${monthTotals.savings >= 0 ? 'text-primary-600' : 'text-danger-600'}`}>{formatCurrency(monthTotals.savings)}</p>
+        </div>
+        <div className="stat-card">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-grape-400 to-grape-500" />
+          <p className="text-xs text-surface-500">Savings Rate</p>
+          <p className="text-lg font-bold text-grape-600">{monthTotals.savingsRate.toFixed(1)}%</p>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-400" />
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search transactions..."
+            className="input-field pl-10"
+          />
+        </div>
+        <div className="flex gap-2">
+          <div className="flex bg-white/80 rounded-xl border border-surface-200 p-1">
+            {(['all', 'income', 'expense'] as const).map(f => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  filter === f
+                    ? f === 'income' ? 'bg-success-500 text-white' : f === 'expense' ? 'bg-danger-500 text-white' : 'bg-primary-500 text-white'
+                    : 'text-surface-500 hover:text-surface-700'
+                }`}
+              >
+                {f.charAt(0).toUpperCase() + f.slice(1)}
+              </button>
+            ))}
+          </div>
+          <div className="relative">
+            <select
+              value={viewMonth}
+              onChange={e => handleMonthChange(e.target.value)}
+              className="appearance-none bg-white/80 border border-surface-200 rounded-xl px-4 py-2.5 pr-8 text-sm font-medium text-surface-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500/30"
+            >
+              {availableMonths.map(m => {
+                const [y, mo] = m.split('-');
+                const label = new Date(parseInt(y), parseInt(mo) - 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+                return <option key={m} value={m}>{label}</option>;
+              })}
+            </select>
+            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-400 pointer-events-none" />
+          </div>
+        </div>
+      </div>
+
+      {/* Transaction List */}
+      <div className="space-y-6">
+        {Object.keys(groupedByDate).length === 0 && (
+          <div className="text-center py-12 text-surface-400">
+            <p className="text-lg font-medium">No transactions found</p>
+            <p className="text-sm mt-1">Try adjusting your filters or selecting a different month</p>
+          </div>
+        )}
+        {Object.entries(groupedByDate).map(([date, txns]) => {
+          const daily = dailyTotals[date];
+          return (
+            <div key={date}>
+              <div className="flex items-center gap-2 mb-3">
+                <Calendar className="w-4 h-4 text-surface-400" />
+                <h3 className="text-sm font-semibold text-surface-500">{date}</h3>
+                <div className="flex-1 h-px bg-surface-100" />
+                {daily && (
+                  <div className="flex gap-3 text-xs">
+                    {daily.income > 0 && <span className="text-success-600 font-medium">+{formatCurrency(daily.income)}</span>}
+                    {daily.expenses > 0 && <span className="text-danger-600 font-medium">-{formatCurrency(daily.expenses)}</span>}
+                  </div>
+                )}
+              </div>
+              <div className="space-y-2">
+                {txns.map(txn => {
+                  const cat = allCategories.find(c => c.id === txn.category);
+                  return (
+                    <div key={txn.id} className="flex items-center gap-3 p-4 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/20 shadow-card hover:shadow-card-hover transition-all group">
+                      <div
+                        className="w-11 h-11 rounded-2xl flex items-center justify-center text-lg flex-shrink-0"
+                        style={{ backgroundColor: (cat?.color || '#868e96') + '18' }}
+                      >
+                        {cat?.icon || '📦'}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-surface-800 truncate">{txn.description}</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-xs text-surface-400">{cat?.name || txn.category}</span>
+                        </div>
+                      </div>
+                      <p className={`text-sm font-bold ${txn.type === 'income' ? 'text-success-600' : 'text-danger-600'}`}>
+                        {txn.type === 'income' ? '+' : '-'}{formatCurrency(txn.amount)}
+                      </p>
+                      <button
+                        onClick={() => deleteTransaction(txn.id)}
+                        className="p-2 rounded-lg text-surface-300 hover:text-danger-500 hover:bg-danger-50 transition-all opacity-0 group-hover:opacity-100"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
