@@ -1,11 +1,18 @@
 'use client';
 
-import { Bell, Search, Plus } from 'lucide-react';
+import { Bell, Search, Plus, LogOut } from 'lucide-react';
 import { useState } from 'react';
 import { AddTransactionModal } from '@/components/modals/AddTransactionModal';
+import { useAuth } from '@/lib/auth-context';
 
 export function TopBar() {
+  const { user, signOut } = useAuth();
   const [showAddTxn, setShowAddTxn] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+
+  const initials = user?.user_metadata?.full_name
+    ? user.user_metadata.full_name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
+    : user?.email?.slice(0, 2).toUpperCase() || 'U';
 
   return (
     <>
@@ -38,10 +45,32 @@ export function TopBar() {
           </button>
           <button className="p-2.5 rounded-xl bg-white/80 border border-surface-200 text-surface-500 hover:text-surface-700 hover:bg-surface-50 transition-all relative">
             <Bell className="w-4 h-4" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-accent-500 rounded-full" />
           </button>
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-white font-semibold text-sm cursor-pointer">
-            JD
+          <div className="relative">
+            <button
+              onClick={() => setShowMenu(!showMenu)}
+              className="w-9 h-9 rounded-xl bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-white font-semibold text-sm cursor-pointer"
+            >
+              {initials}
+            </button>
+            {showMenu && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
+                <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-surface-100 z-50 overflow-hidden">
+                  <div className="p-3 border-b border-surface-100">
+                    <p className="text-sm font-semibold text-surface-800 truncate">{user?.user_metadata?.full_name || 'User'}</p>
+                    <p className="text-xs text-surface-400 truncate">{user?.email}</p>
+                  </div>
+                  <button
+                    onClick={async () => { setShowMenu(false); await signOut(); }}
+                    className="w-full flex items-center gap-2 px-4 py-3 text-sm text-danger-600 hover:bg-danger-50 transition-colors"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Sign Out
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </header>

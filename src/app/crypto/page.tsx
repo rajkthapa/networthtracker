@@ -16,7 +16,7 @@ const CRYPTO_ICONS: Record<string, string> = {
 };
 
 export default function CryptoPage() {
-  const { cryptoHoldings, deleteCryptoHolding } = useApp();
+  const { cryptoHoldings, deleteCryptoHolding, refreshCryptoPrices, pricesLoading } = useApp();
   const [showAddModal, setShowAddModal] = useState(false);
 
   const totalValue = cryptoHoldings.reduce((s, h) => s + h.quantity * h.currentPrice, 0);
@@ -50,9 +50,9 @@ export default function CryptoPage() {
           <p className="text-sm text-surface-500 mt-1">{cryptoHoldings.length} assets tracked</p>
         </div>
         <div className="flex items-center gap-2">
-          <button className="btn-secondary flex items-center gap-2 text-sm">
-            <RefreshCcw className="w-4 h-4" />
-            Refresh Prices
+          <button onClick={refreshCryptoPrices} disabled={pricesLoading} className="btn-secondary flex items-center gap-2 text-sm disabled:opacity-50">
+            <RefreshCcw className={`w-4 h-4 ${pricesLoading ? 'animate-spin' : ''}`} />
+            {pricesLoading ? 'Refreshing...' : 'Refresh Prices'}
           </button>
           <button onClick={() => setShowAddModal(true)} className="btn-primary flex items-center gap-2 text-sm">
             <Plus className="w-4 h-4" />

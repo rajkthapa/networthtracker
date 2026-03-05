@@ -5,7 +5,7 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Profiles table
-CREATE TABLE profiles (
+CREATE TABLE IF NOT EXISTS profiles (
   id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
   email TEXT,
   full_name TEXT,
@@ -15,11 +15,11 @@ CREATE TABLE profiles (
 );
 
 -- Accounts (assets and debts)
-CREATE TABLE accounts (
+CREATE TABLE IF NOT EXISTS accounts (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
   name TEXT NOT NULL,
-  type TEXT NOT NULL, -- '401k', 'ira', 'roth_ira', 'brokerage', 'checking', 'savings', 'hsa', 'crypto_wallet', 'real_estate', 'mortgage_debt', 'auto_loan', 'student_loan', 'credit_card', etc.
+  type TEXT NOT NULL,
   balance DECIMAL(15,2) DEFAULT 0,
   institution TEXT,
   color TEXT DEFAULT '#4c6ef5',
@@ -31,7 +31,7 @@ CREATE TABLE accounts (
 );
 
 -- Transactions
-CREATE TABLE transactions (
+CREATE TABLE IF NOT EXISTS transactions (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
   date DATE NOT NULL,
@@ -45,19 +45,48 @@ CREATE TABLE transactions (
 );
 
 -- Crypto holdings
-CREATE TABLE crypto_holdings (
+CREATE TABLE IF NOT EXISTS crypto_holdings (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
   symbol TEXT NOT NULL,
   name TEXT NOT NULL,
   quantity DECIMAL(20,8) NOT NULL,
   avg_buy_price DECIMAL(15,2) NOT NULL,
+  current_price DECIMAL(15,2) DEFAULT 0,
+  price_change_24h DECIMAL(10,4) DEFAULT 0,
+  coingecko_id TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Stock holdings
+CREATE TABLE IF NOT EXISTS stock_holdings (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  account_id UUID REFERENCES accounts(id) ON DELETE CASCADE NOT NULL,
+  ticker TEXT NOT NULL,
+  name TEXT NOT NULL,
+  shares DECIMAL(15,6) NOT NULL,
+  avg_cost_basis DECIMAL(15,2) NOT NULL,
+  current_price DECIMAL(15,2) DEFAULT 0,
+  price_change_24h DECIMAL(10,4) DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Price history (for storing fetched prices)
+CREATE TABLE IF NOT EXISTS price_history (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  symbol TEXT NOT NULL,
+  asset_type TEXT NOT NULL CHECK (asset_type IN ('crypto', 'stock')),
+  price DECIMAL(15,2) NOT NULL,
+  date DATE NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(symbol, asset_type, date)
+);
+
 -- Net worth snapshots (daily/monthly)
-CREATE TABLE net_worth_snapshots (
+CREATE TABLE IF NOT EXISTS net_worth_snapshots (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
   date DATE NOT NULL,
@@ -69,39 +98,64 @@ CREATE TABLE net_worth_snapshots (
 );
 
 -- Indexes
-CREATE INDEX idx_transactions_user_date ON transactions(user_id, date DESC);
-CREATE INDEX idx_transactions_user_type ON transactions(user_id, type);
-CREATE INDEX idx_transactions_user_category ON transactions(user_id, category);
-CREATE INDEX idx_accounts_user ON accounts(user_id);
-CREATE INDEX idx_crypto_holdings_user ON crypto_holdings(user_id);
-CREATE INDEX idx_net_worth_snapshots_user_date ON net_worth_snapshots(user_id, date DESC);
+CREATE INDEX IF NOT EXISTS idx_transactions_user_date ON transactions(user_id, date DESC);
+CREATE INDEX IF NOT EXISTS idx_transactions_user_type ON transactions(user_id, type);
+CREATE INDEX IF NOT EXISTS idx_transactions_user_category ON transactions(user_id, category);
+CREATE INDEX IF NOT EXISTS idx_accounts_user ON accounts(user_id);
+CREATE INDEX IF NOT EXISTS idx_crypto_holdings_user ON crypto_holdings(user_id);
+CREATE INDEX IF NOT EXISTS idx_stock_holdings_user ON stock_holdings(user_id);
+CREATE INDEX IF NOT EXISTS idx_stock_holdings_account ON stock_holdings(account_id);
+CREATE INDEX IF NOT EXISTS idx_net_worth_snapshots_user_date ON net_worth_snapshots(user_id, date DESC);
+CREATE INDEX IF NOT EXISTS idx_price_history_symbol_date ON price_history(symbol, date DESC);
 
 -- RLS (Row Level Security)
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE accounts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE crypto_holdings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE stock_holdings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE net_worth_snapshots ENABLE ROW LEVEL SECURITY;
+ALTER TABLE price_history ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing policies if they exist (for re-runs)
+DROP POLICY IF EXISTS "Users can view own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can insert own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can CRUD own accounts" ON accounts;
+DROP POLICY IF EXISTS "Users can CRUD own transactions" ON transactions;
+DROP POLICY IF EXISTS "Users can CRUD own crypto" ON crypto_holdings;
+DROP POLICY IF EXISTS "Users can CRUD own stocks" ON stock_holdings;
+DROP POLICY IF EXISTS "Users can CRUD own snapshots" ON net_worth_snapshots;
+DROP POLICY IF EXISTS "Anyone can read price history" ON price_history;
+DROP POLICY IF EXISTS "Authenticated users can insert price history" ON price_history;
 
 -- Policies: Users can only access their own data
 CREATE POLICY "Users can view own profile" ON profiles FOR SELECT USING (auth.uid() = id);
+CREATE POLICY "Users can insert own profile" ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
 CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
 
 CREATE POLICY "Users can CRUD own accounts" ON accounts FOR ALL USING (auth.uid() = user_id);
 CREATE POLICY "Users can CRUD own transactions" ON transactions FOR ALL USING (auth.uid() = user_id);
 CREATE POLICY "Users can CRUD own crypto" ON crypto_holdings FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users can CRUD own stocks" ON stock_holdings FOR ALL USING (auth.uid() = user_id);
 CREATE POLICY "Users can CRUD own snapshots" ON net_worth_snapshots FOR ALL USING (auth.uid() = user_id);
+
+-- Price history is readable by anyone, writable by authenticated users
+CREATE POLICY "Anyone can read price history" ON price_history FOR SELECT USING (true);
+CREATE POLICY "Authenticated users can insert price history" ON price_history FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 
 -- Function to auto-create profile on signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
   INSERT INTO public.profiles (id, email, full_name)
-  VALUES (new.id, new.email, new.raw_user_meta_data->>'full_name');
+  VALUES (new.id, new.email, COALESCE(new.raw_user_meta_data->>'full_name', ''));
   RETURN new;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+-- Drop trigger if exists, then recreate
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();

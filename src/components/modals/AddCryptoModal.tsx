@@ -12,10 +12,10 @@ export function AddCryptoModal({ onClose }: { onClose: () => void }) {
   const [avgBuyPrice, setAvgBuyPrice] = useState('');
   const [currentPrice, setCurrentPrice] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!symbol || !name || !quantity || !avgBuyPrice || !currentPrice) return;
-    addCryptoHolding({
+    await addCryptoHolding({
       symbol: symbol.toUpperCase(),
       name,
       quantity: parseFloat(quantity),

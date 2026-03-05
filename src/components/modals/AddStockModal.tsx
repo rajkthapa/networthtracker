@@ -12,10 +12,10 @@ export function AddStockModal({ onClose, accountId, accountName }: { onClose: ()
   const [avgCostBasis, setAvgCostBasis] = useState('');
   const [currentPrice, setCurrentPrice] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!ticker || !name || !shares || !avgCostBasis || !currentPrice) return;
-    addStockHolding({
+    await addStockHolding({
       accountId,
       ticker: ticker.toUpperCase(),
       name,

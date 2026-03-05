@@ -16,11 +16,11 @@ export function AddAccountModal({ onClose }: { onClose: () => void }) {
 
   const types = isDebt ? DEBT_TYPES : ACCOUNT_TYPES;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !type || !balance) return;
     const typeInfo = types.find(t => t.id === type);
-    addAccount({
+    await addAccount({
       name,
       type,
       balance: parseFloat(balance),

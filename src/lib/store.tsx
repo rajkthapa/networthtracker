@@ -1,9 +1,10 @@
 'use client';
 
-import React, { createContext, useContext, useState, useMemo, useCallback, type ReactNode } from 'react';
+import React, { createContext, useContext, useState, useMemo, useCallback, useEffect, type ReactNode } from 'react';
 import { Account, Transaction, CryptoHolding, StockHolding, NetWorthSnapshot, MonthlyData } from './types';
-import { demoAccounts, demoTransactions, demoCryptoHoldings, demoStockHoldings, demoNetWorthHistory } from './demo-data';
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, ACCOUNT_TYPES, DEBT_TYPES } from './utils';
+import { useAuth } from './auth-context';
+import { createClient } from './supabase';
 
 type CategoryBreakdownItem = {
   category: string;
@@ -15,6 +16,9 @@ type CategoryBreakdownItem = {
 };
 
 interface AppState {
+  // Loading
+  loading: boolean;
+
   // Data
   accounts: Account[];
   transactions: Transaction[];
@@ -23,24 +27,29 @@ interface AppState {
   netWorthHistory: NetWorthSnapshot[];
 
   // Account actions
-  addAccount: (account: Omit<Account, 'id' | 'createdAt'>) => void;
-  updateAccount: (id: string, updates: Partial<Account>) => void;
-  deleteAccount: (id: string) => void;
+  addAccount: (account: Omit<Account, 'id' | 'createdAt'>) => Promise<void>;
+  updateAccount: (id: string, updates: Partial<Account>) => Promise<void>;
+  deleteAccount: (id: string) => Promise<void>;
 
   // Transaction actions
-  addTransaction: (transaction: Omit<Transaction, 'id' | 'createdAt'>) => void;
-  deleteTransaction: (id: string) => void;
+  addTransaction: (transaction: Omit<Transaction, 'id' | 'createdAt'>) => Promise<void>;
+  deleteTransaction: (id: string) => Promise<void>;
 
   // Crypto actions
-  addCryptoHolding: (holding: Omit<CryptoHolding, 'id'>) => void;
-  updateCryptoHolding: (id: string, updates: Partial<CryptoHolding>) => void;
-  deleteCryptoHolding: (id: string) => void;
+  addCryptoHolding: (holding: Omit<CryptoHolding, 'id'>) => Promise<void>;
+  updateCryptoHolding: (id: string, updates: Partial<CryptoHolding>) => Promise<void>;
+  deleteCryptoHolding: (id: string) => Promise<void>;
 
   // Stock actions
-  addStockHolding: (holding: Omit<StockHolding, 'id'>) => void;
-  updateStockHolding: (id: string, updates: Partial<StockHolding>) => void;
-  deleteStockHolding: (id: string) => void;
+  addStockHolding: (holding: Omit<StockHolding, 'id'>) => Promise<void>;
+  updateStockHolding: (id: string, updates: Partial<StockHolding>) => Promise<void>;
+  deleteStockHolding: (id: string) => Promise<void>;
   getStocksByAccount: (accountId: string) => StockHolding[];
+
+  // Price refresh
+  refreshCryptoPrices: () => Promise<void>;
+  refreshStockPrices: () => Promise<void>;
+  pricesLoading: boolean;
 
   // Computed from accounts
   totalAssets: number;
@@ -52,33 +61,24 @@ interface AppState {
   setSelectedMonth: (month: string) => void;
   availableMonths: string[];
 
-  // For the selected month
   monthIncome: number;
   monthExpenses: number;
   monthSavings: number;
   monthSavingsRate: number;
 
-  // Previous month (for comparison)
   prevMonthIncome: number;
   prevMonthExpenses: number;
   prevMonthSavings: number;
   prevMonthSavingsRate: number;
 
-  // Change percentages
   incomeChange: number;
   expenseChange: number;
   savingsChange: number;
 
-  // Monthly data for charts
   monthlyData: MonthlyData[];
-
-  // Category breakdown
   getCategoryBreakdown: (type: 'income' | 'expense', month?: string) => CategoryBreakdownItem[];
-
-  // Get month income/expenses
   getMonthTotals: (month: string) => { income: number; expenses: number; savings: number; savingsRate: number };
 
-  // Dividend specific
   totalDividends: number;
   monthlyAvgDividend: number;
   dividendMonths: number;
@@ -100,67 +100,299 @@ function getPrevMonth(yyyymm: string): string {
   return `${y}-${String(m - 1).padStart(2, '0')}`;
 }
 
+function getCurrentMonth(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+}
+
+// Map DB row to app types
+function mapAccount(row: any): Account {
+  return {
+    id: row.id,
+    name: row.name,
+    type: row.type,
+    balance: Number(row.balance),
+    institution: row.institution || undefined,
+    color: row.color || '#4c6ef5',
+    icon: row.icon || '💰',
+    isDebt: row.is_debt,
+    interestRate: row.interest_rate ? Number(row.interest_rate) : undefined,
+    createdAt: row.created_at,
+  };
+}
+
+function mapTransaction(row: any): Transaction {
+  return {
+    id: row.id,
+    date: row.date,
+    description: row.description,
+    amount: Number(row.amount),
+    type: row.type,
+    category: row.category,
+    accountId: row.account_id || undefined,
+    notes: row.notes || undefined,
+    createdAt: row.created_at,
+  };
+}
+
+function mapCrypto(row: any): CryptoHolding {
+  return {
+    id: row.id,
+    symbol: row.symbol,
+    name: row.name,
+    quantity: Number(row.quantity),
+    avgBuyPrice: Number(row.avg_buy_price),
+    currentPrice: Number(row.current_price) || 0,
+    priceChange24h: Number(row.price_change_24h) || 0,
+    coingeckoId: row.coingecko_id || undefined,
+  };
+}
+
+function mapStock(row: any): StockHolding {
+  return {
+    id: row.id,
+    accountId: row.account_id,
+    ticker: row.ticker,
+    name: row.name,
+    shares: Number(row.shares),
+    avgCostBasis: Number(row.avg_cost_basis),
+    currentPrice: Number(row.current_price) || 0,
+    priceChange24h: Number(row.price_change_24h) || 0,
+  };
+}
+
+function mapSnapshot(row: any): NetWorthSnapshot {
+  return {
+    date: row.date,
+    totalAssets: Number(row.total_assets),
+    totalDebts: Number(row.total_debts),
+    netWorth: Number(row.net_worth),
+  };
+}
+
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [accounts, setAccounts] = useState<Account[]>(demoAccounts);
-  const [transactions, setTransactions] = useState<Transaction[]>(demoTransactions);
-  const [cryptoHoldings, setCryptoHoldings] = useState<CryptoHolding[]>(demoCryptoHoldings);
-  const [stockHoldings, setStockHoldings] = useState<StockHolding[]>(demoStockHoldings);
-  const [netWorthHistory] = useState<NetWorthSnapshot[]>(demoNetWorthHistory);
-  const [selectedMonth, setSelectedMonth] = useState('2026-03');
+  const { user } = useAuth();
+  const supabase = createClient();
+
+  const [loading, setLoading] = useState(true);
+  const [pricesLoading, setPricesLoading] = useState(false);
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [cryptoHoldings, setCryptoHoldings] = useState<CryptoHolding[]>([]);
+  const [stockHoldings, setStockHoldings] = useState<StockHolding[]>([]);
+  const [netWorthHistory, setNetWorthHistory] = useState<NetWorthSnapshot[]>([]);
+  const [selectedMonth, setSelectedMonth] = useState(getCurrentMonth());
+
+  // === Fetch all data when user changes ===
+  useEffect(() => {
+    if (!user) {
+      setAccounts([]);
+      setTransactions([]);
+      setCryptoHoldings([]);
+      setStockHoldings([]);
+      setNetWorthHistory([]);
+      setLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    async function fetchAll() {
+      setLoading(true);
+      const [accRes, txnRes, cryptoRes, stockRes, snapRes] = await Promise.all([
+        supabase.from('accounts').select('*').eq('user_id', user!.id).order('created_at', { ascending: false }),
+        supabase.from('transactions').select('*').eq('user_id', user!.id).order('date', { ascending: false }),
+        supabase.from('crypto_holdings').select('*').eq('user_id', user!.id),
+        supabase.from('stock_holdings').select('*').eq('user_id', user!.id),
+        supabase.from('net_worth_snapshots').select('*').eq('user_id', user!.id).order('date', { ascending: true }),
+      ]);
+
+      if (cancelled) return;
+
+      setAccounts((accRes.data || []).map(mapAccount));
+      setTransactions((txnRes.data || []).map(mapTransaction));
+      setCryptoHoldings((cryptoRes.data || []).map(mapCrypto));
+      setStockHoldings((stockRes.data || []).map(mapStock));
+      setNetWorthHistory((snapRes.data || []).map(mapSnapshot));
+      setLoading(false);
+    }
+
+    fetchAll();
+    return () => { cancelled = true; };
+  }, [user, supabase]);
 
   // === Account Actions ===
-  const addAccount = useCallback((account: Omit<Account, 'id' | 'createdAt'>) => {
-    setAccounts(prev => [...prev, { ...account, id: Date.now().toString(), createdAt: new Date().toISOString() }]);
-  }, []);
+  const addAccount = useCallback(async (account: Omit<Account, 'id' | 'createdAt'>) => {
+    if (!user) return;
+    const { data, error } = await supabase.from('accounts').insert({
+      user_id: user.id,
+      name: account.name,
+      type: account.type,
+      balance: account.balance,
+      institution: account.institution || null,
+      color: account.color,
+      icon: account.icon,
+      is_debt: account.isDebt,
+      interest_rate: account.interestRate || null,
+    }).select().single();
+    if (!error && data) setAccounts(prev => [mapAccount(data), ...prev]);
+  }, [user, supabase]);
 
-  const updateAccount = useCallback((id: string, updates: Partial<Account>) => {
-    setAccounts(prev => prev.map(a => a.id === id ? { ...a, ...updates } : a));
-  }, []);
+  const updateAccount = useCallback(async (id: string, updates: Partial<Account>) => {
+    const dbUpdates: any = {};
+    if (updates.name !== undefined) dbUpdates.name = updates.name;
+    if (updates.balance !== undefined) dbUpdates.balance = updates.balance;
+    if (updates.type !== undefined) dbUpdates.type = updates.type;
+    if (updates.institution !== undefined) dbUpdates.institution = updates.institution;
+    if (updates.color !== undefined) dbUpdates.color = updates.color;
+    if (updates.icon !== undefined) dbUpdates.icon = updates.icon;
+    if (updates.isDebt !== undefined) dbUpdates.is_debt = updates.isDebt;
+    if (updates.interestRate !== undefined) dbUpdates.interest_rate = updates.interestRate;
+    dbUpdates.updated_at = new Date().toISOString();
 
-  const deleteAccount = useCallback((id: string) => {
-    setAccounts(prev => prev.filter(a => a.id !== id));
-    // Also delete stock holdings tied to this account
-    setStockHoldings(prev => prev.filter(s => s.accountId !== id));
-  }, []);
+    const { error } = await supabase.from('accounts').update(dbUpdates).eq('id', id);
+    if (!error) setAccounts(prev => prev.map(a => a.id === id ? { ...a, ...updates } : a));
+  }, [supabase]);
+
+  const deleteAccount = useCallback(async (id: string) => {
+    const { error } = await supabase.from('accounts').delete().eq('id', id);
+    if (!error) {
+      setAccounts(prev => prev.filter(a => a.id !== id));
+      setStockHoldings(prev => prev.filter(s => s.accountId !== id));
+    }
+  }, [supabase]);
 
   // === Transaction Actions ===
-  const addTransaction = useCallback((transaction: Omit<Transaction, 'id' | 'createdAt'>) => {
-    setTransactions(prev => [{ ...transaction, id: Date.now().toString(), createdAt: new Date().toISOString() }, ...prev]);
-  }, []);
+  const addTransaction = useCallback(async (transaction: Omit<Transaction, 'id' | 'createdAt'>) => {
+    if (!user) return;
+    const { data, error } = await supabase.from('transactions').insert({
+      user_id: user.id,
+      date: transaction.date,
+      description: transaction.description,
+      amount: transaction.amount,
+      type: transaction.type,
+      category: transaction.category,
+      account_id: transaction.accountId || null,
+      notes: transaction.notes || null,
+    }).select().single();
+    if (!error && data) setTransactions(prev => [mapTransaction(data), ...prev]);
+  }, [user, supabase]);
 
-  const deleteTransaction = useCallback((id: string) => {
-    setTransactions(prev => prev.filter(t => t.id !== id));
-  }, []);
+  const deleteTransaction = useCallback(async (id: string) => {
+    const { error } = await supabase.from('transactions').delete().eq('id', id);
+    if (!error) setTransactions(prev => prev.filter(t => t.id !== id));
+  }, [supabase]);
 
   // === Crypto Actions ===
-  const addCryptoHolding = useCallback((holding: Omit<CryptoHolding, 'id'>) => {
-    setCryptoHoldings(prev => [...prev, { ...holding, id: `crypto-${Date.now()}` }]);
-  }, []);
+  const addCryptoHolding = useCallback(async (holding: Omit<CryptoHolding, 'id'>) => {
+    if (!user) return;
+    const { data, error } = await supabase.from('crypto_holdings').insert({
+      user_id: user.id,
+      symbol: holding.symbol,
+      name: holding.name,
+      quantity: holding.quantity,
+      avg_buy_price: holding.avgBuyPrice,
+      current_price: holding.currentPrice || 0,
+      price_change_24h: holding.priceChange24h || 0,
+    }).select().single();
+    if (!error && data) setCryptoHoldings(prev => [...prev, mapCrypto(data)]);
+  }, [user, supabase]);
 
-  const updateCryptoHolding = useCallback((id: string, updates: Partial<CryptoHolding>) => {
-    setCryptoHoldings(prev => prev.map(h => h.id === id ? { ...h, ...updates } : h));
-  }, []);
+  const updateCryptoHolding = useCallback(async (id: string, updates: Partial<CryptoHolding>) => {
+    const dbUpdates: any = {};
+    if (updates.quantity !== undefined) dbUpdates.quantity = updates.quantity;
+    if (updates.avgBuyPrice !== undefined) dbUpdates.avg_buy_price = updates.avgBuyPrice;
+    if (updates.currentPrice !== undefined) dbUpdates.current_price = updates.currentPrice;
+    if (updates.priceChange24h !== undefined) dbUpdates.price_change_24h = updates.priceChange24h;
+    dbUpdates.updated_at = new Date().toISOString();
 
-  const deleteCryptoHolding = useCallback((id: string) => {
-    setCryptoHoldings(prev => prev.filter(h => h.id !== id));
-  }, []);
+    const { error } = await supabase.from('crypto_holdings').update(dbUpdates).eq('id', id);
+    if (!error) setCryptoHoldings(prev => prev.map(h => h.id === id ? { ...h, ...updates } : h));
+  }, [supabase]);
+
+  const deleteCryptoHolding = useCallback(async (id: string) => {
+    const { error } = await supabase.from('crypto_holdings').delete().eq('id', id);
+    if (!error) setCryptoHoldings(prev => prev.filter(h => h.id !== id));
+  }, [supabase]);
 
   // === Stock Actions ===
-  const addStockHolding = useCallback((holding: Omit<StockHolding, 'id'>) => {
-    setStockHoldings(prev => [...prev, { ...holding, id: `stk-${Date.now()}` }]);
-  }, []);
+  const addStockHolding = useCallback(async (holding: Omit<StockHolding, 'id'>) => {
+    if (!user) return;
+    const { data, error } = await supabase.from('stock_holdings').insert({
+      user_id: user.id,
+      account_id: holding.accountId,
+      ticker: holding.ticker,
+      name: holding.name,
+      shares: holding.shares,
+      avg_cost_basis: holding.avgCostBasis,
+      current_price: holding.currentPrice || 0,
+      price_change_24h: holding.priceChange24h || 0,
+    }).select().single();
+    if (!error && data) setStockHoldings(prev => [...prev, mapStock(data)]);
+  }, [user, supabase]);
 
-  const updateStockHolding = useCallback((id: string, updates: Partial<StockHolding>) => {
-    setStockHoldings(prev => prev.map(h => h.id === id ? { ...h, ...updates } : h));
-  }, []);
+  const updateStockHolding = useCallback(async (id: string, updates: Partial<StockHolding>) => {
+    const dbUpdates: any = {};
+    if (updates.shares !== undefined) dbUpdates.shares = updates.shares;
+    if (updates.avgCostBasis !== undefined) dbUpdates.avg_cost_basis = updates.avgCostBasis;
+    if (updates.currentPrice !== undefined) dbUpdates.current_price = updates.currentPrice;
+    if (updates.priceChange24h !== undefined) dbUpdates.price_change_24h = updates.priceChange24h;
+    dbUpdates.updated_at = new Date().toISOString();
 
-  const deleteStockHolding = useCallback((id: string) => {
-    setStockHoldings(prev => prev.filter(h => h.id !== id));
-  }, []);
+    const { error } = await supabase.from('stock_holdings').update(dbUpdates).eq('id', id);
+    if (!error) setStockHoldings(prev => prev.map(h => h.id === id ? { ...h, ...updates } : h));
+  }, [supabase]);
+
+  const deleteStockHolding = useCallback(async (id: string) => {
+    const { error } = await supabase.from('stock_holdings').delete().eq('id', id);
+    if (!error) setStockHoldings(prev => prev.filter(h => h.id !== id));
+  }, [supabase]);
 
   const getStocksByAccount = useCallback((accountId: string) => {
     return stockHoldings.filter(s => s.accountId === accountId);
   }, [stockHoldings]);
+
+  // === Price Refresh ===
+  const refreshCryptoPrices = useCallback(async () => {
+    if (cryptoHoldings.length === 0) return;
+    setPricesLoading(true);
+    try {
+      const symbols = cryptoHoldings.map(h => h.symbol);
+      const res = await fetch(`/api/prices?type=crypto&symbols=${symbols.join(',')}`);
+      const { prices } = await res.json();
+      if (prices) {
+        for (const holding of cryptoHoldings) {
+          const p = prices[holding.symbol];
+          if (p) {
+            await updateCryptoHolding(holding.id, { currentPrice: p.price, priceChange24h: p.change24h });
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Failed to refresh crypto prices:', err);
+    }
+    setPricesLoading(false);
+  }, [cryptoHoldings, updateCryptoHolding]);
+
+  const refreshStockPrices = useCallback(async () => {
+    if (stockHoldings.length === 0) return;
+    setPricesLoading(true);
+    try {
+      const tickers = Array.from(new Set(stockHoldings.map(h => h.ticker)));
+      const res = await fetch(`/api/prices?type=stock&symbols=${tickers.join(',')}`);
+      const { prices } = await res.json();
+      if (prices) {
+        for (const holding of stockHoldings) {
+          const p = prices[holding.ticker];
+          if (p) {
+            await updateStockHolding(holding.id, { currentPrice: p.price, priceChange24h: p.change24h });
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Failed to refresh stock prices:', err);
+    }
+    setPricesLoading(false);
+  }, [stockHoldings, updateStockHolding]);
 
   // === Computed ===
   const totalAssets = useMemo(() => accounts.filter(a => !a.isDebt).reduce((s, a) => s + a.balance, 0), [accounts]);
@@ -227,11 +459,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   return (
     <AppContext.Provider value={{
+      loading,
       accounts, transactions, cryptoHoldings, stockHoldings, netWorthHistory,
       addAccount, updateAccount, deleteAccount,
       addTransaction, deleteTransaction,
       addCryptoHolding, updateCryptoHolding, deleteCryptoHolding,
       addStockHolding, updateStockHolding, deleteStockHolding, getStocksByAccount,
+      refreshCryptoPrices, refreshStockPrices, pricesLoading,
       totalAssets, totalDebts, netWorth,
       selectedMonth, setSelectedMonth, availableMonths,
       monthIncome: current.income, monthExpenses: current.expenses,

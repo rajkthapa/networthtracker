@@ -32,6 +32,7 @@ export interface CryptoHolding {
   currentPrice: number;
   priceChange24h: number;
   image?: string;
+  coingeckoId?: string;
 }
 
 export interface StockHolding {

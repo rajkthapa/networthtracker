@@ -11,7 +11,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis
 const INVESTMENT_TYPES = ['401k', 'ira', 'roth_ira', 'brokerage', 'hsa'];
 
 export default function AccountsPage() {
-  const { accounts, totalAssets, totalDebts, netWorth, deleteAccount, updateAccount, getStocksByAccount, deleteStockHolding } = useApp();
+  const { accounts, totalAssets, totalDebts, netWorth, deleteAccount, updateAccount, getStocksByAccount, deleteStockHolding, loading } = useApp();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showStockModal, setShowStockModal] = useState<{ accountId: string; accountName: string } | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);

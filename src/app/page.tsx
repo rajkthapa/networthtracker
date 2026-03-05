@@ -227,13 +227,65 @@ function DividendTracker() {
   );
 }
 
+function EmptyDashboard() {
+  return (
+    <div className="space-y-6 animate-fade-in">
+      <div>
+        <h1 className="page-header">Dashboard</h1>
+        <p className="text-sm text-surface-500 mt-1">Welcome to WealthPulse!</p>
+      </div>
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary-500 via-grape-500 to-accent-500 p-8 text-white text-center">
+        <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent" />
+        <div className="relative max-w-md mx-auto">
+          <h2 className="text-2xl font-bold mb-3">Start Tracking Your Wealth</h2>
+          <p className="text-white/70 text-sm mb-6">Add your first account, transaction, or investment to see your financial dashboard come to life.</p>
+          <div className="flex flex-wrap gap-3 justify-center">
+            <a href="/accounts" className="px-5 py-2.5 rounded-xl bg-white/20 hover:bg-white/30 font-semibold text-sm transition-colors">Add Account</a>
+            <a href="/transactions" className="px-5 py-2.5 rounded-xl bg-white/20 hover:bg-white/30 font-semibold text-sm transition-colors">Add Transaction</a>
+            <a href="/crypto" className="px-5 py-2.5 rounded-xl bg-white/20 hover:bg-white/30 font-semibold text-sm transition-colors">Add Crypto</a>
+          </div>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {[
+          { title: 'Accounts', desc: 'Track checking, savings, 401k, IRA, and more', href: '/accounts' },
+          { title: 'Transactions', desc: 'Log income and expenses with categories', href: '/transactions' },
+          { title: 'Investments', desc: 'Monitor stocks and crypto with live prices', href: '/crypto' },
+        ].map(item => (
+          <a key={item.title} href={item.href} className="stat-card hover:shadow-lg transition-all group cursor-pointer">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary-400 to-grape-400" />
+            <p className="text-lg font-bold text-surface-800 mb-1">{item.title}</p>
+            <p className="text-xs text-surface-500">{item.desc}</p>
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const {
-    totalAssets, totalDebts, netWorth,
+    loading, totalAssets, totalDebts, netWorth,
     monthIncome, monthExpenses, monthSavingsRate,
     incomeChange, expenseChange,
-    selectedMonth,
+    selectedMonth, accounts, transactions, availableMonths,
   } = useApp();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
+        <div className="text-center">
+          <div className="w-10 h-10 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-surface-500 text-sm">Loading your data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show empty state for new users
+  if (accounts.length === 0 && transactions.length === 0) {
+    return <EmptyDashboard />;
+  }
 
   const [y, m] = selectedMonth.split('-').map(Number);
   const monthLabel = new Date(y, m - 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
@@ -247,11 +299,7 @@ export default function Dashboard() {
           <p className="text-sm text-surface-500 mt-1">Financial snapshot for {monthLabel}</p>
         </div>
         <div className="flex items-center gap-3">
-          <MonthSelector />
-          <div className="tag tag-success">
-            <span className="w-2 h-2 rounded-full bg-success-500 animate-pulse-soft" />
-            All accounts synced
-          </div>
+          {availableMonths.length > 0 && <MonthSelector />}
         </div>
       </div>
 

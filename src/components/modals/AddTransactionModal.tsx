@@ -15,10 +15,13 @@ export function AddTransactionModal({ onClose }: { onClose: () => void }) {
 
   const categories = type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [saving, setSaving] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!amount || !description || !category) return;
-    addTransaction({
+    setSaving(true);
+    await addTransaction({
       date,
       description,
       amount: parseFloat(amount),
