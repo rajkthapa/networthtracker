@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Plus, Trash2, TrendingUp, TrendingDown, Building2, Edit3, Check, X, ChevronDown, ChevronRight } from 'lucide-react';
 import { useApp } from '@/lib/store';
-import { formatCurrency, formatPercent, ACCOUNT_TYPES } from '@/lib/utils';
+import { formatCurrency, formatPercent, ACCOUNT_TYPES, LIQUID_ACCOUNT_TYPES } from '@/lib/utils';
 import { AddAccountModal } from '@/components/modals/AddAccountModal';
 import { AddStockModal } from '@/components/modals/AddStockModal';
 import { UpgradeModal } from '@/components/subscription/UpgradeModal';
@@ -23,6 +23,10 @@ export default function AccountsPage() {
   const [expandedAccounts, setExpandedAccounts] = useState<Set<string>>(new Set());
 
   const assets = accounts.filter(a => !a.isDebt).sort((a, b) => b.balance - a.balance);
+  const liquidAssets = assets.filter(a => LIQUID_ACCOUNT_TYPES.includes(a.type));
+  const illiquidAssets = assets.filter(a => !LIQUID_ACCOUNT_TYPES.includes(a.type));
+  const totalLiquid = liquidAssets.reduce((s, a) => s + a.balance, 0);
+  const totalIlliquid = illiquidAssets.reduce((s, a) => s + a.balance, 0);
   const debts = accounts.filter(a => a.isDebt).sort((a, b) => b.balance - a.balance);
 
   const assetsByType = assets.reduce((acc, a) => {
@@ -184,129 +188,250 @@ export default function AccountsPage() {
           </h3>
           <p className="text-sm font-semibold text-success-600">Total: {formatCurrency(totalAssets)}</p>
         </div>
-        <div className="space-y-3">
-          {assets.map(acc => {
-            const isInvestment = isInvestmentAccount(acc.type);
-            const stocks = isInvestment ? getStocksByAccount(acc.id) : [];
-            const isExpanded = expandedAccounts.has(acc.id);
-            const stocksValue = stocks.reduce((s, st) => s + st.shares * st.currentPrice, 0);
-            const stocksCost = stocks.reduce((s, st) => s + st.shares * st.avgCostBasis, 0);
-            const stocksPnL = stocksValue - stocksCost;
 
-            return (
-              <div key={acc.id} className="rounded-2xl border border-surface-100 hover:border-surface-200 transition-all overflow-hidden">
-                <div className="flex items-center gap-3 p-4 group">
-                  {isInvestment ? (
-                    <button onClick={() => toggleExpand(acc.id)} className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-surface-100 transition-colors text-surface-400">
-                      {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                    </button>
-                  ) : (
-                    <div className="w-6" />
-                  )}
-                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl" style={{ backgroundColor: acc.color + '18' }}>
-                    {acc.icon}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-surface-800 truncate">{acc.name}</p>
-                    <div className="flex items-center gap-2">
-                      <p className="text-xs text-surface-400">{acc.institution || ACCOUNT_TYPES.find(t => t.id === acc.type)?.name || acc.type}</p>
-                      {isInvestment && stocks.length > 0 && (
-                        <span className="text-[10px] text-surface-400 bg-surface-100 px-1.5 py-0.5 rounded-full">{stocks.length} positions</span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {editingId === acc.id ? (
-                      <div className="flex items-center gap-1">
-                        <input type="number" value={editBalance} onChange={e => setEditBalance(e.target.value)} className="input-field w-28 py-1 text-sm" autoFocus />
-                        <button onClick={() => saveEdit(acc.id)} className="p-1.5 rounded-lg text-success-500 hover:bg-success-50"><Check className="w-4 h-4" /></button>
-                        <button onClick={() => setEditingId(null)} className="p-1.5 rounded-lg text-surface-400 hover:bg-surface-50"><X className="w-4 h-4" /></button>
-                      </div>
-                    ) : (
-                      <>
-                        <p className="text-sm font-bold text-surface-800 num">{formatCurrency(acc.balance)}</p>
-                        <button onClick={() => startEdit(acc.id, acc.balance)} className="p-1.5 rounded-lg text-surface-300 hover:text-primary-500 hover:bg-primary-50 opacity-0 group-hover:opacity-100 transition-all"><Edit3 className="w-3.5 h-3.5" /></button>
-                        <button onClick={() => deleteAccount(acc.id)} className="p-1.5 rounded-lg text-surface-300 hover:text-danger-500 hover:bg-danger-50 opacity-0 group-hover:opacity-100 transition-all"><Trash2 className="w-3.5 h-3.5" /></button>
-                      </>
-                    )}
-                  </div>
-                </div>
+        {/* Liquid / Illiquid summary */}
+        {assets.length > 0 && (
+          <div className="grid grid-cols-2 gap-3 mb-5">
+            <div className="p-3 rounded-xl bg-teal-50/60 border border-teal-100">
+              <p className="text-[10px] font-semibold text-teal-600 uppercase tracking-wider mb-0.5">Liquid</p>
+              <p className="text-lg font-bold text-teal-700 num">{formatCurrency(totalLiquid)}</p>
+              <p className="text-[10px] text-teal-500">{liquidAssets.length} account{liquidAssets.length !== 1 ? 's' : ''}</p>
+            </div>
+            <div className="p-3 rounded-xl bg-amber-50/60 border border-amber-100">
+              <p className="text-[10px] font-semibold text-amber-600 uppercase tracking-wider mb-0.5">Illiquid</p>
+              <p className="text-lg font-bold text-amber-700 num">{formatCurrency(totalIlliquid)}</p>
+              <p className="text-[10px] text-amber-500">{illiquidAssets.length} account{illiquidAssets.length !== 1 ? 's' : ''}</p>
+            </div>
+          </div>
+        )}
 
-                {/* Stock Positions (expanded) */}
-                {isInvestment && isExpanded && (
-                  <div className="border-t border-surface-100 bg-surface-50/50 px-4 pb-4">
-                    <div className="flex items-center justify-between py-3">
-                      <p className="text-xs font-semibold text-surface-500 uppercase tracking-wider">Stock Positions</p>
-                      <div className="flex items-center gap-3">
-                        {stocks.length > 0 && (
-                          <span className={`text-xs font-semibold ${stocksPnL >= 0 ? 'text-success-600' : 'text-danger-600'}`}>
-                            P&L: {stocksPnL >= 0 ? '+' : ''}{formatCurrency(stocksPnL)}
-                          </span>
-                        )}
-                        <button
-                          onClick={() => setShowStockModal({ accountId: acc.id, accountName: acc.name })}
-                          className="flex items-center gap-1 text-xs text-primary-500 hover:text-primary-600 font-medium"
-                        >
-                          <Plus className="w-3.5 h-3.5" />
-                          Add Position
+        {liquidAssets.length > 0 && (
+          <div className="mb-4">
+            <p className="text-xs font-semibold text-teal-600 uppercase tracking-wider mb-3">Liquid Assets</p>
+            <div className="space-y-3">
+              {liquidAssets.map(acc => {
+                const isInvestment = isInvestmentAccount(acc.type);
+                const stocks = isInvestment ? getStocksByAccount(acc.id) : [];
+                const isExpanded = expandedAccounts.has(acc.id);
+                const stocksValue = stocks.reduce((s, st) => s + st.shares * st.currentPrice, 0);
+                const stocksCost = stocks.reduce((s, st) => s + st.shares * st.avgCostBasis, 0);
+                const stocksPnL = stocksValue - stocksCost;
+
+                return (
+                  <div key={acc.id} className="rounded-2xl border border-surface-100 hover:border-surface-200 transition-all overflow-hidden">
+                    <div className="flex items-center gap-3 p-4 group">
+                      {isInvestment ? (
+                        <button onClick={() => toggleExpand(acc.id)} className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-surface-100 transition-colors text-surface-400">
+                          {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                         </button>
+                      ) : (
+                        <div className="w-6" />
+                      )}
+                      <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl" style={{ backgroundColor: acc.color + '18' }}>
+                        {acc.icon}
                       </div>
-                    </div>
-
-                    {stocks.length > 0 ? (
-                      <div className="space-y-2">
-                        {stocks.map(stock => {
-                          const value = stock.shares * stock.currentPrice;
-                          const cost = stock.shares * stock.avgCostBasis;
-                          const pnl = value - cost;
-                          const pnlPercent = cost > 0 ? (pnl / cost) * 100 : 0;
-
-                          return (
-                            <div key={stock.id} className="flex items-center gap-3 p-3 rounded-xl bg-white border border-surface-100 group/stock">
-                              <div className="w-9 h-9 rounded-lg bg-primary-50 flex items-center justify-center">
-                                <span className="text-xs font-bold text-primary-600">{stock.ticker}</span>
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-xs font-semibold text-surface-700 truncate">{stock.name}</p>
-                                <p className="text-[10px] text-surface-400">{stock.shares} shares @ {formatCurrency(stock.avgCostBasis)}</p>
-                              </div>
-                              <div className="text-right">
-                                <p className="text-xs font-bold text-surface-800">{formatCurrency(value)}</p>
-                                <p className={`text-[10px] font-semibold ${pnl >= 0 ? 'text-success-600' : 'text-danger-600'}`}>
-                                  {pnl >= 0 ? '+' : ''}{formatCurrency(pnl)} ({formatPercent(pnlPercent)})
-                                </p>
-                              </div>
-                              <button
-                                onClick={() => deleteStockHolding(stock.id)}
-                                className="p-1 rounded-lg text-surface-300 hover:text-danger-500 hover:bg-danger-50 opacity-0 group-hover/stock:opacity-100 transition-all"
-                              >
-                                <Trash2 className="w-3 h-3" />
-                              </button>
-                            </div>
-                          );
-                        })}
-                        <div className="flex items-center justify-between pt-2 px-1 text-xs text-surface-500 border-t border-surface-100">
-                          <span>Total ({stocks.length} positions)</span>
-                          <span className="font-semibold text-surface-700">{formatCurrency(stocksValue)}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-surface-800 truncate">{acc.name}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-xs text-surface-400">{acc.institution || ACCOUNT_TYPES.find(t => t.id === acc.type)?.name || acc.type}</p>
+                          {isInvestment && stocks.length > 0 && (
+                            <span className="text-[10px] text-surface-400 bg-surface-100 px-1.5 py-0.5 rounded-full">{stocks.length} positions</span>
+                          )}
                         </div>
                       </div>
-                    ) : (
-                      <div className="text-center py-6 text-surface-400 text-xs">
-                        <p>No positions yet.</p>
-                        <button
-                          onClick={() => setShowStockModal({ accountId: acc.id, accountName: acc.name })}
-                          className="mt-1 text-primary-500 hover:underline"
-                        >
-                          Add your first stock position
-                        </button>
+                      <div className="flex items-center gap-2">
+                        {editingId === acc.id ? (
+                          <div className="flex items-center gap-1">
+                            <input type="number" value={editBalance} onChange={e => setEditBalance(e.target.value)} className="input-field w-28 py-1 text-sm" autoFocus />
+                            <button onClick={() => saveEdit(acc.id)} className="p-1.5 rounded-lg text-success-500 hover:bg-success-50"><Check className="w-4 h-4" /></button>
+                            <button onClick={() => setEditingId(null)} className="p-1.5 rounded-lg text-surface-400 hover:bg-surface-50"><X className="w-4 h-4" /></button>
+                          </div>
+                        ) : (
+                          <>
+                            <p className="text-sm font-bold text-surface-800 num">{formatCurrency(acc.balance)}</p>
+                            <button onClick={() => startEdit(acc.id, acc.balance)} className="p-1.5 rounded-lg text-surface-300 hover:text-primary-500 hover:bg-primary-50 opacity-0 group-hover:opacity-100 transition-all"><Edit3 className="w-3.5 h-3.5" /></button>
+                            <button onClick={() => deleteAccount(acc.id)} className="p-1.5 rounded-lg text-surface-300 hover:text-danger-500 hover:bg-danger-50 opacity-0 group-hover:opacity-100 transition-all"><Trash2 className="w-3.5 h-3.5" /></button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    {isInvestment && isExpanded && (
+                      <div className="border-t border-surface-100 bg-surface-50/50 px-4 pb-4">
+                        <div className="flex items-center justify-between py-3">
+                          <p className="text-xs font-semibold text-surface-500 uppercase tracking-wider">Stock Positions</p>
+                          <div className="flex items-center gap-3">
+                            {stocks.length > 0 && (
+                              <span className={`text-xs font-semibold ${stocksPnL >= 0 ? 'text-success-600' : 'text-danger-600'}`}>
+                                P&L: {stocksPnL >= 0 ? '+' : ''}{formatCurrency(stocksPnL)}
+                              </span>
+                            )}
+                            <button onClick={() => setShowStockModal({ accountId: acc.id, accountName: acc.name })} className="flex items-center gap-1 text-xs text-primary-500 hover:text-primary-600 font-medium">
+                              <Plus className="w-3.5 h-3.5" /> Add Position
+                            </button>
+                          </div>
+                        </div>
+                        {stocks.length > 0 ? (
+                          <div className="space-y-2">
+                            {stocks.map(stock => {
+                              const value = stock.shares * stock.currentPrice;
+                              const cost = stock.shares * stock.avgCostBasis;
+                              const pnl = value - cost;
+                              const pnlPercent = cost > 0 ? (pnl / cost) * 100 : 0;
+                              return (
+                                <div key={stock.id} className="flex items-center gap-3 p-3 rounded-xl bg-white border border-surface-100 group/stock">
+                                  <div className="w-9 h-9 rounded-lg bg-primary-50 flex items-center justify-center">
+                                    <span className="text-xs font-bold text-primary-600">{stock.ticker}</span>
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-xs font-semibold text-surface-700 truncate">{stock.name}</p>
+                                    <p className="text-[10px] text-surface-400">{stock.shares} shares @ {formatCurrency(stock.avgCostBasis)}</p>
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="text-xs font-bold text-surface-800">{formatCurrency(value)}</p>
+                                    <p className={`text-[10px] font-semibold ${pnl >= 0 ? 'text-success-600' : 'text-danger-600'}`}>
+                                      {pnl >= 0 ? '+' : ''}{formatCurrency(pnl)} ({formatPercent(pnlPercent)})
+                                    </p>
+                                  </div>
+                                  <button onClick={() => deleteStockHolding(stock.id)} className="p-1 rounded-lg text-surface-300 hover:text-danger-500 hover:bg-danger-50 opacity-0 group-hover/stock:opacity-100 transition-all">
+                                    <Trash2 className="w-3 h-3" />
+                                  </button>
+                                </div>
+                              );
+                            })}
+                            <div className="flex items-center justify-between pt-2 px-1 text-xs text-surface-500 border-t border-surface-100">
+                              <span>Total ({stocks.length} positions)</span>
+                              <span className="font-semibold text-surface-700">{formatCurrency(stocksValue)}</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-center py-6 text-surface-400 text-xs">
+                            <p>No positions yet.</p>
+                            <button onClick={() => setShowStockModal({ accountId: acc.id, accountName: acc.name })} className="mt-1 text-primary-500 hover:underline">Add your first stock position</button>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {illiquidAssets.length > 0 && (
+          <div>
+            <p className="text-xs font-semibold text-amber-600 uppercase tracking-wider mb-3">Illiquid Assets</p>
+            <div className="space-y-3">
+              {illiquidAssets.map(acc => {
+                const isInvestment = isInvestmentAccount(acc.type);
+                const stocks = isInvestment ? getStocksByAccount(acc.id) : [];
+                const isExpanded = expandedAccounts.has(acc.id);
+                const stocksValue = stocks.reduce((s, st) => s + st.shares * st.currentPrice, 0);
+                const stocksCost = stocks.reduce((s, st) => s + st.shares * st.avgCostBasis, 0);
+                const stocksPnL = stocksValue - stocksCost;
+
+                return (
+                  <div key={acc.id} className="rounded-2xl border border-surface-100 hover:border-surface-200 transition-all overflow-hidden">
+                    <div className="flex items-center gap-3 p-4 group">
+                      {isInvestment ? (
+                        <button onClick={() => toggleExpand(acc.id)} className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-surface-100 transition-colors text-surface-400">
+                          {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                        </button>
+                      ) : (
+                        <div className="w-6" />
+                      )}
+                      <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl" style={{ backgroundColor: acc.color + '18' }}>
+                        {acc.icon}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-surface-800 truncate">{acc.name}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-xs text-surface-400">{acc.institution || ACCOUNT_TYPES.find(t => t.id === acc.type)?.name || acc.type}</p>
+                          {isInvestment && stocks.length > 0 && (
+                            <span className="text-[10px] text-surface-400 bg-surface-100 px-1.5 py-0.5 rounded-full">{stocks.length} positions</span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {editingId === acc.id ? (
+                          <div className="flex items-center gap-1">
+                            <input type="number" value={editBalance} onChange={e => setEditBalance(e.target.value)} className="input-field w-28 py-1 text-sm" autoFocus />
+                            <button onClick={() => saveEdit(acc.id)} className="p-1.5 rounded-lg text-success-500 hover:bg-success-50"><Check className="w-4 h-4" /></button>
+                            <button onClick={() => setEditingId(null)} className="p-1.5 rounded-lg text-surface-400 hover:bg-surface-50"><X className="w-4 h-4" /></button>
+                          </div>
+                        ) : (
+                          <>
+                            <p className="text-sm font-bold text-surface-800 num">{formatCurrency(acc.balance)}</p>
+                            <button onClick={() => startEdit(acc.id, acc.balance)} className="p-1.5 rounded-lg text-surface-300 hover:text-primary-500 hover:bg-primary-50 opacity-0 group-hover:opacity-100 transition-all"><Edit3 className="w-3.5 h-3.5" /></button>
+                            <button onClick={() => deleteAccount(acc.id)} className="p-1.5 rounded-lg text-surface-300 hover:text-danger-500 hover:bg-danger-50 opacity-0 group-hover:opacity-100 transition-all"><Trash2 className="w-3.5 h-3.5" /></button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    {isInvestment && isExpanded && (
+                      <div className="border-t border-surface-100 bg-surface-50/50 px-4 pb-4">
+                        <div className="flex items-center justify-between py-3">
+                          <p className="text-xs font-semibold text-surface-500 uppercase tracking-wider">Stock Positions</p>
+                          <div className="flex items-center gap-3">
+                            {stocks.length > 0 && (
+                              <span className={`text-xs font-semibold ${stocksPnL >= 0 ? 'text-success-600' : 'text-danger-600'}`}>
+                                P&L: {stocksPnL >= 0 ? '+' : ''}{formatCurrency(stocksPnL)}
+                              </span>
+                            )}
+                            <button onClick={() => setShowStockModal({ accountId: acc.id, accountName: acc.name })} className="flex items-center gap-1 text-xs text-primary-500 hover:text-primary-600 font-medium">
+                              <Plus className="w-3.5 h-3.5" /> Add Position
+                            </button>
+                          </div>
+                        </div>
+                        {stocks.length > 0 ? (
+                          <div className="space-y-2">
+                            {stocks.map(stock => {
+                              const value = stock.shares * stock.currentPrice;
+                              const cost = stock.shares * stock.avgCostBasis;
+                              const pnl = value - cost;
+                              const pnlPercent = cost > 0 ? (pnl / cost) * 100 : 0;
+                              return (
+                                <div key={stock.id} className="flex items-center gap-3 p-3 rounded-xl bg-white border border-surface-100 group/stock">
+                                  <div className="w-9 h-9 rounded-lg bg-primary-50 flex items-center justify-center">
+                                    <span className="text-xs font-bold text-primary-600">{stock.ticker}</span>
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-xs font-semibold text-surface-700 truncate">{stock.name}</p>
+                                    <p className="text-[10px] text-surface-400">{stock.shares} shares @ {formatCurrency(stock.avgCostBasis)}</p>
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="text-xs font-bold text-surface-800">{formatCurrency(value)}</p>
+                                    <p className={`text-[10px] font-semibold ${pnl >= 0 ? 'text-success-600' : 'text-danger-600'}`}>
+                                      {pnl >= 0 ? '+' : ''}{formatCurrency(pnl)} ({formatPercent(pnlPercent)})
+                                    </p>
+                                  </div>
+                                  <button onClick={() => deleteStockHolding(stock.id)} className="p-1 rounded-lg text-surface-300 hover:text-danger-500 hover:bg-danger-50 opacity-0 group-hover/stock:opacity-100 transition-all">
+                                    <Trash2 className="w-3 h-3" />
+                                  </button>
+                                </div>
+                              );
+                            })}
+                            <div className="flex items-center justify-between pt-2 px-1 text-xs text-surface-500 border-t border-surface-100">
+                              <span>Total ({stocks.length} positions)</span>
+                              <span className="font-semibold text-surface-700">{formatCurrency(stocksValue)}</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-center py-6 text-surface-400 text-xs">
+                            <p>No positions yet.</p>
+                            <button onClick={() => setShowStockModal({ accountId: acc.id, accountName: acc.name })} className="mt-1 text-primary-500 hover:underline">Add your first stock position</button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Debts List */}

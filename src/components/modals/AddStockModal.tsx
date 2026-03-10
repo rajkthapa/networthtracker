@@ -7,17 +7,15 @@ import { useApp } from '@/lib/store';
 export function AddStockModal({ onClose, accountId, accountName }: { onClose: () => void; accountId: string; accountName: string }) {
   const { addStockHolding } = useApp();
   const [ticker, setTicker] = useState('');
-  const [name, setName] = useState('');
   const [shares, setShares] = useState('');
   const [avgCostBasis, setAvgCostBasis] = useState('');
-  const [currentPrice, setCurrentPrice] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (!ticker || !name || !shares || !avgCostBasis || !currentPrice) {
+    if (!ticker || !shares || !avgCostBasis) {
       setError('Please fill all fields');
       return;
     }
@@ -26,10 +24,10 @@ export function AddStockModal({ onClose, accountId, accountName }: { onClose: ()
       await addStockHolding({
         accountId,
         ticker: ticker.toUpperCase(),
-        name,
+        name: ticker.toUpperCase(),
         shares: parseFloat(shares),
         avgCostBasis: parseFloat(avgCostBasis),
-        currentPrice: parseFloat(currentPrice),
+        currentPrice: 0,
         priceChange24h: 0,
       });
       onClose();
@@ -60,15 +58,9 @@ export function AddStockModal({ onClose, accountId, accountName }: { onClose: ()
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-medium text-surface-600 mb-1.5">Ticker</label>
-              <input type="text" value={ticker} onChange={e => setTicker(e.target.value)} placeholder="AAPL" className="input-field uppercase" required />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-surface-600 mb-1.5">Company Name</label>
-              <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Apple Inc." className="input-field" required />
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-surface-600 mb-1.5">Ticker</label>
+            <input type="text" value={ticker} onChange={e => setTicker(e.target.value)} placeholder="AAPL" className="input-field uppercase" required />
           </div>
 
           <div>
@@ -76,31 +68,17 @@ export function AddStockModal({ onClose, accountId, accountName }: { onClose: ()
             <input type="number" step="any" value={shares} onChange={e => setShares(e.target.value)} placeholder="100" className="input-field" required />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-medium text-surface-600 mb-1.5">Avg Cost Basis ($)</label>
-              <input type="number" step="0.01" value={avgCostBasis} onChange={e => setAvgCostBasis(e.target.value)} placeholder="150.00" className="input-field" required />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-surface-600 mb-1.5">Current Price ($)</label>
-              <input type="number" step="0.01" value={currentPrice} onChange={e => setCurrentPrice(e.target.value)} placeholder="228.50" className="input-field" required />
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-surface-600 mb-1.5">Avg Cost Basis ($)</label>
+            <input type="number" step="0.01" value={avgCostBasis} onChange={e => setAvgCostBasis(e.target.value)} placeholder="150.00" className="input-field" required />
           </div>
 
-          {shares && currentPrice && (
+          {shares && avgCostBasis && (
             <div className="p-3 rounded-xl bg-surface-50 text-sm">
               <div className="flex justify-between">
-                <span className="text-surface-500">Position Value</span>
-                <span className="font-semibold text-surface-800">${(parseFloat(shares) * parseFloat(currentPrice)).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                <span className="text-surface-500">Total Cost</span>
+                <span className="font-semibold text-surface-800">${(parseFloat(shares) * parseFloat(avgCostBasis)).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
               </div>
-              {avgCostBasis && (
-                <div className="flex justify-between mt-1">
-                  <span className="text-surface-500">P&L</span>
-                  <span className={`font-semibold ${parseFloat(currentPrice) >= parseFloat(avgCostBasis) ? 'text-success-600' : 'text-danger-600'}`}>
-                    ${((parseFloat(currentPrice) - parseFloat(avgCostBasis)) * parseFloat(shares)).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                  </span>
-                </div>
-              )}
             </div>
           )}
 

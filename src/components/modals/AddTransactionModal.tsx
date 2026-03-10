@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { X, Loader2 } from 'lucide-react';
 import { useApp } from '@/lib/store';
-import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '@/lib/utils';
+import { getAllExpenseCategories, getAllIncomeCategories } from '@/components/modals/ManageCategoriesModal';
 
 export function AddTransactionModal({ onClose }: { onClose: () => void }) {
   const { addTransaction } = useApp();
@@ -15,7 +15,7 @@ export function AddTransactionModal({ onClose }: { onClose: () => void }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  const categories = type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+  const categories = type === 'income' ? getAllIncomeCategories() : getAllExpenseCategories();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

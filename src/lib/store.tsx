@@ -89,6 +89,8 @@ interface AppState {
 
 const AppContext = createContext<AppState | null>(null);
 
+import { getCustomCategories } from '@/components/modals/ManageCategoriesModal';
+
 const ALL_CATEGORIES = [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES, ...ACCOUNT_TYPES, ...DEBT_TYPES];
 
 function getMonthLabel(yyyymm: string): string {
@@ -459,9 +461,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const total = filteredTxns.reduce((s, t) => s + t.amount, 0);
     const grouped: Record<string, number> = {};
     filteredTxns.forEach(t => { grouped[t.category] = (grouped[t.category] || 0) + t.amount; });
+    const allCats = [...ALL_CATEGORIES, ...getCustomCategories()];
     return Object.entries(grouped)
       .map(([cat, amount]) => {
-        const catInfo = ALL_CATEGORIES.find(c => c.id === cat) || { name: cat, color: '#868e96', icon: '📦' };
+        const catInfo = allCats.find(c => c.id === cat) || { name: cat, color: '#868e96', icon: '📦' };
         return { category: cat, name: catInfo.name, amount: Math.round(amount * 100) / 100, percentage: total > 0 ? Math.round((amount / total) * 1000) / 10 : 0, color: catInfo.color, icon: catInfo.icon };
       })
       .sort((a, b) => b.amount - a.amount);

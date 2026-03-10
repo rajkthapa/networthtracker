@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { Search, Trash2, Calendar, ChevronDown, ArrowLeftRight, Plus } from 'lucide-react';
+import { Search, Trash2, Calendar, ChevronDown, ArrowLeftRight, Plus, Settings } from 'lucide-react';
 import { useApp } from '@/lib/store';
-import { formatCurrency, EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '@/lib/utils';
+import { formatCurrency } from '@/lib/utils';
 import { AddTransactionModal } from '@/components/modals/AddTransactionModal';
 import { CategoryDrilldownModal } from '@/components/modals/CategoryDrilldownModal';
+import { ManageCategoriesModal, getAllExpenseCategories, getAllIncomeCategories } from '@/components/modals/ManageCategoriesModal';
 
 export default function TransactionsPage() {
   const { transactions, deleteTransaction, getMonthTotals, availableMonths, selectedMonth, setSelectedMonth } = useApp();
@@ -19,8 +20,9 @@ export default function TransactionsPage() {
     setViewMonth(selectedMonth);
   }, [selectedMonth]);
   const [drilldown, setDrilldown] = useState<{ category: string; name: string; icon: string; color: string; type: 'income' | 'expense' } | null>(null);
+  const [showCategoryManager, setShowCategoryManager] = useState(false);
 
-  const allCategories = [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES];
+  const allCategories = [...getAllIncomeCategories(), ...getAllExpenseCategories()];
   const monthTotals = getMonthTotals(viewMonth);
 
   const filtered = useMemo(() => {
@@ -63,10 +65,16 @@ export default function TransactionsPage() {
           <h1 className="page-header">Transactions</h1>
           <p className="text-sm text-surface-500 mt-1">{filtered.length} transactions</p>
         </div>
-        <button onClick={() => setShowAddModal(true)} className="btn-primary flex items-center gap-2">
-          <Plus className="w-4 h-4" />
-          Add Transaction
-        </button>
+        <div className="flex gap-2">
+          <button onClick={() => setShowCategoryManager(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-surface-200 text-sm font-medium text-surface-600 hover:bg-surface-50 transition-all">
+            <Settings className="w-4 h-4" />
+            Categories
+          </button>
+          <button onClick={() => setShowAddModal(true)} className="btn-primary flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            Add Transaction
+          </button>
+        </div>
       </div>
 
       {/* Month Summary Bar */}
@@ -199,6 +207,7 @@ export default function TransactionsPage() {
       </div>
 
       {showAddModal && <AddTransactionModal onClose={() => setShowAddModal(false)} />}
+      {showCategoryManager && <ManageCategoriesModal onClose={() => setShowCategoryManager(false)} />}
       {drilldown && (
         <CategoryDrilldownModal
           category={drilldown.category}

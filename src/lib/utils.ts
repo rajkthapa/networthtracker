@@ -42,14 +42,20 @@ export function getChangeBgColor(value: number): string {
 }
 
 export const EXPENSE_CATEGORIES = [
-  { id: 'mortgage', name: 'Mortgage Payment', icon: '🏠', color: '#4c6ef5' },
+  { id: 'mortgage', name: 'Rent/Mortgage', icon: '🏠', color: '#4c6ef5' },
   { id: 'rent', name: 'Rent', icon: '🏢', color: '#7950f2' },
   { id: 'utilities', name: 'Utilities', icon: '⚡', color: '#f59f00' },
+  { id: 'utility_gas', name: 'Utility - Gas', icon: '🔥', color: '#f59f00' },
+  { id: 'utility_electric', name: 'Utility - Electric', icon: '⚡', color: '#fab005' },
+  { id: 'utility_garbage', name: 'Utility - Garbage', icon: '🗑️', color: '#868e96' },
   { id: 'internet', name: 'Internet', icon: '🌐', color: '#15aabf' },
   { id: 'phone', name: 'Phone', icon: '📱', color: '#20c997' },
   { id: 'groceries', name: 'Groceries', icon: '🛒', color: '#40c057' },
   { id: 'dining', name: 'Dining Out', icon: '🍽️', color: '#f06595' },
   { id: 'transportation', name: 'Transportation', icon: '🚗', color: '#fd7e14' },
+  { id: 'car_payment', name: 'Car Payment', icon: '🚗', color: '#fd7e14' },
+  { id: 'car_gas', name: 'Car Gas', icon: '⛽', color: '#e64980' },
+  { id: 'car_maintenance', name: 'Car Maintenance', icon: '🔧', color: '#495057' },
   { id: 'gas', name: 'Gas', icon: '⛽', color: '#e64980' },
   { id: 'insurance', name: 'Insurance', icon: '🛡️', color: '#be4bdb' },
   { id: 'healthcare', name: 'Healthcare', icon: '🏥', color: '#fa5252' },
@@ -67,15 +73,17 @@ export const EXPENSE_CATEGORIES = [
 ];
 
 export const INCOME_CATEGORIES = [
-  { id: 'w2', name: 'W-2 Salary', icon: '💼', color: '#4c6ef5' },
+  { id: 'paycheck', name: 'Paycheck', icon: '💰', color: '#4c6ef5' },
+  { id: 'w2', name: 'W-2 Salary', icon: '💼', color: '#5c7cfa' },
   { id: 'freelance', name: 'Freelance', icon: '💻', color: '#7950f2' },
   { id: 'business', name: 'Business Income', icon: '🏪', color: '#f59f00' },
   { id: 'dividend', name: 'Dividend Income', icon: '📈', color: '#40c057' },
   { id: 'interest', name: 'Interest Income', icon: '🏦', color: '#15aabf' },
+  { id: 'options_income', name: 'Options Income', icon: '📊', color: '#be4bdb' },
   { id: 'rental', name: 'Rental Income', icon: '🏠', color: '#20c997' },
   { id: 'social_media', name: 'Social Media', icon: '📱', color: '#f06595' },
   { id: 'youtube', name: 'YouTube', icon: '▶️', color: '#fa5252' },
-  { id: 'capital_gains', name: 'Capital Gains', icon: '📊', color: '#be4bdb' },
+  { id: 'capital_gains', name: 'Capital Gains', icon: '📊', color: '#845ef7' },
   { id: 'bonus', name: 'Bonus', icon: '🎉', color: '#fd7e14' },
   { id: 'commission', name: 'Commission', icon: '🤝', color: '#e64980' },
   { id: 'side_hustle', name: 'Side Hustle', icon: '🔥', color: '#cc5de8' },
@@ -97,6 +105,9 @@ export const ACCOUNT_TYPES = [
   { id: 'vehicle', name: 'Vehicle', icon: '🚗', color: '#868e96' },
   { id: 'other_asset', name: 'Other Asset', icon: '💎', color: '#cc5de8' },
 ];
+
+export const LIQUID_ACCOUNT_TYPES = ['checking', 'savings', 'brokerage', 'crypto_wallet', 'hsa'];
+export const ILLIQUID_ACCOUNT_TYPES = ['401k', 'ira', 'roth_ira', '529', 'real_estate', 'vehicle', 'other_asset'];
 
 export const DEBT_TYPES = [
   { id: 'mortgage_debt', name: 'Mortgage', icon: '🏠', color: '#fa5252' },
