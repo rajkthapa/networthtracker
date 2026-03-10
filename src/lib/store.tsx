@@ -405,7 +405,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const availableMonths = useMemo(() => {
     const set = new Set(transactions.map(t => t.date.slice(0, 7)));
+    const currentMonth = getCurrentMonth();
+    set.add(currentMonth);
     return Array.from(set).sort().reverse();
+  }, [transactions]);
+
+  // Auto-select the most recent month that has transactions
+  useEffect(() => {
+    if (transactions.length === 0) return;
+    const months = Array.from(new Set(transactions.map(t => t.date.slice(0, 7)))).sort().reverse();
+    const currentMonth = getCurrentMonth();
+    // If current month has no transactions, select the most recent month that does
+    const hasCurrentMonth = transactions.some(t => t.date.startsWith(currentMonth));
+    if (!hasCurrentMonth && months.length > 0) {
+      setSelectedMonth(months[0]);
+    }
   }, [transactions]);
 
   const getMonthTotals = useCallback((month: string) => {

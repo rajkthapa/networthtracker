@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Search, Trash2, Calendar, ChevronDown, ArrowLeftRight, Plus } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { formatCurrency, EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '@/lib/utils';
@@ -13,6 +13,11 @@ export default function TransactionsPage() {
   const [search, setSearch] = useState('');
   const [viewMonth, setViewMonth] = useState(selectedMonth);
   const [showAddModal, setShowAddModal] = useState(false);
+
+  // Sync viewMonth when selectedMonth changes (e.g. auto-select on load)
+  useEffect(() => {
+    setViewMonth(selectedMonth);
+  }, [selectedMonth]);
   const [drilldown, setDrilldown] = useState<{ category: string; name: string; icon: string; color: string; type: 'income' | 'expense' } | null>(null);
 
   const allCategories = [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES];
