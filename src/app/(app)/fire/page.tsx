@@ -2,13 +2,46 @@
 
 import { useApp } from '@/lib/store';
 import { formatCurrency } from '@/lib/utils';
-import { Flame, Zap, Shield, Award } from 'lucide-react';
+import { Flame, Zap, Shield, Award, Lock } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useSubscription } from '@/lib/subscription-context';
+import { UpgradeModal } from '@/components/subscription/UpgradeModal';
+import { useState } from 'react';
 
 export default function FIREPage() {
   const { netWorth, monthIncome, monthExpenses, monthlyData } = useApp();
+  const { isPro } = useSubscription();
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
-  const annualIncome = monthIncome * 12;
+  if (!isPro) {
+    return (
+      <div className="space-y-6 animate-fade-in">
+        <div>
+          <h1 className="page-header">FIRE Calculator</h1>
+          <p className="text-sm text-surface-500 mt-1">Financial Independence, Retire Early</p>
+        </div>
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-danger-50 via-warning-50 to-danger-50 p-10 md:p-16 text-center border border-danger-100">
+          <div className="max-w-md mx-auto">
+            <div className="w-16 h-16 rounded-2xl bg-danger-100 flex items-center justify-center mx-auto mb-6">
+              <Lock className="w-8 h-8 text-danger-500" />
+            </div>
+            <h2 className="text-2xl font-bold text-surface-900 mb-3">Pro Feature</h2>
+            <p className="text-surface-500 mb-8">
+              FIRE planning tools including retirement projections, savings rate analysis, and Coast FIRE calculations are available on the Pro plan.
+            </p>
+            <button
+              onClick={() => setShowUpgrade(true)}
+              className="px-8 py-3.5 bg-gradient-to-r from-grape-500 to-accent-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all"
+            >
+              Upgrade to Pro
+            </button>
+          </div>
+        </div>
+        <UpgradeModal open={showUpgrade} onClose={() => setShowUpgrade(false)} feature="FIRE Calculator" />
+      </div>
+    );
+  }
+
   const annualExpenses = monthExpenses * 12;
   const monthlySavings = monthIncome - monthExpenses;
   const annualSavings = monthlySavings * 12;
@@ -79,7 +112,7 @@ export default function FIREPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <p className="text-white/70 text-sm font-medium mb-1">Your FIRE Number</p>
-              <h2 className="text-3xl md:text-4xl font-bold">{formatCurrency(fireNumber, true)}</h2>
+              <h2 className="text-3xl md:text-4xl font-bold num">{formatCurrency(fireNumber, true)}</h2>
               <p className="text-white/60 text-xs mt-1">Based on {formatCurrency(annualExpenses, true)}/yr expenses x 25</p>
             </div>
             <div>
@@ -100,13 +133,12 @@ export default function FIREPage() {
 
       {/* FIRE Types */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="stat-card">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-success-400 to-success-500" />
+        <div className="stat-card border-l-4 border-success-500">
           <div className="flex items-center gap-2 mb-2">
             <Shield className="w-5 h-5 text-success-500" />
             <p className="text-sm font-semibold text-surface-700">Lean FIRE</p>
           </div>
-          <p className="text-xl font-bold text-surface-900">{formatCurrency(leanFireNumber, true)}</p>
+          <p className="text-xl font-bold text-surface-900 num">{formatCurrency(leanFireNumber, true)}</p>
           <p className="text-[10px] text-surface-400 mt-0.5">60% of current expenses</p>
           <div className="w-full h-2 bg-surface-100 rounded-full mt-2 overflow-hidden">
             <div className="h-full bg-success-500 rounded-full" style={{ width: `${Math.min(leanFireProgress, 100)}%` }} />
@@ -114,13 +146,12 @@ export default function FIREPage() {
           <p className="text-xs text-surface-400 mt-1">{leanFireProgress.toFixed(1)}% complete</p>
         </div>
 
-        <div className="stat-card">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary-400 to-primary-500" />
+        <div className="stat-card border-l-4 border-primary-500">
           <div className="flex items-center gap-2 mb-2">
             <Flame className="w-5 h-5 text-primary-500" />
             <p className="text-sm font-semibold text-surface-700">Regular FIRE</p>
           </div>
-          <p className="text-xl font-bold text-surface-900">{formatCurrency(fireNumber, true)}</p>
+          <p className="text-xl font-bold text-surface-900 num">{formatCurrency(fireNumber, true)}</p>
           <p className="text-[10px] text-surface-400 mt-0.5">100% of current expenses</p>
           <div className="w-full h-2 bg-surface-100 rounded-full mt-2 overflow-hidden">
             <div className="h-full bg-primary-500 rounded-full" style={{ width: `${Math.min(fireProgress, 100)}%` }} />
@@ -128,13 +159,12 @@ export default function FIREPage() {
           <p className="text-xs text-surface-400 mt-1">{fireProgress.toFixed(1)}% complete</p>
         </div>
 
-        <div className="stat-card">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-grape-400 to-grape-500" />
+        <div className="stat-card border-l-4 border-grape-500">
           <div className="flex items-center gap-2 mb-2">
             <Zap className="w-5 h-5 text-grape-500" />
             <p className="text-sm font-semibold text-surface-700">Coast FIRE</p>
           </div>
-          <p className="text-xl font-bold text-surface-900">{formatCurrency(coastFireNumber, true)}</p>
+          <p className="text-xl font-bold text-surface-900 num">{formatCurrency(coastFireNumber, true)}</p>
           <p className="text-[10px] text-surface-400 mt-0.5">Stop saving, retire at 65</p>
           <div className="w-full h-2 bg-surface-100 rounded-full mt-2 overflow-hidden">
             <div className="h-full bg-grape-500 rounded-full" style={{ width: `${Math.min(coastFireProgress, 100)}%` }} />
@@ -142,13 +172,12 @@ export default function FIREPage() {
           <p className="text-xs text-surface-400 mt-1">{coastFireProgress.toFixed(1)}% complete</p>
         </div>
 
-        <div className="stat-card">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-accent-400 to-accent-500" />
+        <div className="stat-card border-l-4 border-accent-500">
           <div className="flex items-center gap-2 mb-2">
             <Award className="w-5 h-5 text-accent-500" />
             <p className="text-sm font-semibold text-surface-700">Fat FIRE</p>
           </div>
-          <p className="text-xl font-bold text-surface-900">{formatCurrency(fatFireNumber, true)}</p>
+          <p className="text-xl font-bold text-surface-900 num">{formatCurrency(fatFireNumber, true)}</p>
           <p className="text-[10px] text-surface-400 mt-0.5">150% of current expenses</p>
           <div className="w-full h-2 bg-surface-100 rounded-full mt-2 overflow-hidden">
             <div className="h-full bg-accent-500 rounded-full" style={{ width: `${Math.min(fatFireProgress, 100)}%` }} />
@@ -168,7 +197,7 @@ export default function FIREPage() {
                 <stop offset="95%" stopColor="#4c6ef5" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e8ebf3" />
+            <CartesianGrid strokeDasharray="3 3" stroke="#e8ebf3" vertical={false} />
             <XAxis dataKey="year" stroke="#8b95ad" fontSize={11} tickLine={false} />
             <YAxis stroke="#8b95ad" fontSize={12} tickLine={false} tickFormatter={(v) => formatCurrency(v, true)} />
             <Tooltip formatter={(value: any, name: any) => [formatCurrency(value), name === 'netWorth' ? 'Projected Net Worth' : name === 'fireTarget' ? 'FIRE Target' : 'Lean FIRE']} />

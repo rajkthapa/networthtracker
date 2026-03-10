@@ -6,13 +6,17 @@ import { useApp } from '@/lib/store';
 import { formatCurrency, formatPercent, ACCOUNT_TYPES } from '@/lib/utils';
 import { AddAccountModal } from '@/components/modals/AddAccountModal';
 import { AddStockModal } from '@/components/modals/AddStockModal';
+import { UpgradeModal } from '@/components/subscription/UpgradeModal';
+import { useSubscription } from '@/lib/subscription-context';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 
 const INVESTMENT_TYPES = ['401k', 'ira', 'roth_ira', 'brokerage', 'hsa'];
 
 export default function AccountsPage() {
-  const { accounts, totalAssets, totalDebts, netWorth, deleteAccount, updateAccount, getStocksByAccount, deleteStockHolding, loading } = useApp();
+  const { accounts, totalAssets, totalDebts, netWorth, deleteAccount, updateAccount, getStocksByAccount, deleteStockHolding } = useApp();
+  const { isPro } = useSubscription();
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showStockModal, setShowStockModal] = useState<{ accountId: string; accountName: string } | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editBalance, setEditBalance] = useState('');
@@ -65,56 +69,59 @@ export default function AccountsPage() {
           <h1 className="page-header">Accounts & Assets</h1>
           <p className="text-sm text-surface-500 mt-1">{assets.length} assets, {debts.length} debts</p>
         </div>
-        <button onClick={() => setShowAddModal(true)} className="btn-primary flex items-center gap-2">
+        <button onClick={() => {
+          if (!isPro && accounts.length >= 3) {
+            setShowUpgradeModal(true);
+          } else {
+            setShowAddModal(true);
+          }
+        }} className="btn-primary flex items-center gap-2">
           <Plus className="w-4 h-4" />
           Add Account
+          {!isPro && <span className="text-xs opacity-70">({accounts.length}/3)</span>}
         </button>
       </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="stat-card">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-success-400 to-teal-400" />
+        <div className="stat-card border-l-4 border-success-500">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-success-100 text-success-600 flex items-center justify-center">
               <TrendingUp className="w-4 h-4" />
             </div>
             <div>
-              <p className="text-xs text-surface-500">Total Assets</p>
-              <p className="text-lg font-bold text-success-600">{formatCurrency(totalAssets)}</p>
+              <p className="stat-label">Total Assets</p>
+              <p className="text-lg font-bold text-success-600 num">{formatCurrency(totalAssets)}</p>
             </div>
           </div>
         </div>
-        <div className="stat-card">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-danger-400 to-accent-400" />
+        <div className="stat-card border-l-4 border-danger-500">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-danger-100 text-danger-600 flex items-center justify-center">
               <TrendingDown className="w-4 h-4" />
             </div>
             <div>
-              <p className="text-xs text-surface-500">Total Debts</p>
-              <p className="text-lg font-bold text-danger-600">{formatCurrency(totalDebts)}</p>
+              <p className="stat-label">Total Debts</p>
+              <p className="text-lg font-bold text-danger-600 num">{formatCurrency(totalDebts)}</p>
             </div>
           </div>
         </div>
-        <div className="stat-card">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary-400 to-grape-400" />
+        <div className="stat-card border-l-4 border-primary-500">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-primary-100 text-primary-600 flex items-center justify-center">
               <Building2 className="w-4 h-4" />
             </div>
             <div>
-              <p className="text-xs text-surface-500">Net Worth</p>
-              <p className="text-lg font-bold text-primary-600">{formatCurrency(netWorth)}</p>
+              <p className="stat-label">Net Worth</p>
+              <p className="text-lg font-bold text-primary-600 num">{formatCurrency(netWorth)}</p>
             </div>
           </div>
         </div>
-        <div className="stat-card">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-warning-400 to-warning-500" />
+        <div className="stat-card border-l-4 border-warning-500">
           <div>
-            <p className="text-xs text-surface-500">Debt-to-Asset Ratio</p>
-            <p className="text-lg font-bold text-surface-800">{debtToAssetRatio.toFixed(1)}%</p>
-            <p className="text-[10px] text-surface-400 mt-0.5">Annual interest: {formatCurrency(totalInterestPerYear)}</p>
+            <p className="stat-label">Debt-to-Asset Ratio</p>
+            <p className="text-lg font-bold text-surface-800 num">{debtToAssetRatio.toFixed(1)}%</p>
+            <p className="text-[10px] text-surface-400 mt-0.5 num">Annual interest: {formatCurrency(totalInterestPerYear)}</p>
           </div>
         </div>
       </div>
@@ -149,7 +156,7 @@ export default function AccountsPage() {
           {debts.length > 0 ? (
             <ResponsiveContainer width="100%" height={280}>
               <BarChart data={debts} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="#e8ebf3" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e8ebf3" vertical={false} />
                 <XAxis type="number" tickFormatter={(v) => formatCurrency(v, true)} fontSize={12} stroke="#8b95ad" />
                 <YAxis type="category" dataKey="name" fontSize={11} stroke="#8b95ad" width={120} />
                 <Tooltip formatter={(v: any) => formatCurrency(v)} />
@@ -217,7 +224,7 @@ export default function AccountsPage() {
                       </div>
                     ) : (
                       <>
-                        <p className="text-sm font-bold text-surface-800">{formatCurrency(acc.balance)}</p>
+                        <p className="text-sm font-bold text-surface-800 num">{formatCurrency(acc.balance)}</p>
                         <button onClick={() => startEdit(acc.id, acc.balance)} className="p-1.5 rounded-lg text-surface-300 hover:text-primary-500 hover:bg-primary-50 opacity-0 group-hover:opacity-100 transition-all"><Edit3 className="w-3.5 h-3.5" /></button>
                         <button onClick={() => deleteAccount(acc.id)} className="p-1.5 rounded-lg text-surface-300 hover:text-danger-500 hover:bg-danger-50 opacity-0 group-hover:opacity-100 transition-all"><Trash2 className="w-3.5 h-3.5" /></button>
                       </>
@@ -357,6 +364,7 @@ export default function AccountsPage() {
 
       {showAddModal && <AddAccountModal onClose={() => setShowAddModal(false)} />}
       {showStockModal && <AddStockModal onClose={() => setShowStockModal(null)} accountId={showStockModal.accountId} accountName={showStockModal.accountName} />}
+      <UpgradeModal open={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} feature="Unlimited accounts" />
     </div>
   );
 }

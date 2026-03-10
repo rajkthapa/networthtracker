@@ -16,11 +16,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (loading) return;
-    if (!user && !isAuthPage) {
+    if (!user && !isAuthPage && !pathname.startsWith('/')) {
       router.push('/auth/login');
     }
     if (user && isAuthPage) {
-      router.push('/');
+      router.push('/dashboard');
     }
   }, [user, loading, isAuthPage, router]);
 

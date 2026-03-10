@@ -51,10 +51,11 @@ interface AppState {
   refreshStockPrices: () => Promise<void>;
   pricesLoading: boolean;
 
-  // Computed from accounts
+  // Computed from accounts + crypto
   totalAssets: number;
   totalDebts: number;
   netWorth: number;
+  totalCryptoValue: number;
 
   // Month-specific helpers
   selectedMonth: string;
@@ -82,6 +83,8 @@ interface AppState {
   totalDividends: number;
   monthlyAvgDividend: number;
   dividendMonths: number;
+
+  getCategoryHistory: (category: string) => { month: string; label: string; amount: number }[];
 }
 
 const AppContext = createContext<AppState | null>(null);
@@ -288,9 +291,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const { data, error } = await supabase.from('crypto_holdings').insert({
       user_id: user.id,
       symbol: holding.symbol,
-      name: holding.name,
+      name: holding.name || holding.symbol,
       quantity: holding.quantity,
-      avg_buy_price: holding.avgBuyPrice,
+      avg_buy_price: holding.avgBuyPrice || 0,
       current_price: holding.currentPrice || 0,
       price_change_24h: holding.priceChange24h || 0,
     }).select().single();
@@ -395,7 +398,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [stockHoldings, updateStockHolding]);
 
   // === Computed ===
-  const totalAssets = useMemo(() => accounts.filter(a => !a.isDebt).reduce((s, a) => s + a.balance, 0), [accounts]);
+  const totalCryptoValue = useMemo(() => cryptoHoldings.reduce((s, h) => s + h.quantity * h.currentPrice, 0), [cryptoHoldings]);
+  const totalAssets = useMemo(() => accounts.filter(a => !a.isDebt).reduce((s, a) => s + a.balance, 0) + totalCryptoValue, [accounts, totalCryptoValue]);
   const totalDebts = useMemo(() => accounts.filter(a => a.isDebt).reduce((s, a) => s + a.balance, 0), [accounts]);
   const netWorth = totalAssets - totalDebts;
 
@@ -449,6 +453,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
       .sort((a, b) => b.amount - a.amount);
   }, [transactions, selectedMonth]);
 
+  const getCategoryHistory = useCallback((category: string) => {
+    const sorted = [...availableMonths].sort();
+    return sorted.map(m => {
+      const total = transactions
+        .filter(t => t.category === category && t.date.startsWith(m))
+        .reduce((s, t) => s + t.amount, 0);
+      return { month: m, label: getMonthLabel(m), amount: Math.round(total * 100) / 100 };
+    });
+  }, [transactions, availableMonths]);
+
   const { totalDividends, monthlyAvgDividend, dividendMonths } = useMemo(() => {
     const divTxns = transactions.filter(t => t.category === 'dividend');
     const total = divTxns.reduce((s, t) => s + t.amount, 0);
@@ -466,7 +480,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       addCryptoHolding, updateCryptoHolding, deleteCryptoHolding,
       addStockHolding, updateStockHolding, deleteStockHolding, getStocksByAccount,
       refreshCryptoPrices, refreshStockPrices, pricesLoading,
-      totalAssets, totalDebts, netWorth,
+      totalAssets, totalDebts, netWorth, totalCryptoValue,
       selectedMonth, setSelectedMonth, availableMonths,
       monthIncome: current.income, monthExpenses: current.expenses,
       monthSavings: current.savings, monthSavingsRate: current.savingsRate,
@@ -474,7 +488,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       prevMonthSavings: prev.savings, prevMonthSavingsRate: prev.savingsRate,
       incomeChange, expenseChange, savingsChange,
       monthlyData, getCategoryBreakdown, getMonthTotals,
-      totalDividends, monthlyAvgDividend, dividendMonths,
+      totalDividends, monthlyAvgDividend, dividendMonths, getCategoryHistory,
     }}>
       {children}
     </AppContext.Provider>

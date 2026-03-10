@@ -1,13 +1,11 @@
 'use client';
 
-import { Bell, Search, Plus, LogOut } from 'lucide-react';
+import { Bell, Search, LogOut } from 'lucide-react';
 import { useState } from 'react';
-import { AddTransactionModal } from '@/components/modals/AddTransactionModal';
 import { useAuth } from '@/lib/auth-context';
 
 export function TopBar() {
   const { user, signOut } = useAuth();
-  const [showAddTxn, setShowAddTxn] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
 
   const initials = user?.user_metadata?.full_name
@@ -36,13 +34,6 @@ export function TopBar() {
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowAddTxn(true)}
-            className="btn-primary flex items-center gap-2 text-sm py-2"
-          >
-            <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">Add Transaction</span>
-          </button>
           <button className="p-2.5 rounded-xl bg-white/80 border border-surface-200 text-surface-500 hover:text-surface-700 hover:bg-surface-50 transition-all relative">
             <Bell className="w-4 h-4" />
           </button>
@@ -74,7 +65,6 @@ export function TopBar() {
           </div>
         </div>
       </header>
-      {showAddTxn && <AddTransactionModal onClose={() => setShowAddTxn(false)} />}
     </>
   );
 }

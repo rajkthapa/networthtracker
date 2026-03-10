@@ -1,18 +1,25 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Upload, FileText, Image, Table2, Link2, Plus, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Upload, FileText, Image, Table2, Link2, Plus, CheckCircle2, AlertCircle, Lock } from 'lucide-react';
 import { useApp } from '@/lib/store';
+import PlaidLinkButton from '@/components/plaid/PlaidLinkButton';
+import PlaidConnectionsList from '@/components/plaid/PlaidConnectionsList';
+import { useSubscription } from '@/lib/subscription-context';
+import { UpgradeModal } from '@/components/subscription/UpgradeModal';
 
 type ImportMethod = 'csv' | 'pdf' | 'image' | 'plaid' | 'manual';
 
 export default function ImportPage() {
   const { addTransaction } = useApp();
+  const { isPro } = useSubscription();
+  const [showUpgrade, setShowUpgrade] = useState(false);
   const [activeMethod, setActiveMethod] = useState<ImportMethod>('csv');
   const [dragActive, setDragActive] = useState(false);
   const [importStatus, setImportStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
   const [importedCount, setImportedCount] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [plaidRefreshKey, setPlaidRefreshKey] = useState(0);
 
   // Manual transaction form
   const [manualForm, setManualForm] = useState({
@@ -27,7 +34,7 @@ export default function ImportPage() {
     { id: 'csv' as const, name: 'CSV / Excel', icon: Table2, description: 'Import from spreadsheet files', color: 'text-success-600 bg-success-100' },
     { id: 'pdf' as const, name: 'PDF Statement', icon: FileText, description: 'Extract from bank statements', color: 'text-primary-600 bg-primary-100' },
     { id: 'image' as const, name: 'Receipt Image', icon: Image, description: 'Scan receipts and invoices', color: 'text-grape-600 bg-grape-100' },
-    { id: 'plaid' as const, name: 'Connect Bank', icon: Link2, description: 'Link via Plaid (coming soon)', color: 'text-cyan-600 bg-cyan-100' },
+    { id: 'plaid' as const, name: 'Connect Bank', icon: Link2, description: 'Link via Plaid', color: 'text-cyan-600 bg-cyan-100' },
     { id: 'manual' as const, name: 'Manual Entry', icon: Plus, description: 'Add transactions manually', color: 'text-warning-600 bg-warning-100' },
   ];
 
@@ -185,20 +192,38 @@ export default function ImportPage() {
 
       {/* Plaid Connection */}
       {activeMethod === 'plaid' && (
-        <div className="chart-container text-center py-12">
-          <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-cyan-100 to-primary-100 flex items-center justify-center mx-auto mb-4">
-            <Link2 className="w-10 h-10 text-cyan-600" />
+        isPro ? (
+          <div className="chart-container text-center py-12">
+            <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-cyan-100 to-primary-100 flex items-center justify-center mx-auto mb-4">
+              <Link2 className="w-10 h-10 text-cyan-600" />
+            </div>
+            <h3 className="text-xl font-bold text-surface-800 mb-2">Connect Your Bank Account</h3>
+            <p className="text-sm text-surface-500 max-w-md mx-auto mb-6">
+              Securely link your bank accounts through Plaid to automatically import transactions and track balances in real-time.
+            </p>
+            <PlaidLinkButton onSuccess={() => setPlaidRefreshKey(k => k + 1)} />
+            <p className="text-xs text-surface-400 mt-4">Supports 12,000+ financial institutions</p>
+            <PlaidConnectionsList refreshKey={plaidRefreshKey} />
           </div>
-          <h3 className="text-xl font-bold text-surface-800 mb-2">Connect Your Bank Account</h3>
-          <p className="text-sm text-surface-500 max-w-md mx-auto mb-6">
-            Securely link your bank accounts through Plaid to automatically import transactions and track balances in real-time.
-          </p>
-          <button className="btn-accent">
-            Connect with Plaid (Coming Soon)
-          </button>
-          <p className="text-xs text-surface-400 mt-4">Supports 12,000+ financial institutions</p>
-        </div>
+        ) : (
+          <div className="chart-container text-center py-12">
+            <div className="w-16 h-16 rounded-2xl bg-grape-50 flex items-center justify-center mx-auto mb-4">
+              <Lock className="w-8 h-8 text-grape-500" />
+            </div>
+            <h3 className="text-xl font-bold text-surface-800 mb-2">Pro Feature</h3>
+            <p className="text-sm text-surface-500 max-w-md mx-auto mb-6">
+              Bank connections via Plaid are available on the Pro plan. Upgrade to automatically sync your accounts.
+            </p>
+            <button
+              onClick={() => setShowUpgrade(true)}
+              className="px-8 py-3 bg-gradient-to-r from-grape-500 to-accent-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all"
+            >
+              Upgrade to Pro
+            </button>
+          </div>
+        )
       )}
+      <UpgradeModal open={showUpgrade} onClose={() => setShowUpgrade(false)} feature="Plaid bank connections" />
 
       {/* Manual Entry */}
       {activeMethod === 'manual' && (

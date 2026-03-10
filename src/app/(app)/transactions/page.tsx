@@ -1,15 +1,19 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Search, Trash2, Calendar, ChevronDown } from 'lucide-react';
+import { Search, Trash2, Calendar, ChevronDown, ArrowLeftRight, Plus } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { formatCurrency, EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '@/lib/utils';
+import { AddTransactionModal } from '@/components/modals/AddTransactionModal';
+import { CategoryDrilldownModal } from '@/components/modals/CategoryDrilldownModal';
 
 export default function TransactionsPage() {
   const { transactions, deleteTransaction, getMonthTotals, availableMonths, selectedMonth, setSelectedMonth } = useApp();
   const [filter, setFilter] = useState<'all' | 'income' | 'expense'>('all');
   const [search, setSearch] = useState('');
   const [viewMonth, setViewMonth] = useState(selectedMonth);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [drilldown, setDrilldown] = useState<{ category: string; name: string; icon: string; color: string; type: 'income' | 'expense' } | null>(null);
 
   const allCategories = [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES];
   const monthTotals = getMonthTotals(viewMonth);
@@ -54,29 +58,29 @@ export default function TransactionsPage() {
           <h1 className="page-header">Transactions</h1>
           <p className="text-sm text-surface-500 mt-1">{filtered.length} transactions</p>
         </div>
+        <button onClick={() => setShowAddModal(true)} className="btn-primary flex items-center gap-2">
+          <Plus className="w-4 h-4" />
+          Add Transaction
+        </button>
       </div>
 
       {/* Month Summary Bar */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="stat-card">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-success-400 to-success-500" />
-          <p className="text-xs text-surface-500">Income</p>
-          <p className="text-lg font-bold text-success-600">{formatCurrency(monthTotals.income)}</p>
+        <div className="stat-card border-l-4 border-success-500">
+          <p className="stat-label">Income</p>
+          <p className="text-lg font-bold text-success-600 num">{formatCurrency(monthTotals.income)}</p>
         </div>
-        <div className="stat-card">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-danger-400 to-danger-500" />
-          <p className="text-xs text-surface-500">Expenses</p>
-          <p className="text-lg font-bold text-danger-600">{formatCurrency(monthTotals.expenses)}</p>
+        <div className="stat-card border-l-4 border-danger-500">
+          <p className="stat-label">Expenses</p>
+          <p className="text-lg font-bold text-danger-600 num">{formatCurrency(monthTotals.expenses)}</p>
         </div>
-        <div className="stat-card">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary-400 to-primary-500" />
-          <p className="text-xs text-surface-500">Net Savings</p>
-          <p className={`text-lg font-bold ${monthTotals.savings >= 0 ? 'text-primary-600' : 'text-danger-600'}`}>{formatCurrency(monthTotals.savings)}</p>
+        <div className="stat-card border-l-4 border-primary-500">
+          <p className="stat-label">Net Savings</p>
+          <p className={`text-lg font-bold num ${monthTotals.savings >= 0 ? 'text-primary-600' : 'text-danger-600'}`}>{formatCurrency(monthTotals.savings)}</p>
         </div>
-        <div className="stat-card">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-grape-400 to-grape-500" />
-          <p className="text-xs text-surface-500">Savings Rate</p>
-          <p className="text-lg font-bold text-grape-600">{monthTotals.savingsRate.toFixed(1)}%</p>
+        <div className="stat-card border-l-4 border-grape-500">
+          <p className="stat-label">Savings Rate</p>
+          <p className="text-lg font-bold text-grape-600 num">{monthTotals.savingsRate.toFixed(1)}%</p>
         </div>
       </div>
 
@@ -128,7 +132,8 @@ export default function TransactionsPage() {
       {/* Transaction List */}
       <div className="space-y-6">
         {Object.keys(groupedByDate).length === 0 && (
-          <div className="text-center py-12 text-surface-400">
+          <div className="text-center py-16 text-surface-400">
+            <ArrowLeftRight className="w-12 h-12 mx-auto mb-3 text-surface-300" />
             <p className="text-lg font-medium">No transactions found</p>
             <p className="text-sm mt-1">Try adjusting your filters or selecting a different month</p>
           </div>
@@ -162,10 +167,15 @@ export default function TransactionsPage() {
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-surface-800 truncate">{txn.description}</p>
                         <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-xs text-surface-400">{cat?.name || txn.category}</span>
+                          <button
+                            onClick={() => cat && setDrilldown({ category: txn.category, name: cat.name, icon: cat.icon, color: cat.color, type: txn.type })}
+                            className="text-xs text-surface-400 hover:text-primary-500 hover:underline transition-colors"
+                          >
+                            {cat?.name || txn.category}
+                          </button>
                         </div>
                       </div>
-                      <p className={`text-sm font-bold ${txn.type === 'income' ? 'text-success-600' : 'text-danger-600'}`}>
+                      <p className={`text-sm font-bold num ${txn.type === 'income' ? 'text-success-600' : 'text-danger-600'}`}>
                         {txn.type === 'income' ? '+' : '-'}{formatCurrency(txn.amount)}
                       </p>
                       <button
@@ -182,6 +192,18 @@ export default function TransactionsPage() {
           );
         })}
       </div>
+
+      {showAddModal && <AddTransactionModal onClose={() => setShowAddModal(false)} />}
+      {drilldown && (
+        <CategoryDrilldownModal
+          category={drilldown.category}
+          name={drilldown.name}
+          icon={drilldown.icon}
+          color={drilldown.color}
+          type={drilldown.type}
+          onClose={() => setDrilldown(null)}
+        />
+      )}
     </div>
   );
 }

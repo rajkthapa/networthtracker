@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X } from 'lucide-react';
+import { X, Loader2 } from 'lucide-react';
 import { useApp } from '@/lib/store';
 
 export function AddStockModal({ onClose, accountId, accountName }: { onClose: () => void; accountId: string; accountName: string }) {
@@ -11,20 +11,32 @@ export function AddStockModal({ onClose, accountId, accountName }: { onClose: ()
   const [shares, setShares] = useState('');
   const [avgCostBasis, setAvgCostBasis] = useState('');
   const [currentPrice, setCurrentPrice] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!ticker || !name || !shares || !avgCostBasis || !currentPrice) return;
-    await addStockHolding({
-      accountId,
-      ticker: ticker.toUpperCase(),
-      name,
-      shares: parseFloat(shares),
-      avgCostBasis: parseFloat(avgCostBasis),
-      currentPrice: parseFloat(currentPrice),
-      priceChange24h: 0,
-    });
-    onClose();
+    setError('');
+    if (!ticker || !name || !shares || !avgCostBasis || !currentPrice) {
+      setError('Please fill all fields');
+      return;
+    }
+    setSaving(true);
+    try {
+      await addStockHolding({
+        accountId,
+        ticker: ticker.toUpperCase(),
+        name,
+        shares: parseFloat(shares),
+        avgCostBasis: parseFloat(avgCostBasis),
+        currentPrice: parseFloat(currentPrice),
+        priceChange24h: 0,
+      });
+      onClose();
+    } catch {
+      setError('Failed to save stock position. Please try again.');
+      setSaving(false);
+    }
   };
 
   return (
@@ -42,6 +54,12 @@ export function AddStockModal({ onClose, accountId, accountName }: { onClose: ()
         </div>
 
         <form onSubmit={handleSubmit} className="px-6 pb-6 space-y-4">
+          {error && (
+            <div className="p-3 rounded-xl bg-danger-50 border border-danger-200 text-danger-700 text-sm">
+              {error}
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium text-surface-600 mb-1.5">Ticker</label>
@@ -86,8 +104,16 @@ export function AddStockModal({ onClose, accountId, accountName }: { onClose: ()
             </div>
           )}
 
-          <button type="submit" className="w-full py-3.5 rounded-xl font-semibold text-white bg-gradient-to-r from-primary-500 to-grape-500 hover:shadow-lg transition-all">
-            Add Stock Position
+          <button
+            type="submit"
+            disabled={saving}
+            className="w-full py-3.5 rounded-xl font-semibold text-white bg-gradient-to-r from-primary-500 to-grape-500 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            {saving ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              'Add Stock Position'
+            )}
           </button>
         </form>
       </div>

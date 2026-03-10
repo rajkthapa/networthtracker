@@ -52,7 +52,7 @@ export default function NetWorthPage() {
         <div className="absolute -top-20 -right-20 w-60 h-60 bg-white/10 rounded-full blur-3xl" />
         <div className="relative">
           <p className="text-white/70 text-sm font-medium mb-2">Current Net Worth</p>
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">{formatCurrency(netWorth)}</h2>
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 num">{formatCurrency(netWorth)}</h2>
           <div className="flex flex-wrap gap-4">
             {hasHistory && (
               <>
@@ -74,25 +74,21 @@ export default function NetWorthPage() {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="stat-card">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-success-400 to-success-500" />
-          <p className="text-xs text-surface-500">Assets</p>
-          <p className="text-lg font-bold text-success-600">{formatCurrency(totalAssets)}</p>
+        <div className="stat-card border-l-4 border-success-500">
+          <p className="stat-label">Assets</p>
+          <p className="text-lg font-bold text-success-600 num">{formatCurrency(totalAssets)}</p>
         </div>
-        <div className="stat-card">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-danger-400 to-danger-500" />
-          <p className="text-xs text-surface-500">Debts</p>
-          <p className="text-lg font-bold text-danger-600">{formatCurrency(totalDebts)}</p>
+        <div className="stat-card border-l-4 border-danger-500">
+          <p className="stat-label">Debts</p>
+          <p className="text-lg font-bold text-danger-600 num">{formatCurrency(totalDebts)}</p>
         </div>
-        <div className="stat-card">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary-400 to-primary-500" />
-          <p className="text-xs text-surface-500">Debt-to-Asset Ratio</p>
-          <p className="text-lg font-bold text-primary-600">{totalAssets > 0 ? ((totalDebts / totalAssets) * 100).toFixed(1) : 0}%</p>
+        <div className="stat-card border-l-4 border-primary-500">
+          <p className="stat-label">Debt-to-Asset Ratio</p>
+          <p className="text-lg font-bold text-primary-600 num">{totalAssets > 0 ? ((totalDebts / totalAssets) * 100).toFixed(1) : 0}%</p>
         </div>
-        <div className="stat-card">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-grape-400 to-grape-500" />
-          <p className="text-xs text-surface-500">Avg Monthly Growth</p>
-          <p className="text-lg font-bold text-grape-600">{netWorthHistory.length > 1 ? formatCurrency(totalChange / (netWorthHistory.length - 1)) : '$0'}</p>
+        <div className="stat-card border-l-4 border-grape-500">
+          <p className="stat-label">Avg Monthly Growth</p>
+          <p className="text-lg font-bold text-grape-600 num">{netWorthHistory.length > 1 ? formatCurrency(totalChange / (netWorthHistory.length - 1)) : '$0'}</p>
         </div>
       </div>
 
@@ -115,7 +111,7 @@ export default function NetWorthPage() {
                 <stop offset="95%" stopColor="#fa5252" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e8ebf3" />
+            <CartesianGrid strokeDasharray="3 3" stroke="#e8ebf3" vertical={false} />
             <XAxis dataKey="date" stroke="#8b95ad" fontSize={12} tickLine={false} />
             <YAxis stroke="#8b95ad" fontSize={12} tickLine={false} tickFormatter={(v) => formatCurrency(v, true)} />
             <Tooltip formatter={(value: any, name: any) => [formatCurrency(value), name === 'netWorth' ? 'Net Worth' : name === 'totalAssets' ? 'Assets' : 'Debts']} />
@@ -133,7 +129,7 @@ export default function NetWorthPage() {
           <h3 className="section-header mb-4">Monthly Net Worth Change</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={yoyData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e8ebf3" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e8ebf3" vertical={false} />
               <XAxis dataKey="date" stroke="#8b95ad" fontSize={11} tickLine={false} />
               <YAxis stroke="#8b95ad" fontSize={12} tickLine={false} tickFormatter={(v) => formatCurrency(v, true)} />
               <Tooltip formatter={(value: any) => formatCurrency(value)} />
@@ -150,7 +146,7 @@ export default function NetWorthPage() {
           <h3 className="section-header mb-4">Asset Breakdown</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={assetBreakdown} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" stroke="#e8ebf3" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e8ebf3" vertical={false} />
               <XAxis type="number" tickFormatter={(v) => formatCurrency(v, true)} fontSize={12} stroke="#8b95ad" />
               <YAxis type="category" dataKey="name" fontSize={10} stroke="#8b95ad" width={140} />
               <Tooltip formatter={(v: any) => formatCurrency(v)} />
@@ -169,7 +165,7 @@ export default function NetWorthPage() {
         <h3 className="section-header mb-4">Income vs Expenses (from Transactions)</h3>
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={monthlyData} barGap={4}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e8ebf3" />
+            <CartesianGrid strokeDasharray="3 3" stroke="#e8ebf3" vertical={false} />
             <XAxis dataKey="month" stroke="#8b95ad" fontSize={11} tickLine={false} />
             <YAxis stroke="#8b95ad" fontSize={12} tickLine={false} tickFormatter={(v) => formatCurrency(v, true)} />
             <Tooltip formatter={(value: any, name: any) => [formatCurrency(value), name]} />

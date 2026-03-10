@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X } from 'lucide-react';
+import { X, Loader2 } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { ACCOUNT_TYPES, DEBT_TYPES } from '@/lib/utils';
 
@@ -13,24 +13,36 @@ export function AddAccountModal({ onClose }: { onClose: () => void }) {
   const [balance, setBalance] = useState('');
   const [institution, setInstitution] = useState('');
   const [interestRate, setInterestRate] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
 
   const types = isDebt ? DEBT_TYPES : ACCOUNT_TYPES;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !type || !balance) return;
-    const typeInfo = types.find(t => t.id === type);
-    await addAccount({
-      name,
-      type,
-      balance: parseFloat(balance),
-      institution,
-      color: typeInfo?.color || '#4c6ef5',
-      icon: typeInfo?.icon || '💰',
-      isDebt,
-      interestRate: interestRate ? parseFloat(interestRate) : undefined,
-    });
-    onClose();
+    setError('');
+    if (!name || !type || !balance) {
+      setError(!type ? 'Please select an account type' : 'Please fill all required fields');
+      return;
+    }
+    setSaving(true);
+    try {
+      const typeInfo = types.find(t => t.id === type);
+      await addAccount({
+        name,
+        type,
+        balance: parseFloat(balance),
+        institution,
+        color: typeInfo?.color || '#4c6ef5',
+        icon: typeInfo?.icon || '💰',
+        isDebt,
+        interestRate: interestRate ? parseFloat(interestRate) : undefined,
+      });
+      onClose();
+    } catch {
+      setError('Failed to save account. Please try again.');
+      setSaving(false);
+    }
   };
 
   return (
@@ -66,6 +78,12 @@ export function AddAccountModal({ onClose }: { onClose: () => void }) {
         </div>
 
         <form onSubmit={handleSubmit} className="px-6 pb-6 space-y-4">
+          {error && (
+            <div className="p-3 rounded-xl bg-danger-50 border border-danger-200 text-danger-700 text-sm">
+              {error}
+            </div>
+          )}
+
           <div>
             <label className="block text-sm font-medium text-surface-600 mb-1.5">Account Name</label>
             <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="e.g., Chase Checking" className="input-field" required />
@@ -110,8 +128,18 @@ export function AddAccountModal({ onClose }: { onClose: () => void }) {
             </div>
           )}
 
-          <button type="submit" className="w-full btn-primary py-3.5">
-            Add {isDebt ? 'Debt' : 'Account'}
+          <button
+            type="submit"
+            disabled={saving}
+            className={`w-full py-3.5 rounded-xl font-semibold text-white transition-all disabled:opacity-50 flex items-center justify-center gap-2 ${
+              isDebt ? 'bg-danger-500 hover:bg-danger-600' : 'bg-success-500 hover:bg-success-600'
+            }`}
+          >
+            {saving ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              `Add ${isDebt ? 'Debt' : 'Account'}`
+            )}
           </button>
         </form>
       </div>

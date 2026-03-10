@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X } from 'lucide-react';
+import { X, Loader2 } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '@/lib/utils';
 
@@ -12,30 +12,42 @@ export function AddTransactionModal({ onClose }: { onClose: () => void }) {
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
 
   const categories = type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
 
-  const [saving, setSaving] = useState(false);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!amount || !description || !category) return;
+    setError('');
+    if (!amount || !description || !category) {
+      setError(!category ? 'Please select a category' : 'Please fill all fields');
+      return;
+    }
+    if (parseFloat(amount) <= 0) {
+      setError('Amount must be greater than 0');
+      return;
+    }
     setSaving(true);
-    await addTransaction({
-      date,
-      description,
-      amount: parseFloat(amount),
-      type,
-      category,
-    });
-    onClose();
+    try {
+      await addTransaction({
+        date,
+        description,
+        amount: parseFloat(amount),
+        type,
+        category,
+      });
+      onClose();
+    } catch {
+      setError('Failed to save transaction. Please try again.');
+      setSaving(false);
+    }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-surface-900/40 backdrop-blur-sm" onClick={onClose} />
       <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl animate-scale-in overflow-hidden">
-        {/* Header */}
         <div className="flex items-center justify-between p-6 pb-4">
           <h2 className="text-xl font-bold text-surface-900">Add Transaction</h2>
           <button onClick={onClose} className="p-2 rounded-xl hover:bg-surface-100 transition-colors">
@@ -43,13 +55,12 @@ export function AddTransactionModal({ onClose }: { onClose: () => void }) {
           </button>
         </div>
 
-        {/* Type Toggle */}
         <div className="px-6 mb-4">
           <div className="flex bg-surface-100 rounded-xl p-1">
             <button
               onClick={() => { setType('expense'); setCategory(''); }}
               className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-                type === 'expense' ? 'bg-danger-500 text-white shadow-md' : 'text-surface-500'
+                type === 'expense' ? 'bg-danger-500 text-white shadow-sm' : 'text-surface-500'
               }`}
             >
               Expense
@@ -57,7 +68,7 @@ export function AddTransactionModal({ onClose }: { onClose: () => void }) {
             <button
               onClick={() => { setType('income'); setCategory(''); }}
               className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-                type === 'income' ? 'bg-success-500 text-white shadow-md' : 'text-surface-500'
+                type === 'income' ? 'bg-success-500 text-white shadow-sm' : 'text-surface-500'
               }`}
             >
               Income
@@ -66,7 +77,12 @@ export function AddTransactionModal({ onClose }: { onClose: () => void }) {
         </div>
 
         <form onSubmit={handleSubmit} className="px-6 pb-6 space-y-4">
-          {/* Amount */}
+          {error && (
+            <div className="p-3 rounded-xl bg-danger-50 border border-danger-200 text-danger-700 text-sm">
+              {error}
+            </div>
+          )}
+
           <div>
             <label className="block text-sm font-medium text-surface-600 mb-1.5">Amount</label>
             <div className="relative">
@@ -74,16 +90,16 @@ export function AddTransactionModal({ onClose }: { onClose: () => void }) {
               <input
                 type="number"
                 step="0.01"
+                min="0.01"
                 value={amount}
                 onChange={e => setAmount(e.target.value)}
                 placeholder="0.00"
-                className="input-field pl-8 text-2xl font-bold"
+                className="input-field pl-8 text-2xl font-bold num"
                 required
               />
             </div>
           </div>
 
-          {/* Description */}
           <div>
             <label className="block text-sm font-medium text-surface-600 mb-1.5">Description</label>
             <input
@@ -96,7 +112,6 @@ export function AddTransactionModal({ onClose }: { onClose: () => void }) {
             />
           </div>
 
-          {/* Date */}
           <div>
             <label className="block text-sm font-medium text-surface-600 mb-1.5">Date</label>
             <input
@@ -107,9 +122,10 @@ export function AddTransactionModal({ onClose }: { onClose: () => void }) {
             />
           </div>
 
-          {/* Category */}
           <div>
-            <label className="block text-sm font-medium text-surface-600 mb-2">Category</label>
+            <label className="block text-sm font-medium text-surface-600 mb-2">
+              Category {!category && <span className="text-danger-500">*</span>}
+            </label>
             <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto scrollbar-hide">
               {categories.map(cat => (
                 <button
@@ -118,7 +134,7 @@ export function AddTransactionModal({ onClose }: { onClose: () => void }) {
                   onClick={() => setCategory(cat.id)}
                   className={`flex flex-col items-center gap-1 p-3 rounded-xl border-2 transition-all text-center ${
                     category === cat.id
-                      ? 'border-primary-500 bg-primary-50 shadow-glow-primary'
+                      ? 'border-primary-500 bg-primary-50'
                       : 'border-surface-100 hover:border-surface-200'
                   }`}
                 >
@@ -131,13 +147,18 @@ export function AddTransactionModal({ onClose }: { onClose: () => void }) {
 
           <button
             type="submit"
-            className={`w-full py-3.5 rounded-xl font-semibold text-white transition-all ${
+            disabled={saving}
+            className={`w-full py-3.5 rounded-xl font-semibold text-white transition-all disabled:opacity-50 flex items-center justify-center gap-2 ${
               type === 'expense'
-                ? 'bg-gradient-to-r from-danger-500 to-accent-500 hover:shadow-glow-accent'
-                : 'bg-gradient-to-r from-success-500 to-teal-500 hover:shadow-glow-success'
+                ? 'bg-danger-500 hover:bg-danger-600'
+                : 'bg-success-500 hover:bg-success-600'
             }`}
           >
-            Add {type === 'expense' ? 'Expense' : 'Income'}
+            {saving ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              `Add ${type === 'expense' ? 'Expense' : 'Income'}`
+            )}
           </button>
         </form>
       </div>

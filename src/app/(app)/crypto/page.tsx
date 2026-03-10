@@ -70,7 +70,7 @@ export default function CryptoPage() {
             <Bitcoin className="w-5 h-5" />
             <p className="text-white/80 text-sm font-medium">Total Portfolio Value</p>
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold mb-3">{formatCurrency(totalValue)}</h2>
+          <h2 className="text-4xl md:text-5xl font-bold mb-3 num">{formatCurrency(totalValue)}</h2>
           <div className="flex flex-wrap items-center gap-3">
             <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl ${totalPnL >= 0 ? 'bg-green-500/20' : 'bg-red-500/20'}`}>
               {totalPnL >= 0 ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
@@ -223,25 +223,21 @@ export default function CryptoPage() {
       {/* Stats */}
       {cryptoHoldings.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="stat-card bg-gradient-to-br from-[#f7931a]/5 to-transparent">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-[#f7931a]" />
-            <p className="text-xs text-surface-500">Bitcoin Dominance</p>
-            <p className="text-lg font-bold text-surface-800">{btcDominance.toFixed(1)}%</p>
+          <div className="stat-card border-l-4 border-[#f7931a]">
+            <p className="stat-label">Bitcoin Dominance</p>
+            <p className="text-lg font-bold text-surface-800 num">{btcDominance.toFixed(1)}%</p>
           </div>
-          <div className="stat-card">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-success-400 to-success-500" />
-            <p className="text-xs text-surface-500">Total Cost Basis</p>
-            <p className="text-lg font-bold text-surface-800">{formatCurrency(totalCost)}</p>
+          <div className="stat-card border-l-4 border-success-500">
+            <p className="stat-label">Total Cost Basis</p>
+            <p className="text-lg font-bold text-surface-800 num">{formatCurrency(totalCost)}</p>
           </div>
-          <div className="stat-card">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-grape-400 to-grape-500" />
-            <p className="text-xs text-surface-500">Best Performer</p>
-            <p className="text-lg font-bold text-success-600">{bestPerformer?.symbol} {formatPercent(bestPerformer?.pnlPercent || 0)}</p>
+          <div className="stat-card border-l-4 border-grape-500">
+            <p className="stat-label">Best Performer</p>
+            <p className="text-lg font-bold text-success-600 num">{bestPerformer?.symbol} {formatPercent(bestPerformer?.pnlPercent || 0)}</p>
           </div>
-          <div className="stat-card">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-danger-400 to-danger-500" />
-            <p className="text-xs text-surface-500">Worst Performer</p>
-            <p className="text-lg font-bold text-danger-600">{worstPerformer?.symbol} {formatPercent(worstPerformer?.pnlPercent || 0)}</p>
+          <div className="stat-card border-l-4 border-danger-500">
+            <p className="stat-label">Worst Performer</p>
+            <p className="text-lg font-bold text-danger-600 num">{worstPerformer?.symbol} {formatPercent(worstPerformer?.pnlPercent || 0)}</p>
           </div>
         </div>
       )}

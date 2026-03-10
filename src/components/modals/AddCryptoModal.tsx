@@ -1,30 +1,51 @@
 'use client';
 
 import { useState } from 'react';
-import { X } from 'lucide-react';
+import { X, Loader2 } from 'lucide-react';
 import { useApp } from '@/lib/store';
 
 export function AddCryptoModal({ onClose }: { onClose: () => void }) {
   const { addCryptoHolding } = useApp();
   const [symbol, setSymbol] = useState('');
-  const [name, setName] = useState('');
   const [quantity, setQuantity] = useState('');
   const [avgBuyPrice, setAvgBuyPrice] = useState('');
   const [currentPrice, setCurrentPrice] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!symbol || !name || !quantity || !avgBuyPrice || !currentPrice) return;
-    await addCryptoHolding({
-      symbol: symbol.toUpperCase(),
-      name,
-      quantity: parseFloat(quantity),
-      avgBuyPrice: parseFloat(avgBuyPrice),
-      currentPrice: parseFloat(currentPrice),
-      priceChange24h: 0,
-    });
-    onClose();
+    setError('');
+    if (!symbol || !quantity) {
+      setError('Symbol and quantity are required');
+      return;
+    }
+    if (parseFloat(quantity) <= 0) {
+      setError('Quantity must be greater than 0');
+      return;
+    }
+    setSaving(true);
+    try {
+      await addCryptoHolding({
+        symbol: symbol.toUpperCase(),
+        name: symbol.toUpperCase(),
+        quantity: parseFloat(quantity),
+        avgBuyPrice: avgBuyPrice ? parseFloat(avgBuyPrice) : 0,
+        currentPrice: currentPrice ? parseFloat(currentPrice) : 0,
+        priceChange24h: 0,
+      });
+      onClose();
+    } catch {
+      setError('Failed to save crypto position. Please try again.');
+      setSaving(false);
+    }
   };
+
+  const qty = parseFloat(quantity) || 0;
+  const curPrice = parseFloat(currentPrice) || 0;
+  const buyPrice = parseFloat(avgBuyPrice) || 0;
+  const positionValue = qty * curPrice;
+  const pnl = (curPrice - buyPrice) * qty;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -38,52 +59,62 @@ export function AddCryptoModal({ onClose }: { onClose: () => void }) {
         </div>
 
         <form onSubmit={handleSubmit} className="px-6 pb-6 space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-medium text-surface-600 mb-1.5">Symbol</label>
-              <input type="text" value={symbol} onChange={e => setSymbol(e.target.value)} placeholder="BTC" className="input-field uppercase" required />
+          {error && (
+            <div className="p-3 rounded-xl bg-danger-50 border border-danger-200 text-danger-700 text-sm">
+              {error}
             </div>
-            <div>
-              <label className="block text-sm font-medium text-surface-600 mb-1.5">Name</label>
-              <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Bitcoin" className="input-field" required />
-            </div>
+          )}
+
+          <div>
+            <label className="block text-sm font-medium text-surface-600 mb-1.5">Symbol <span className="text-danger-500">*</span></label>
+            <input type="text" value={symbol} onChange={e => setSymbol(e.target.value)} placeholder="BTC" className="input-field uppercase" required />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-surface-600 mb-1.5">Quantity</label>
-            <input type="number" step="any" value={quantity} onChange={e => setQuantity(e.target.value)} placeholder="0.5" className="input-field" required />
+            <label className="block text-sm font-medium text-surface-600 mb-1.5">Quantity <span className="text-danger-500">*</span></label>
+            <input type="number" step="any" min="0" value={quantity} onChange={e => setQuantity(e.target.value)} placeholder="0.5" className="input-field" required />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium text-surface-600 mb-1.5">Avg Buy Price ($)</label>
-              <input type="number" step="0.01" value={avgBuyPrice} onChange={e => setAvgBuyPrice(e.target.value)} placeholder="50000" className="input-field" required />
+              <input type="number" step="0.01" min="0" value={avgBuyPrice} onChange={e => setAvgBuyPrice(e.target.value)} placeholder="Optional" className="input-field" />
             </div>
             <div>
               <label className="block text-sm font-medium text-surface-600 mb-1.5">Current Price ($)</label>
-              <input type="number" step="0.01" value={currentPrice} onChange={e => setCurrentPrice(e.target.value)} placeholder="97000" className="input-field" required />
+              <input type="number" step="0.01" min="0" value={currentPrice} onChange={e => setCurrentPrice(e.target.value)} placeholder="Optional" className="input-field" />
             </div>
           </div>
 
-          {quantity && currentPrice && (
+          <p className="text-xs text-surface-400">Prices can be fetched automatically after adding via the Refresh Prices button.</p>
+
+          {qty > 0 && curPrice > 0 && (
             <div className="p-3 rounded-xl bg-surface-50 text-sm">
               <div className="flex justify-between">
                 <span className="text-surface-500">Position Value</span>
-                <span className="font-semibold text-surface-800">${(parseFloat(quantity) * parseFloat(currentPrice)).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                <span className="font-semibold text-surface-800 num">${positionValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
               </div>
-              {avgBuyPrice && (
+              {buyPrice > 0 && (
                 <div className="flex justify-between mt-1">
                   <span className="text-surface-500">P&L</span>
-                  <span className={`font-semibold ${parseFloat(currentPrice) >= parseFloat(avgBuyPrice) ? 'text-success-600' : 'text-danger-600'}`}>
-                    ${((parseFloat(currentPrice) - parseFloat(avgBuyPrice)) * parseFloat(quantity)).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  <span className={`font-semibold num ${pnl >= 0 ? 'text-success-600' : 'text-danger-600'}`}>
+                    ${pnl.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
               )}
             </div>
           )}
 
-          <button type="submit" className="w-full py-3.5 rounded-xl font-semibold text-white bg-gradient-to-r from-[#f7931a] to-[#627eea] hover:shadow-lg transition-all">
-            Add Crypto Position
+          <button
+            type="submit"
+            disabled={saving}
+            className="w-full py-3.5 rounded-xl font-semibold text-white bg-gradient-to-r from-[#f7931a] to-[#627eea] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            {saving ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              'Add Crypto Position'
+            )}
           </button>
         </form>
       </div>
