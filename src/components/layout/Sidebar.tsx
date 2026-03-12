@@ -21,22 +21,22 @@ export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <aside className={`hidden md:flex flex-col bg-white border-r border-surface-100 p-3 transition-all duration-200 ${collapsed ? 'w-[72px]' : 'w-60'}`}>
+    <aside className={`hidden md:flex flex-col bg-th-card border-r border-[var(--border-color)] p-3 transition-all duration-200 ${collapsed ? 'w-[72px]' : 'w-60'}`}>
       {/* Logo */}
-      <div className={`flex items-center gap-3 px-3 py-3 mb-4 ${collapsed ? 'justify-center' : ''}`}>
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-600 to-grape-600 flex items-center justify-center flex-shrink-0">
+      <div className={`flex items-center gap-3 px-3 py-3 mb-6 ${collapsed ? 'justify-center' : ''}`}>
+        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-500 to-grape-500 flex items-center justify-center flex-shrink-0 shadow-glow-primary">
           <TrendingUp className="w-4.5 h-4.5 text-white" />
         </div>
         {!collapsed && (
           <div>
-            <h1 className="text-base font-bold text-gradient-primary bg-gradient-to-r from-primary-600 to-grape-600">WealthPulse</h1>
-            <p className="text-[9px] text-surface-400 font-medium tracking-widest uppercase">Smart Finance</p>
+            <h1 className="text-base font-bold text-gradient-primary bg-gradient-to-r from-primary-400 to-grape-400">WealthPulse</h1>
+            <p className="text-[9px] text-th-faint font-medium tracking-widest uppercase">Smart Finance</p>
           </div>
         )}
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 space-y-0.5">
+      <nav className="flex-1 space-y-1">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
@@ -60,7 +60,7 @@ export function Sidebar() {
       </div>
 
       {/* Collapse toggle */}
-      <div className="border-t border-surface-100 pt-3 mt-3">
+      <div className="border-t border-[var(--border-color)] pt-3 mt-3">
         <button
           onClick={() => setCollapsed(!collapsed)}
           className={`nav-item nav-item-inactive w-full ${collapsed ? 'justify-center px-0' : ''}`}

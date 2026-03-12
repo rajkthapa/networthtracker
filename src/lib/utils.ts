@@ -30,15 +30,15 @@ export function formatNumber(num: number): string {
 }
 
 export function getChangeColor(value: number): string {
-  if (value > 0) return 'text-success-500';
-  if (value < 0) return 'text-danger-500';
-  return 'text-surface-500';
+  if (value > 0) return 'text-success-400';
+  if (value < 0) return 'text-danger-400';
+  return 'text-th-faint';
 }
 
 export function getChangeBgColor(value: number): string {
-  if (value > 0) return 'bg-success-500/10 text-success-600';
-  if (value < 0) return 'bg-danger-500/10 text-danger-600';
-  return 'bg-surface-200 text-surface-600';
+  if (value > 0) return 'bg-success-500/10 text-success-400';
+  if (value < 0) return 'bg-danger-500/10 text-danger-400';
+  return 'bg-[var(--bg-hover)] text-th-muted';
 }
 
 export const EXPENSE_CATEGORIES = [

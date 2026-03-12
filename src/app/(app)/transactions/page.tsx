@@ -63,10 +63,10 @@ export default function TransactionsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="page-header">Transactions</h1>
-          <p className="text-sm text-surface-500 mt-1">{filtered.length} transactions</p>
+          <p className="text-sm text-th-muted mt-1">{filtered.length} transactions</p>
         </div>
         <div className="flex gap-2">
-          <button onClick={() => setShowCategoryManager(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-surface-200 text-sm font-medium text-surface-600 hover:bg-surface-50 transition-all">
+          <button onClick={() => setShowCategoryManager(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[var(--border-strong)] text-sm font-medium text-th-body hover:bg-[var(--bg-hover)] transition-all">
             <Settings className="w-4 h-4" />
             Categories
           </button>
@@ -81,26 +81,26 @@ export default function TransactionsPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="stat-card border-l-4 border-success-500">
           <p className="stat-label">Income</p>
-          <p className="text-lg font-bold text-success-600 num">{formatCurrency(monthTotals.income)}</p>
+          <p className="text-lg font-bold text-success-400 num">{formatCurrency(monthTotals.income)}</p>
         </div>
         <div className="stat-card border-l-4 border-danger-500">
           <p className="stat-label">Expenses</p>
-          <p className="text-lg font-bold text-danger-600 num">{formatCurrency(monthTotals.expenses)}</p>
+          <p className="text-lg font-bold text-danger-400 num">{formatCurrency(monthTotals.expenses)}</p>
         </div>
         <div className="stat-card border-l-4 border-primary-500">
           <p className="stat-label">Net Savings</p>
-          <p className={`text-lg font-bold num ${monthTotals.savings >= 0 ? 'text-primary-600' : 'text-danger-600'}`}>{formatCurrency(monthTotals.savings)}</p>
+          <p className={`text-lg font-bold num ${monthTotals.savings >= 0 ? 'text-primary-400' : 'text-danger-400'}`}>{formatCurrency(monthTotals.savings)}</p>
         </div>
         <div className="stat-card border-l-4 border-grape-500">
           <p className="stat-label">Savings Rate</p>
-          <p className="text-lg font-bold text-grape-600 num">{monthTotals.savingsRate.toFixed(1)}%</p>
+          <p className="text-lg font-bold text-grape-400 num">{monthTotals.savingsRate.toFixed(1)}%</p>
         </div>
       </div>
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-th-faint" />
           <input
             type="text"
             value={search}
@@ -110,7 +110,7 @@ export default function TransactionsPage() {
           />
         </div>
         <div className="flex gap-2">
-          <div className="flex bg-white/80 rounded-xl border border-surface-200 p-1">
+          <div className="flex bg-th-card/80 rounded-xl border border-[var(--border-strong)] p-1">
             {(['all', 'income', 'expense'] as const).map(f => (
               <button
                 key={f}
@@ -118,7 +118,7 @@ export default function TransactionsPage() {
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   filter === f
                     ? f === 'income' ? 'bg-success-500 text-white' : f === 'expense' ? 'bg-danger-500 text-white' : 'bg-primary-500 text-white'
-                    : 'text-surface-500 hover:text-surface-700'
+                    : 'text-th-muted hover:text-th-heading'
                 }`}
               >
                 {f.charAt(0).toUpperCase() + f.slice(1)}
@@ -129,7 +129,7 @@ export default function TransactionsPage() {
             <select
               value={viewMonth}
               onChange={e => handleMonthChange(e.target.value)}
-              className="appearance-none bg-white/80 border border-surface-200 rounded-xl px-4 py-2.5 pr-8 text-sm font-medium text-surface-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500/30"
+              className="appearance-none bg-th-card/80 border border-[var(--border-strong)] rounded-xl px-4 py-2.5 pr-8 text-sm font-medium text-th-heading cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500/30"
             >
               {availableMonths.map(m => {
                 const [y, mo] = m.split('-');
@@ -137,7 +137,7 @@ export default function TransactionsPage() {
                 return <option key={m} value={m}>{label}</option>;
               })}
             </select>
-            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-400 pointer-events-none" />
+            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-th-faint pointer-events-none" />
           </div>
         </div>
       </div>
@@ -145,8 +145,8 @@ export default function TransactionsPage() {
       {/* Transaction List */}
       <div className="space-y-6">
         {Object.keys(groupedByDate).length === 0 && (
-          <div className="text-center py-16 text-surface-400">
-            <ArrowLeftRight className="w-12 h-12 mx-auto mb-3 text-surface-300" />
+          <div className="text-center py-16 text-th-faint">
+            <ArrowLeftRight className="w-12 h-12 mx-auto mb-3 text-th-faint" />
             <p className="text-lg font-medium">No transactions found</p>
             <p className="text-sm mt-1">Try adjusting your filters or selecting a different month</p>
           </div>
@@ -156,13 +156,13 @@ export default function TransactionsPage() {
           return (
             <div key={date}>
               <div className="flex items-center gap-2 mb-3">
-                <Calendar className="w-4 h-4 text-surface-400" />
-                <h3 className="text-sm font-semibold text-surface-500">{date}</h3>
-                <div className="flex-1 h-px bg-surface-100" />
+                <Calendar className="w-4 h-4 text-th-faint" />
+                <h3 className="text-sm font-semibold text-th-muted">{date}</h3>
+                <div className="flex-1 h-px bg-[var(--bg-hover)]" />
                 {daily && (
                   <div className="flex gap-3 text-xs">
-                    {daily.income > 0 && <span className="text-success-600 font-medium">+{formatCurrency(daily.income)}</span>}
-                    {daily.expenses > 0 && <span className="text-danger-600 font-medium">-{formatCurrency(daily.expenses)}</span>}
+                    {daily.income > 0 && <span className="text-success-400 font-medium">+{formatCurrency(daily.income)}</span>}
+                    {daily.expenses > 0 && <span className="text-danger-400 font-medium">-{formatCurrency(daily.expenses)}</span>}
                   </div>
                 )}
               </div>
@@ -170,7 +170,7 @@ export default function TransactionsPage() {
                 {txns.map(txn => {
                   const cat = allCategories.find(c => c.id === txn.category);
                   return (
-                    <div key={txn.id} className="flex items-center gap-3 p-4 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/20 shadow-card hover:shadow-card-hover transition-all group">
+                    <div key={txn.id} className="flex items-center gap-3 p-4 bg-th-card/80 backdrop-blur-sm rounded-2xl border border-[var(--border-color)] shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] transition-all group">
                       <div
                         className="w-11 h-11 rounded-2xl flex items-center justify-center text-lg flex-shrink-0"
                         style={{ backgroundColor: (cat?.color || '#868e96') + '18' }}
@@ -178,22 +178,22 @@ export default function TransactionsPage() {
                         {cat?.icon || '📦'}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-surface-800 truncate">{txn.description}</p>
+                        <p className="text-sm font-semibold text-th-heading truncate">{txn.description}</p>
                         <div className="flex items-center gap-2 mt-0.5">
                           <button
                             onClick={() => cat && setDrilldown({ category: txn.category, name: cat.name, icon: cat.icon, color: cat.color, type: txn.type })}
-                            className="text-xs text-surface-400 hover:text-primary-500 hover:underline transition-colors"
+                            className="text-xs text-th-faint hover:text-primary-500 hover:underline transition-colors"
                           >
                             {cat?.name || txn.category}
                           </button>
                         </div>
                       </div>
-                      <p className={`text-sm font-bold num ${txn.type === 'income' ? 'text-success-600' : 'text-danger-600'}`}>
+                      <p className={`text-sm font-bold num ${txn.type === 'income' ? 'text-success-400' : 'text-danger-400'}`}>
                         {txn.type === 'income' ? '+' : '-'}{formatCurrency(txn.amount)}
                       </p>
                       <button
                         onClick={() => deleteTransaction(txn.id)}
-                        className="p-2 rounded-lg text-surface-300 hover:text-danger-500 hover:bg-danger-50 transition-all opacity-0 group-hover:opacity-100"
+                        className="p-2 rounded-lg text-th-faint hover:text-danger-400 hover:bg-danger-500/10 transition-all opacity-0 group-hover:opacity-100"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>

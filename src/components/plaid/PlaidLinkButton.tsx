@@ -83,16 +83,16 @@ export default function PlaidLinkButton({ onSuccess }: PlaidLinkButtonProps) {
   if (result) {
     return (
       <div className="text-center py-8">
-        <div className="w-16 h-16 rounded-2xl bg-success-100 text-success-600 flex items-center justify-center mx-auto mb-4">
+        <div className="w-16 h-16 rounded-2xl bg-success-500/15 text-success-400 flex items-center justify-center mx-auto mb-4">
           <CheckCircle2 className="w-8 h-8" />
         </div>
-        <h3 className="text-lg font-bold text-surface-800 mb-2">
+        <h3 className="text-lg font-bold text-th-heading mb-2">
           {result.institution} Connected!
         </h3>
-        <p className="text-sm text-surface-500 mb-1">
+        <p className="text-sm text-th-muted mb-1">
           {result.accounts_created} account{result.accounts_created !== 1 ? 's' : ''} imported
         </p>
-        <p className="text-sm text-surface-500 mb-6">
+        <p className="text-sm text-th-muted mb-6">
           {result.transactions_imported} transaction{result.transactions_imported !== 1 ? 's' : ''} imported
         </p>
         <button
@@ -108,7 +108,7 @@ export default function PlaidLinkButton({ onSuccess }: PlaidLinkButtonProps) {
   return (
     <div className="text-center">
       {error && (
-        <div className="mb-4 p-3 rounded-xl bg-danger-50 border border-danger-200 text-sm text-danger-700">
+        <div className="mb-4 p-3 rounded-xl bg-danger-500/10 border border-danger-500/30 text-sm text-danger-300">
           {error}
         </div>
       )}

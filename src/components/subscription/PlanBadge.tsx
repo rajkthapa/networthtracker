@@ -26,12 +26,12 @@ export function PlanBadge({ collapsed }: { collapsed: boolean }) {
     return (
       <div className="flex justify-center">
         <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-          isPro ? 'bg-gradient-to-br from-grape-500 to-accent-500' : 'bg-surface-100'
+          isPro ? 'bg-gradient-to-br from-grape-500 to-accent-500' : 'bg-[var(--bg-hover)]'
         }`}>
           {isPro ? (
             <Crown className="w-4 h-4 text-white" />
           ) : (
-            <span className="text-xs font-bold text-surface-500">F</span>
+            <span className="text-xs font-bold text-th-faint">F</span>
           )}
         </div>
       </div>
@@ -43,13 +43,13 @@ export function PlanBadge({ collapsed }: { collapsed: boolean }) {
       <button
         onClick={handleManage}
         disabled={portalLoading}
-        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-gradient-to-r from-grape-50 to-accent-50 border border-grape-100 hover:border-grape-200 transition-all text-left"
+        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-grape-500/10 border border-grape-500/20 hover:border-grape-500/30 transition-all text-left"
       >
         <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-grape-500 to-accent-500 flex items-center justify-center flex-shrink-0">
           <Crown className="w-4 h-4 text-white" />
         </div>
         <div className="min-w-0">
-          <p className="text-xs font-bold text-grape-700">Pro Plan</p>
+          <p className="text-xs font-bold text-grape-300">Pro Plan</p>
           <p className="text-[10px] text-grape-500">
             {subscription.cancelAtPeriodEnd ? 'Cancels soon' : 'Manage plan'}
           </p>
@@ -59,13 +59,13 @@ export function PlanBadge({ collapsed }: { collapsed: boolean }) {
   }
 
   return (
-    <div className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-surface-50 border border-surface-100">
-      <div className="w-8 h-8 rounded-lg bg-surface-200 flex items-center justify-center flex-shrink-0">
-        <Sparkles className="w-4 h-4 text-surface-500" />
+    <div className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border-color)]">
+      <div className="w-8 h-8 rounded-lg bg-[var(--bg-hover-strong)] flex items-center justify-center flex-shrink-0">
+        <Sparkles className="w-4 h-4 text-th-faint" />
       </div>
       <div className="min-w-0">
-        <p className="text-xs font-bold text-surface-700">Free Plan</p>
-        <p className="text-[10px] text-surface-400">3 accounts max</p>
+        <p className="text-xs font-bold text-th-body">Free Plan</p>
+        <p className="text-[10px] text-th-faint">3 accounts max</p>
       </div>
     </div>
   );

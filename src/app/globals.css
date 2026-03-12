@@ -2,30 +2,120 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #f8f9fc;
-  --foreground: #0f172a;
-  --bg-surface: #ffffff;
-  --bg-elevated: #f1f5f9;
-  --border-subtle: #e2e8f0;
+/* ═══════════════════════════════════════════════════
+   DARK THEME — Deep navy with ocean undertones
+   ═══════════════════════════════════════════════════ */
+:root,
+[data-theme="dark"] {
+  --color-th-base: 6 9 17;
+  --color-th-card: 13 17 23;
+  --color-th-elevated: 21 27 40;
+  --color-th-heading: 241 245 249;
+  --color-th-body: 203 213 225;
+  --color-th-muted: 148 163 184;
+  --color-th-faint: 100 116 139;
+
+  --background: #060911;
+  --foreground: #e2e8f0;
+  --border-color: rgba(255,255,255,0.06);
+  --border-strong: rgba(255,255,255,0.10);
+  --border-stronger: rgba(255,255,255,0.14);
+  --bg-subtle: rgba(255,255,255,0.03);
+  --bg-hover: rgba(255,255,255,0.05);
+  --bg-hover-strong: rgba(255,255,255,0.08);
+  --bg-overlay: rgba(0,0,0,0.6);
+  --bg-input: rgba(255,255,255,0.03);
+  --bg-inset: rgba(255,255,255,0.02);
+
+  --shadow-card: 0 1px 2px rgba(0,0,0,0.24), 0 0 0 1px rgba(255,255,255,0.04);
+  --shadow-card-hover: 0 8px 24px rgba(0,0,0,0.32), 0 0 0 1px rgba(255,255,255,0.06);
+  --shadow-glass: 0 8px 32px rgba(0,0,0,0.4);
+  --shadow-inner-glow: inset 0 1px 0 rgba(255,255,255,0.04);
+  --card-gradient: linear-gradient(135deg, rgba(255,255,255,0.015) 0%, transparent 100%);
+
+  --scrollbar-thumb: rgba(255,255,255,0.08);
+  --scrollbar-hover: rgba(255,255,255,0.16);
+
+  --tooltip-bg: rgba(13, 17, 23, 0.96);
+  --tooltip-text: #f1f5f9;
+  --tooltip-item: #94a3b8;
+  --tooltip-border: rgba(255, 255, 255, 0.08);
+  --chart-grid: rgba(255, 255, 255, 0.04);
+  --chart-axis: #475569;
+
+  --selection-bg: rgba(20, 184, 166, 0.25);
+  --selection-text: #99f6e4;
+
+  --ring-offset: #0d1117;
+}
+
+/* ═══════════════════════════════════════════════════
+   LIGHT THEME — Crisp, clean, professional
+   Shadows use navy tint (not pure black) for warmth
+   ═══════════════════════════════════════════════════ */
+[data-theme="light"] {
+  --color-th-base: 249 250 251;
+  --color-th-card: 255 255 255;
+  --color-th-elevated: 243 244 246;
+  --color-th-heading: 17 24 39;
+  --color-th-body: 55 65 81;
+  --color-th-muted: 107 114 128;
+  --color-th-faint: 156 163 175;
+
+  --background: #f9fafb;
+  --foreground: #374151;
+  --border-color: rgba(17, 24, 39, 0.08);
+  --border-strong: rgba(17, 24, 39, 0.12);
+  --border-stronger: rgba(17, 24, 39, 0.18);
+  --bg-subtle: rgba(17, 24, 39, 0.02);
+  --bg-hover: rgba(17, 24, 39, 0.04);
+  --bg-hover-strong: rgba(17, 24, 39, 0.06);
+  --bg-overlay: rgba(17, 24, 39, 0.40);
+  --bg-input: #ffffff;
+  --bg-inset: rgba(17, 24, 39, 0.025);
+
+  --shadow-card: 0 1px 3px rgba(17, 24, 39, 0.06), 0 0 0 1px rgba(17, 24, 39, 0.04);
+  --shadow-card-hover: 0 4px 16px rgba(17, 24, 39, 0.08), 0 0 0 1px rgba(17, 24, 39, 0.06);
+  --shadow-glass: 0 8px 32px rgba(17, 24, 39, 0.10);
+  --shadow-inner-glow: 0 1px 2px rgba(17, 24, 39, 0.03);
+  --card-gradient: none;
+
+  --scrollbar-thumb: rgba(17, 24, 39, 0.12);
+  --scrollbar-hover: rgba(17, 24, 39, 0.20);
+
+  --tooltip-bg: rgba(255, 255, 255, 0.97);
+  --tooltip-text: #111827;
+  --tooltip-item: #6b7280;
+  --tooltip-border: rgba(17, 24, 39, 0.08);
+  --chart-grid: rgba(17, 24, 39, 0.06);
+  --chart-axis: #9ca3af;
+
+  --selection-bg: rgba(20, 184, 166, 0.15);
+  --selection-text: #0f766e;
+
+  --ring-offset: #ffffff;
 }
 
 @layer base {
   * {
-    @apply border-surface-200;
+    border-color: var(--border-color);
   }
 
   body {
-    @apply bg-[var(--background)] text-[var(--foreground)] antialiased;
+    background: var(--background);
+    color: var(--foreground);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 
   ::selection {
-    @apply bg-primary-200 text-primary-900;
+    background: var(--selection-bg);
+    color: var(--selection-text);
   }
 
   :focus-visible {
-    outline: 2px solid #4c6ef5;
+    outline: 2px solid rgba(20, 184, 166, 0.5);
     outline-offset: 2px;
     border-radius: 6px;
   }
@@ -33,39 +123,57 @@
 
 @layer components {
   .glass-card {
-    @apply bg-white/90 backdrop-blur-xl border border-surface-100 shadow-card;
+    @apply bg-th-card/80 backdrop-blur-xl shadow-[var(--shadow-card)];
+    border: 1px solid var(--border-color);
   }
 
   .stat-card {
-    @apply bg-white rounded-2xl p-5 relative overflow-hidden border border-surface-100 shadow-card;
+    @apply bg-th-card rounded-2xl p-5 relative overflow-hidden shadow-[var(--shadow-inner-glow)];
+    border: 1px solid var(--border-color);
+    background-image: var(--card-gradient);
   }
 
   .nav-item {
-    @apply flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-150;
+    @apply flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200;
   }
 
   .nav-item-active {
-    @apply bg-primary-600 text-white shadow-sm;
+    @apply bg-primary-500/15 text-primary-600 shadow-glow-primary;
+  }
+
+  [data-theme="dark"] .nav-item-active {
+    @apply text-primary-400;
   }
 
   .nav-item-inactive {
-    @apply text-surface-600 hover:bg-surface-50 hover:text-surface-900;
+    @apply text-th-muted hover:text-th-heading;
+    &:hover {
+      background: var(--bg-hover);
+    }
   }
 
   .btn-primary {
-    @apply bg-primary-600 text-white font-semibold px-6 py-2.5 rounded-xl hover:bg-primary-700 active:bg-primary-800 transition-colors duration-150;
+    @apply bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold px-6 py-2.5 rounded-xl hover:from-primary-400 hover:to-primary-500 active:from-primary-600 active:to-primary-700 transition-all duration-200 shadow-glow-primary;
   }
 
   .btn-secondary {
-    @apply bg-white text-surface-700 font-medium px-5 py-2.5 rounded-xl border border-surface-200 hover:border-surface-300 hover:bg-surface-50 transition-colors duration-150;
+    @apply text-th-body font-medium px-5 py-2.5 rounded-xl transition-all duration-200;
+    background: var(--bg-hover);
+    border: 1px solid var(--border-color);
+    &:hover {
+      background: var(--bg-hover-strong);
+      border-color: var(--border-stronger);
+    }
   }
 
   .btn-accent {
-    @apply bg-grape-600 text-white font-semibold px-6 py-2.5 rounded-xl hover:bg-grape-700 transition-colors duration-150;
+    @apply bg-gradient-to-r from-primary-600 to-grape-500 text-white font-semibold px-6 py-2.5 rounded-xl hover:from-primary-500 hover:to-grape-400 transition-all duration-200;
   }
 
   .input-field {
-    @apply w-full px-4 py-3 rounded-xl border border-surface-200 bg-white text-surface-900 placeholder-surface-400 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all duration-150;
+    @apply w-full px-4 py-3 rounded-xl text-th-heading placeholder-th-faint focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500/50 transition-all duration-200;
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
   }
 
   .input-field:focus-visible {
@@ -73,7 +181,9 @@
   }
 
   .chart-container {
-    @apply bg-white rounded-2xl p-6 border border-surface-100 shadow-card;
+    @apply bg-th-card rounded-2xl p-6 shadow-[var(--shadow-inner-glow)];
+    border: 1px solid var(--border-color);
+    background-image: var(--card-gradient);
   }
 
   .tag {
@@ -81,31 +191,44 @@
   }
 
   .tag-success {
-    @apply bg-success-50 text-success-700;
+    @apply bg-success-500/15 text-success-400;
+  }
+
+  [data-theme="light"] .tag-success {
+    @apply text-success-600;
   }
 
   .tag-danger {
-    @apply bg-danger-50 text-danger-700;
+    @apply bg-danger-500/15 text-danger-400;
+  }
+
+  [data-theme="light"] .tag-danger {
+    @apply text-danger-600;
   }
 
   .tag-primary {
-    @apply bg-primary-50 text-primary-700;
+    @apply bg-primary-500/15 text-primary-400;
+  }
+
+  [data-theme="light"] .tag-primary {
+    @apply text-primary-600;
   }
 
   .page-header {
-    @apply text-2xl md:text-3xl font-bold text-surface-900 tracking-tight;
+    @apply text-2xl md:text-3xl font-bold text-th-heading tracking-tight;
   }
 
   .section-header {
-    @apply text-base font-semibold text-surface-800;
+    @apply text-base font-semibold text-th-heading;
   }
 
   .stat-label {
-    @apply text-xs font-medium uppercase tracking-wider text-surface-500;
+    @apply text-xs font-medium uppercase tracking-wider text-th-faint;
   }
 
   .skeleton {
-    @apply rounded-xl bg-surface-100 animate-pulse;
+    @apply rounded-xl animate-pulse;
+    background: var(--bg-hover);
   }
 }
 
@@ -116,7 +239,7 @@
   }
 
   .text-gradient-primary {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-grape-600;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-500 to-grape-400;
   }
 
   .scrollbar-hide::-webkit-scrollbar {
@@ -128,26 +251,53 @@
   }
 }
 
-/* Recharts customization */
+/* Recharts theme-aware overrides */
 .recharts-tooltip-wrapper {
   outline: none !important;
 }
 
 .recharts-default-tooltip {
-  background: rgba(255, 255, 255, 0.96) !important;
+  background: var(--tooltip-bg) !important;
   backdrop-filter: blur(12px) !important;
-  border: 1px solid #e2e8f0 !important;
+  border: 1px solid var(--tooltip-border) !important;
   border-radius: 12px !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+  box-shadow: var(--shadow-glass) !important;
   padding: 12px 16px !important;
 }
 
 .recharts-tooltip-label {
-  color: #0f172a !important;
+  color: var(--tooltip-text) !important;
   font-weight: 600 !important;
   margin-bottom: 4px !important;
 }
 
+.recharts-tooltip-item {
+  color: var(--tooltip-item) !important;
+}
+
+.recharts-legend-item-text {
+  color: var(--tooltip-item) !important;
+}
+
+.recharts-cartesian-grid line {
+  stroke: var(--chart-grid) !important;
+}
+
+/* Theme-aware chart axis colors */
+.recharts-xAxis .recharts-cartesian-axis-line,
+.recharts-yAxis .recharts-cartesian-axis-line {
+  stroke: var(--chart-grid) !important;
+}
+.recharts-xAxis .recharts-cartesian-axis-tick-line,
+.recharts-yAxis .recharts-cartesian-axis-tick-line {
+  stroke: var(--chart-grid) !important;
+}
+.recharts-xAxis .recharts-cartesian-axis-tick-value,
+.recharts-yAxis .recharts-cartesian-axis-tick-value {
+  fill: var(--chart-axis) !important;
+}
+
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -158,10 +308,16 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d5dae6;
+  background: var(--scrollbar-thumb);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #b0b8cc;
+  background: var(--scrollbar-hover);
+}
+
+/* Light theme: make select dropdowns readable */
+[data-theme="light"] select option {
+  background: #ffffff;
+  color: #111827;
 }

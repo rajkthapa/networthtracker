@@ -124,7 +124,7 @@ function mapAccount(row: any): Account {
     type: row.type,
     balance: Number(row.balance),
     institution: row.institution || undefined,
-    color: row.color || '#4c6ef5',
+    color: row.color || '#14b8a6',
     icon: row.icon || '💰',
     isDebt: row.is_debt,
     interestRate: row.interest_rate ? Number(row.interest_rate) : undefined,

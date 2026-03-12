@@ -28,12 +28,12 @@ export function MobileNav() {
       {/* More menu sheet */}
       {showMore && (
         <div className="md:hidden fixed inset-0 z-50">
-          <div className="absolute inset-0 bg-surface-900/30 backdrop-blur-sm" onClick={() => setShowMore(false)} />
-          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl p-6 pb-[calc(env(safe-area-inset-bottom)+24px)] animate-slide-up">
+          <div className="absolute inset-0 bg-[var(--bg-overlay)] backdrop-blur-sm" onClick={() => setShowMore(false)} />
+          <div className="absolute bottom-0 left-0 right-0 bg-th-card rounded-t-3xl p-6 pb-[calc(env(safe-area-inset-bottom)+24px)] animate-slide-up border-t border-[var(--border-strong)]">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-surface-900">More</h3>
-              <button onClick={() => setShowMore(false)} className="p-2 rounded-xl hover:bg-surface-100">
-                <X className="w-5 h-5 text-surface-500" />
+              <h3 className="text-lg font-bold text-th-heading">More</h3>
+              <button onClick={() => setShowMore(false)} className="p-2 rounded-xl hover:bg-[var(--bg-hover)]">
+                <X className="w-5 h-5 text-th-muted" />
               </button>
             </div>
             <div className="space-y-1">
@@ -46,7 +46,7 @@ export function MobileNav() {
                     href={item.href}
                     onClick={() => setShowMore(false)}
                     className={`flex items-center gap-3 p-3 rounded-xl transition-colors ${
-                      isActive ? 'bg-primary-50 text-primary-600' : 'text-surface-700 hover:bg-surface-50'
+                      isActive ? 'bg-primary-500/15 text-primary-400' : 'text-th-body hover:bg-[var(--bg-hover)]'
                     }`}
                   >
                     <Icon className="w-5 h-5" />
@@ -60,7 +60,7 @@ export function MobileNav() {
       )}
 
       {/* Bottom nav bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-surface-100 px-2 pb-[env(safe-area-inset-bottom)] z-40">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-th-card/95 backdrop-blur-xl border-t border-[var(--border-color)] px-2 pb-[env(safe-area-inset-bottom)] z-40">
         <div className="flex items-center justify-around py-1.5">
           {primaryNav.map((item) => {
             const isActive = pathname === item.href;
@@ -70,10 +70,10 @@ export function MobileNav() {
                 key={item.href}
                 href={item.href}
                 className={`flex flex-col items-center gap-0.5 py-1.5 px-3 rounded-xl transition-all duration-150 min-w-[52px] ${
-                  isActive ? 'text-primary-600' : 'text-surface-400'
+                  isActive ? 'text-primary-400' : 'text-th-faint'
                 }`}
               >
-                <div className={`p-1.5 rounded-xl transition-all duration-150 ${isActive ? 'bg-primary-50' : ''}`}>
+                <div className={`p-1.5 rounded-xl transition-all duration-150 ${isActive ? 'bg-primary-500/15' : ''}`}>
                   <Icon className="w-5 h-5" />
                 </div>
                 <span className="text-[11px] font-medium">{item.label}</span>
@@ -83,10 +83,10 @@ export function MobileNav() {
           <button
             onClick={() => setShowMore(true)}
             className={`flex flex-col items-center gap-0.5 py-1.5 px-3 rounded-xl transition-all duration-150 min-w-[52px] ${
-              isMoreActive ? 'text-primary-600' : 'text-surface-400'
+              isMoreActive ? 'text-primary-400' : 'text-th-faint'
             }`}
           >
-            <div className={`p-1.5 rounded-xl transition-all duration-150 ${isMoreActive ? 'bg-primary-50' : ''}`}>
+            <div className={`p-1.5 rounded-xl transition-all duration-150 ${isMoreActive ? 'bg-primary-500/15' : ''}`}>
               <MoreHorizontal className="w-5 h-5" />
             </div>
             <span className="text-[11px] font-medium">More</span>

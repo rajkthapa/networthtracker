@@ -2,16 +2,16 @@ export function DashboardMockup() {
   return (
     <div className="relative mx-auto max-w-4xl">
       {/* Browser chrome */}
-      <div className="bg-white rounded-2xl shadow-2xl shadow-surface-900/10 border border-surface-200 overflow-hidden">
+      <div className="bg-th-card rounded-2xl shadow-[var(--shadow-glass)] shadow-black/30 border border-[var(--border-strong)] overflow-hidden">
         {/* Title bar */}
-        <div className="flex items-center gap-2 px-4 py-3 bg-surface-50 border-b border-surface-100">
+        <div className="flex items-center gap-2 px-4 py-3 bg-[var(--bg-subtle)] border-b border-[var(--border-color)]">
           <div className="flex gap-1.5">
             <div className="w-3 h-3 rounded-full bg-danger-400" />
             <div className="w-3 h-3 rounded-full bg-warning-400" />
             <div className="w-3 h-3 rounded-full bg-success-400" />
           </div>
           <div className="flex-1 flex justify-center">
-            <div className="bg-white rounded-lg px-4 py-1 text-xs text-surface-400 border border-surface-200 w-64 text-center">
+            <div className="bg-[var(--bg-hover)] rounded-lg px-4 py-1 text-xs text-th-faint border border-[var(--border-strong)] w-64 text-center">
               app.wealthpulse.io/dashboard
             </div>
           </div>
@@ -20,44 +20,44 @@ export function DashboardMockup() {
         {/* Dashboard content */}
         <div className="flex">
           {/* Mini sidebar */}
-          <div className="hidden sm:flex flex-col w-16 bg-surface-50 border-r border-surface-100 py-4 px-2 gap-3">
+          <div className="hidden sm:flex flex-col w-16 bg-[var(--bg-subtle)] border-r border-[var(--border-color)] py-4 px-2 gap-3">
             <div className="w-10 h-10 mx-auto rounded-xl bg-gradient-to-br from-primary-600 to-grape-600 flex items-center justify-center mb-2">
               <div className="w-4 h-4 border-2 border-white rounded-sm" />
             </div>
             {[true, false, false, false, false].map((active, i) => (
-              <div key={i} className={`w-10 h-10 mx-auto rounded-xl ${active ? 'bg-primary-600' : 'bg-surface-200'}`} />
+              <div key={i} className={`w-10 h-10 mx-auto rounded-xl ${active ? 'bg-primary-600' : 'bg-[var(--bg-hover-strong)]'}`} />
             ))}
           </div>
 
           {/* Main area */}
           <div className="flex-1 p-4 sm:p-6 space-y-4">
             {/* Net worth hero */}
-            <div className="bg-gradient-to-r from-primary-50 to-grape-50 rounded-xl p-4 border border-primary-100">
-              <div className="text-[10px] text-surface-500 uppercase tracking-wider mb-1">Net Worth</div>
-              <div className="text-2xl sm:text-3xl font-bold text-surface-900">$284,750</div>
+            <div className="bg-gradient-to-r from-primary-500/10 to-grape-500/10 rounded-xl p-4 border border-primary-500/20">
+              <div className="text-[10px] text-th-faint uppercase tracking-wider mb-1">Net Worth</div>
+              <div className="text-2xl sm:text-3xl font-bold text-th-heading">$284,750</div>
               <div className="flex items-center gap-1 mt-1">
-                <span className="text-xs font-semibold text-success-600 bg-success-50 px-2 py-0.5 rounded-full">+12.4%</span>
-                <span className="text-[10px] text-surface-400">vs last month</span>
+                <span className="text-xs font-semibold text-success-400 bg-success-500/10 px-2 py-0.5 rounded-full">+12.4%</span>
+                <span className="text-[10px] text-th-faint">vs last month</span>
               </div>
             </div>
 
             {/* Stat cards */}
             <div className="grid grid-cols-3 gap-3">
               {[
-                { label: 'Income', value: '$8,450', color: 'border-l-success-500', change: '+5.2%' },
-                { label: 'Expenses', value: '$4,120', color: 'border-l-danger-500', change: '-8.1%' },
-                { label: 'Savings', value: '51.2%', color: 'border-l-grape-500', change: '' },
+                { label: 'Income', value: '$8,450', color: 'border-l-success-500/50', change: '+5.2%' },
+                { label: 'Expenses', value: '$4,120', color: 'border-l-danger-500/50', change: '-8.1%' },
+                { label: 'Savings', value: '51.2%', color: 'border-l-grape-500/50', change: '' },
               ].map(stat => (
-                <div key={stat.label} className={`bg-white rounded-xl p-3 border border-surface-100 border-l-4 ${stat.color}`}>
-                  <div className="text-[10px] text-surface-500 uppercase tracking-wider">{stat.label}</div>
-                  <div className="text-sm sm:text-lg font-bold text-surface-900 mt-0.5">{stat.value}</div>
+                <div key={stat.label} className={`bg-th-card rounded-xl p-3 border border-[var(--border-color)] border-l-4 ${stat.color}`}>
+                  <div className="text-[10px] text-th-faint uppercase tracking-wider">{stat.label}</div>
+                  <div className="text-sm sm:text-lg font-bold text-th-heading mt-0.5">{stat.value}</div>
                 </div>
               ))}
             </div>
 
             {/* Chart placeholder */}
-            <div className="bg-white rounded-xl border border-surface-100 p-4">
-              <div className="text-xs font-semibold text-surface-700 mb-3">Net Worth Trend</div>
+            <div className="bg-th-card rounded-xl border border-[var(--border-color)] p-4">
+              <div className="text-xs font-semibold text-th-heading mb-3">Net Worth Trend</div>
               <div className="flex items-end gap-1 h-20">
                 {[35, 42, 38, 50, 48, 55, 60, 58, 65, 72, 70, 78].map((h, i) => (
                   <div

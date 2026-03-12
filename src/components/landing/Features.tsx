@@ -5,54 +5,54 @@ const features = [
     icon: LayoutDashboard,
     title: 'Beautiful Dashboard',
     description: 'See your complete financial picture at a glance with charts, stats, and month-over-month comparisons.',
-    color: 'bg-primary-50 text-primary-600',
+    color: 'bg-primary-500/10 text-primary-400',
   },
   {
     icon: TrendingUp,
     title: 'Net Worth Tracking',
     description: 'Track your net worth over time with automatic snapshots, trends, and growth analysis.',
-    color: 'bg-success-50 text-success-600',
+    color: 'bg-success-500/10 text-success-400',
   },
   {
     icon: Bitcoin,
     title: 'Crypto Portfolio',
     description: 'Monitor your crypto holdings with live CoinGecko prices, 24h changes, and portfolio allocation.',
-    color: 'bg-warning-50 text-warning-600',
+    color: 'bg-warning-500/10 text-warning-400',
   },
   {
     icon: Landmark,
     title: 'Bank Connections',
     description: 'Connect your bank accounts with Plaid for automatic balance syncing and transaction imports.',
-    color: 'bg-grape-50 text-grape-600',
+    color: 'bg-grape-500/10 text-grape-400',
     pro: true,
   },
   {
     icon: Flame,
     title: 'FIRE Calculator',
     description: 'Plan your path to financial independence with FIRE projections, savings rate tracking, and goal setting.',
-    color: 'bg-danger-50 text-danger-600',
+    color: 'bg-danger-500/10 text-danger-400',
     pro: true,
   },
   {
     icon: ArrowLeftRight,
     title: 'Smart Transactions',
     description: 'Categorize income and expenses automatically. Import from CSV/Excel or enter manually.',
-    color: 'bg-cyan-50 text-cyan-600',
+    color: 'bg-cyan-500/10 text-cyan-400',
   },
 ];
 
 export function Features() {
   return (
-    <section id="features" className="py-20 md:py-32 bg-white">
+    <section id="features" className="py-20 md:py-32 bg-th-card">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-surface-900 mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-th-heading mb-4">
             Everything You Need to{' '}
             <span className="bg-gradient-to-r from-primary-600 to-grape-600 bg-clip-text text-transparent">
               Master Your Money
             </span>
           </h2>
-          <p className="text-surface-500 text-lg max-w-2xl mx-auto">
+          <p className="text-th-muted text-lg max-w-2xl mx-auto">
             Powerful tools to track, analyze, and grow your wealth. From daily expenses to long-term investments.
           </p>
         </div>
@@ -63,7 +63,7 @@ export function Features() {
             return (
               <div
                 key={feature.title}
-                className="relative group bg-white rounded-2xl p-6 border border-surface-100 hover:border-surface-200 hover:shadow-card-hover transition-all duration-300"
+                className="relative group bg-th-card rounded-2xl p-6 border border-[var(--border-color)] hover:border-[var(--border-strong)] hover:shadow-[var(--shadow-card-hover)] transition-all duration-300"
               >
                 {feature.pro && (
                   <span className="absolute top-4 right-4 text-[10px] font-bold uppercase tracking-wider bg-gradient-to-r from-grape-500 to-accent-500 text-white px-2.5 py-1 rounded-full">
@@ -73,8 +73,8 @@ export function Features() {
                 <div className={`w-12 h-12 rounded-2xl ${feature.color} flex items-center justify-center mb-4`}>
                   <Icon className="w-6 h-6" />
                 </div>
-                <h3 className="text-lg font-bold text-surface-900 mb-2">{feature.title}</h3>
-                <p className="text-sm text-surface-500 leading-relaxed">{feature.description}</p>
+                <h3 className="text-lg font-bold text-th-heading mb-2">{feature.title}</h3>
+                <p className="text-sm text-th-muted leading-relaxed">{feature.description}</p>
               </div>
             );
           })}

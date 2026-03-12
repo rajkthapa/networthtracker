@@ -38,7 +38,7 @@ export function getAllIncomeCategories() {
 }
 
 const ICON_OPTIONS = ['📦', '🏠', '🚗', '⛽', '🛒', '🍽️', '💊', '🎓', '✈️', '🎁', '💰', '📈', '🏦', '💼', '📱', '🔧', '🗑️', '🔥', '⚡', '🌐', '📺', '🛍️', '🎬', '💪', '🐾', '💅', '📋', '🤝', '🎉', '₿'];
-const COLOR_OPTIONS = ['#4c6ef5', '#7950f2', '#be4bdb', '#f06595', '#fa5252', '#fd7e14', '#f59f00', '#40c057', '#20c997', '#15aabf', '#22b8cf', '#868e96', '#495057', '#cc5de8', '#e64980'];
+const COLOR_OPTIONS = ['#14b8a6', '#06b6d4', '#0ea5e9', '#f43f5e', '#ef4444', '#f97316', '#f59e0b', '#10b981', '#059669', '#2dd4bf', '#22d3ee', '#6b7280', '#374151', '#8b5cf6', '#ec4899'];
 
 export function ManageCategoriesModal({ onClose }: { onClose: () => void }) {
   const [tab, setTab] = useState<'expense' | 'income'>('expense');
@@ -46,7 +46,7 @@ export function ManageCategoriesModal({ onClose }: { onClose: () => void }) {
   const [showAdd, setShowAdd] = useState(false);
   const [newName, setNewName] = useState('');
   const [newIcon, setNewIcon] = useState('📦');
-  const [newColor, setNewColor] = useState('#4c6ef5');
+  const [newColor, setNewColor] = useState('#14b8a6');
 
   useEffect(() => {
     setCustomCategories(getCustomCategories());
@@ -67,7 +67,7 @@ export function ManageCategoriesModal({ onClose }: { onClose: () => void }) {
     saveCustomCategories(updated);
     setNewName('');
     setNewIcon('📦');
-    setNewColor('#4c6ef5');
+    setNewColor('#14b8a6');
     setShowAdd(false);
   };
 
@@ -79,24 +79,24 @@ export function ManageCategoriesModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-surface-900/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl animate-scale-in overflow-hidden max-h-[85vh] flex flex-col">
+      <div className="absolute inset-0 bg-[var(--bg-overlay)] backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-lg bg-th-card rounded-3xl shadow-[var(--shadow-glass)] border border-[var(--border-color)] animate-scale-in overflow-hidden max-h-[85vh] flex flex-col">
         <div className="flex items-center justify-between p-6 pb-4">
-          <h2 className="text-xl font-bold text-surface-900 flex items-center gap-2">
+          <h2 className="text-xl font-bold text-th-heading flex items-center gap-2">
             <Tag className="w-5 h-5 text-primary-500" />
             Manage Categories
           </h2>
-          <button onClick={onClose} className="p-2 rounded-xl hover:bg-surface-100 transition-colors">
-            <X className="w-5 h-5 text-surface-500" />
+          <button onClick={onClose} className="p-2 rounded-xl hover:bg-[var(--bg-hover-strong)] transition-colors">
+            <X className="w-5 h-5 text-th-muted" />
           </button>
         </div>
 
         <div className="px-6 mb-4">
-          <div className="flex bg-surface-100 rounded-xl p-1">
+          <div className="flex bg-[var(--bg-hover)] rounded-xl p-1">
             <button
               onClick={() => setTab('expense')}
               className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-                tab === 'expense' ? 'bg-danger-500 text-white shadow-sm' : 'text-surface-500'
+                tab === 'expense' ? 'bg-danger-500 text-white shadow-sm' : 'text-th-muted'
               }`}
             >
               Expense Categories
@@ -104,7 +104,7 @@ export function ManageCategoriesModal({ onClose }: { onClose: () => void }) {
             <button
               onClick={() => setTab('income')}
               className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-                tab === 'income' ? 'bg-success-500 text-white shadow-sm' : 'text-surface-500'
+                tab === 'income' ? 'bg-success-500 text-white shadow-sm' : 'text-th-muted'
               }`}
             >
               Income Categories
@@ -114,12 +114,12 @@ export function ManageCategoriesModal({ onClose }: { onClose: () => void }) {
 
         <div className="flex-1 overflow-y-auto px-6 pb-6">
           {/* Built-in categories */}
-          <p className="text-[10px] font-semibold text-surface-400 uppercase tracking-wider mb-2">Built-in</p>
+          <p className="text-[10px] font-semibold text-th-faint uppercase tracking-wider mb-2">Built-in</p>
           <div className="grid grid-cols-2 gap-1.5 mb-4">
             {builtIn.map(cat => (
-              <div key={cat.id} className="flex items-center gap-2 p-2 rounded-lg bg-surface-50">
+              <div key={cat.id} className="flex items-center gap-2 p-2 rounded-lg bg-[var(--bg-subtle)]">
                 <span className="text-base">{cat.icon}</span>
-                <span className="text-xs font-medium text-surface-600 truncate">{cat.name}</span>
+                <span className="text-xs font-medium text-th-body truncate">{cat.name}</span>
                 <div className="w-2.5 h-2.5 rounded-full ml-auto flex-shrink-0" style={{ backgroundColor: cat.color }} />
               </div>
             ))}
@@ -127,10 +127,10 @@ export function ManageCategoriesModal({ onClose }: { onClose: () => void }) {
 
           {/* Custom categories */}
           <div className="flex items-center justify-between mb-2">
-            <p className="text-[10px] font-semibold text-surface-400 uppercase tracking-wider">Custom</p>
+            <p className="text-[10px] font-semibold text-th-faint uppercase tracking-wider">Custom</p>
             <button
               onClick={() => setShowAdd(!showAdd)}
-              className="flex items-center gap-1 text-xs text-primary-500 hover:text-primary-600 font-medium"
+              className="flex items-center gap-1 text-xs text-primary-500 hover:text-primary-400 font-medium"
             >
               <Plus className="w-3.5 h-3.5" />
               Add Category
@@ -138,7 +138,7 @@ export function ManageCategoriesModal({ onClose }: { onClose: () => void }) {
           </div>
 
           {showAdd && (
-            <div className="p-4 rounded-2xl border border-primary-200 bg-primary-50/30 mb-3 space-y-3">
+            <div className="p-4 rounded-2xl border border-primary-500/30 bg-primary-500/5 mb-3 space-y-3">
               <input
                 type="text"
                 value={newName}
@@ -148,7 +148,7 @@ export function ManageCategoriesModal({ onClose }: { onClose: () => void }) {
                 autoFocus
               />
               <div>
-                <p className="text-[10px] font-medium text-surface-500 mb-1.5">Icon</p>
+                <p className="text-[10px] font-medium text-th-muted mb-1.5">Icon</p>
                 <div className="flex flex-wrap gap-1.5">
                   {ICON_OPTIONS.map(icon => (
                     <button
@@ -156,7 +156,7 @@ export function ManageCategoriesModal({ onClose }: { onClose: () => void }) {
                       type="button"
                       onClick={() => setNewIcon(icon)}
                       className={`w-8 h-8 rounded-lg flex items-center justify-center text-base transition-all ${
-                        newIcon === icon ? 'bg-primary-100 ring-2 ring-primary-500' : 'bg-white hover:bg-surface-50'
+                        newIcon === icon ? 'bg-primary-500/15 ring-2 ring-primary-500' : 'bg-[var(--bg-hover)] hover:bg-[var(--bg-hover)]'
                       }`}
                     >
                       {icon}
@@ -165,7 +165,7 @@ export function ManageCategoriesModal({ onClose }: { onClose: () => void }) {
                 </div>
               </div>
               <div>
-                <p className="text-[10px] font-medium text-surface-500 mb-1.5">Color</p>
+                <p className="text-[10px] font-medium text-th-muted mb-1.5">Color</p>
                 <div className="flex flex-wrap gap-1.5">
                   {COLOR_OPTIONS.map(color => (
                     <button
@@ -173,7 +173,7 @@ export function ManageCategoriesModal({ onClose }: { onClose: () => void }) {
                       type="button"
                       onClick={() => setNewColor(color)}
                       className={`w-7 h-7 rounded-full transition-all ${
-                        newColor === color ? 'ring-2 ring-offset-2 ring-primary-500' : ''
+                        newColor === color ? 'ring-2 ring-offset-2 ring-offset-[var(--ring-offset)] ring-primary-500' : ''
                       }`}
                       style={{ backgroundColor: color }}
                     />
@@ -190,7 +190,7 @@ export function ManageCategoriesModal({ onClose }: { onClose: () => void }) {
                 </button>
                 <button
                   onClick={() => setShowAdd(false)}
-                  className="px-4 py-2 rounded-xl text-sm font-medium text-surface-500 hover:bg-surface-100 transition-all"
+                  className="px-4 py-2 rounded-xl text-sm font-medium text-th-muted hover:bg-[var(--bg-hover-strong)] transition-all"
                 >
                   Cancel
                 </button>
@@ -199,18 +199,18 @@ export function ManageCategoriesModal({ onClose }: { onClose: () => void }) {
           )}
 
           {custom.length === 0 && !showAdd && (
-            <p className="text-xs text-surface-400 py-4 text-center">No custom categories yet</p>
+            <p className="text-xs text-th-faint py-4 text-center">No custom categories yet</p>
           )}
 
           <div className="space-y-1.5">
             {custom.map(cat => (
-              <div key={cat.id} className="flex items-center gap-2 p-2.5 rounded-lg bg-surface-50 group">
+              <div key={cat.id} className="flex items-center gap-2 p-2.5 rounded-lg bg-[var(--bg-subtle)] group">
                 <span className="text-base">{cat.icon}</span>
-                <span className="text-xs font-medium text-surface-600 flex-1 truncate">{cat.name}</span>
+                <span className="text-xs font-medium text-th-body flex-1 truncate">{cat.name}</span>
                 <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: cat.color }} />
                 <button
                   onClick={() => handleDelete(cat.id)}
-                  className="p-1 rounded-lg text-surface-300 hover:text-danger-500 hover:bg-danger-50 opacity-0 group-hover:opacity-100 transition-all"
+                  className="p-1 rounded-lg text-th-faint hover:text-danger-400 hover:bg-danger-500/10 opacity-0 group-hover:opacity-100 transition-all"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>

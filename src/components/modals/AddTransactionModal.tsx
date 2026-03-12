@@ -46,21 +46,21 @@ export function AddTransactionModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-surface-900/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl animate-scale-in overflow-hidden">
+      <div className="absolute inset-0 bg-[var(--bg-overlay)] backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-md bg-th-card rounded-3xl shadow-[var(--shadow-glass)] border border-[var(--border-color)] animate-scale-in overflow-hidden">
         <div className="flex items-center justify-between p-6 pb-4">
-          <h2 className="text-xl font-bold text-surface-900">Add Transaction</h2>
-          <button onClick={onClose} className="p-2 rounded-xl hover:bg-surface-100 transition-colors">
-            <X className="w-5 h-5 text-surface-500" />
+          <h2 className="text-xl font-bold text-th-heading">Add Transaction</h2>
+          <button onClick={onClose} className="p-2 rounded-xl hover:bg-[var(--bg-hover-strong)] transition-colors">
+            <X className="w-5 h-5 text-th-muted" />
           </button>
         </div>
 
         <div className="px-6 mb-4">
-          <div className="flex bg-surface-100 rounded-xl p-1">
+          <div className="flex bg-[var(--bg-hover)] rounded-xl p-1">
             <button
               onClick={() => { setType('expense'); setCategory(''); }}
               className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-                type === 'expense' ? 'bg-danger-500 text-white shadow-sm' : 'text-surface-500'
+                type === 'expense' ? 'bg-danger-500 text-white shadow-sm' : 'text-th-muted'
               }`}
             >
               Expense
@@ -68,7 +68,7 @@ export function AddTransactionModal({ onClose }: { onClose: () => void }) {
             <button
               onClick={() => { setType('income'); setCategory(''); }}
               className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-                type === 'income' ? 'bg-success-500 text-white shadow-sm' : 'text-surface-500'
+                type === 'income' ? 'bg-success-500 text-white shadow-sm' : 'text-th-muted'
               }`}
             >
               Income
@@ -78,15 +78,15 @@ export function AddTransactionModal({ onClose }: { onClose: () => void }) {
 
         <form onSubmit={handleSubmit} className="px-6 pb-6 space-y-4">
           {error && (
-            <div className="p-3 rounded-xl bg-danger-50 border border-danger-200 text-danger-700 text-sm">
+            <div className="p-3 rounded-xl bg-danger-500/10 border border-danger-500/30 text-danger-300 text-sm">
               {error}
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-surface-600 mb-1.5">Amount</label>
+            <label className="block text-sm font-medium text-th-body mb-1.5">Amount</label>
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400 font-semibold">$</span>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-th-faint font-semibold">$</span>
               <input
                 type="number"
                 step="0.01"
@@ -101,7 +101,7 @@ export function AddTransactionModal({ onClose }: { onClose: () => void }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-surface-600 mb-1.5">Description</label>
+            <label className="block text-sm font-medium text-th-body mb-1.5">Description</label>
             <input
               type="text"
               value={description}
@@ -113,7 +113,7 @@ export function AddTransactionModal({ onClose }: { onClose: () => void }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-surface-600 mb-1.5">Date</label>
+            <label className="block text-sm font-medium text-th-body mb-1.5">Date</label>
             <input
               type="date"
               value={date}
@@ -123,8 +123,8 @@ export function AddTransactionModal({ onClose }: { onClose: () => void }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-surface-600 mb-2">
-              Category {!category && <span className="text-danger-500">*</span>}
+            <label className="block text-sm font-medium text-th-body mb-2">
+              Category {!category && <span className="text-danger-400">*</span>}
             </label>
             <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto scrollbar-hide">
               {categories.map(cat => (
@@ -134,12 +134,12 @@ export function AddTransactionModal({ onClose }: { onClose: () => void }) {
                   onClick={() => setCategory(cat.id)}
                   className={`flex flex-col items-center gap-1 p-3 rounded-xl border-2 transition-all text-center ${
                     category === cat.id
-                      ? 'border-primary-500 bg-primary-50'
-                      : 'border-surface-100 hover:border-surface-200'
+                      ? 'border-primary-500 bg-primary-500/10'
+                      : 'border-[var(--border-color)] hover:border-[var(--border-strong)]'
                   }`}
                 >
                   <span className="text-xl">{cat.icon}</span>
-                  <span className="text-[10px] font-medium text-surface-600 leading-tight">{cat.name}</span>
+                  <span className="text-[10px] font-medium text-th-body leading-tight">{cat.name}</span>
                 </button>
               ))}
             </div>

@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { TrendingUp, Menu, X } from 'lucide-react';
+import { TrendingUp, Menu, X, Sun, Moon } from 'lucide-react';
+import { useTheme } from '@/lib/theme-context';
 
 const navLinks = [
   { href: '#features', label: 'Features' },
@@ -11,6 +12,7 @@ const navLinks = [
 ];
 
 export function LandingNavbar() {
+  const { theme, toggleTheme } = useTheme();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -22,7 +24,7 @@ export function LandingNavbar() {
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      scrolled ? 'bg-white/90 backdrop-blur-xl shadow-sm border-b border-surface-100' : 'bg-transparent'
+      scrolled ? 'bg-th-card/90 backdrop-blur-xl shadow-sm border-b border-[var(--border-color)]' : 'bg-transparent'
     }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
@@ -42,7 +44,7 @@ export function LandingNavbar() {
               <a
                 key={link.href}
                 href={link.href}
-                className="text-sm font-medium text-surface-600 hover:text-surface-900 transition-colors"
+                className="text-sm font-medium text-th-body hover:text-th-heading transition-colors"
               >
                 {link.label}
               </a>
@@ -51,9 +53,16 @@ export function LandingNavbar() {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-3">
+            <button
+              onClick={toggleTheme}
+              className="p-2.5 rounded-xl hover:bg-[var(--bg-hover-strong)] transition-colors text-th-muted hover:text-th-heading"
+              title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
             <Link
               href="/auth/login"
-              className="text-sm font-medium text-surface-700 hover:text-surface-900 px-4 py-2 transition-colors"
+              className="text-sm font-medium text-th-heading hover:text-th-heading px-4 py-2 transition-colors"
             >
               Log in
             </Link>
@@ -67,7 +76,7 @@ export function LandingNavbar() {
 
           {/* Mobile toggle */}
           <button
-            className="md:hidden p-2 rounded-xl hover:bg-surface-100 transition-colors"
+            className="md:hidden p-2 rounded-xl hover:bg-[var(--bg-hover-strong)] transition-colors text-th-heading"
             onClick={() => setMobileOpen(!mobileOpen)}
           >
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -77,20 +86,20 @@ export function LandingNavbar() {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden bg-white border-t border-surface-100 shadow-lg">
+        <div className="md:hidden bg-th-card border-t border-[var(--border-color)] shadow-lg">
           <div className="px-4 py-4 space-y-1">
             {navLinks.map(link => (
               <a
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileOpen(false)}
-                className="block px-4 py-3 rounded-xl text-sm font-medium text-surface-700 hover:bg-surface-50"
+                className="block px-4 py-3 rounded-xl text-sm font-medium text-th-heading hover:bg-[var(--bg-hover)]"
               >
                 {link.label}
               </a>
             ))}
-            <div className="pt-3 border-t border-surface-100 space-y-2">
-              <Link href="/auth/login" className="block w-full text-center px-4 py-3 rounded-xl text-sm font-medium text-surface-700 hover:bg-surface-50">
+            <div className="pt-3 border-t border-[var(--border-color)] space-y-2">
+              <Link href="/auth/login" className="block w-full text-center px-4 py-3 rounded-xl text-sm font-medium text-th-heading hover:bg-[var(--bg-hover)]">
                 Log in
               </Link>
               <Link href="/auth/signup" className="block w-full text-center px-4 py-3 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-primary-600 to-grape-600">

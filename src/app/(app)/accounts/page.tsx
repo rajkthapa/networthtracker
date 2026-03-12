@@ -72,10 +72,10 @@ export default function AccountsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="page-header">Accounts & Assets</h1>
-          <p className="text-sm text-surface-500 mt-1">{assets.length} assets, {debts.length} debts</p>
+          <p className="text-sm text-th-muted mt-1">{assets.length} assets, {debts.length} debts</p>
         </div>
         <div className="flex gap-2">
-          <button onClick={refreshStockPrices} disabled={pricesLoading} className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-surface-200 text-sm font-medium text-surface-600 hover:bg-surface-50 transition-all disabled:opacity-50">
+          <button onClick={refreshStockPrices} disabled={pricesLoading} className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[var(--border-strong)] text-sm font-medium text-th-body hover:bg-[var(--bg-hover)] transition-all disabled:opacity-50">
             <RefreshCcw className={`w-4 h-4 ${pricesLoading ? 'animate-spin' : ''}`} />
             Refresh Prices
           </button>
@@ -95,44 +95,44 @@ export default function AccountsPage() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="stat-card border-l-4 border-success-500">
+        <div className="stat-card border-l-4 border-success-500/50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-success-100 text-success-600 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-2xl bg-success-500/15 text-success-400 flex items-center justify-center">
               <TrendingUp className="w-4 h-4" />
             </div>
             <div>
               <p className="stat-label">Total Assets</p>
-              <p className="text-lg font-bold text-success-600 num">{formatCurrency(totalAssets)}</p>
+              <p className="text-lg font-bold text-success-400 num">{formatCurrency(totalAssets)}</p>
             </div>
           </div>
         </div>
-        <div className="stat-card border-l-4 border-danger-500">
+        <div className="stat-card border-l-4 border-danger-500/50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-danger-100 text-danger-600 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-2xl bg-danger-500/15 text-danger-400 flex items-center justify-center">
               <TrendingDown className="w-4 h-4" />
             </div>
             <div>
               <p className="stat-label">Total Debts</p>
-              <p className="text-lg font-bold text-danger-600 num">{formatCurrency(totalDebts)}</p>
+              <p className="text-lg font-bold text-danger-400 num">{formatCurrency(totalDebts)}</p>
             </div>
           </div>
         </div>
-        <div className="stat-card border-l-4 border-primary-500">
+        <div className="stat-card border-l-4 border-primary-500/50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-primary-100 text-primary-600 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-2xl bg-primary-500/15 text-primary-400 flex items-center justify-center">
               <Building2 className="w-4 h-4" />
             </div>
             <div>
               <p className="stat-label">Net Worth</p>
-              <p className="text-lg font-bold text-primary-600 num">{formatCurrency(netWorth)}</p>
+              <p className="text-lg font-bold text-primary-400 num">{formatCurrency(netWorth)}</p>
             </div>
           </div>
         </div>
-        <div className="stat-card border-l-4 border-warning-500">
+        <div className="stat-card border-l-4 border-warning-500/50">
           <div>
             <p className="stat-label">Debt-to-Asset Ratio</p>
-            <p className="text-lg font-bold text-surface-800 num">{debtToAssetRatio.toFixed(1)}%</p>
-            <p className="text-[10px] text-surface-400 mt-0.5 num">Annual interest: {formatCurrency(totalInterestPerYear)}</p>
+            <p className="text-lg font-bold text-th-heading num">{debtToAssetRatio.toFixed(1)}%</p>
+            <p className="text-[10px] text-th-faint mt-0.5 num">Annual interest: {formatCurrency(totalInterestPerYear)}</p>
           </div>
         </div>
       </div>
@@ -155,8 +155,8 @@ export default function AccountsPage() {
             {assetPieData.map(d => (
               <div key={d.name} className="flex items-center gap-1.5 text-xs">
                 <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: d.color }} />
-                <span className="text-surface-600">{d.name}</span>
-                <span className="text-surface-400">({((d.value / totalAssets) * 100).toFixed(1)}%)</span>
+                <span className="text-th-body">{d.name}</span>
+                <span className="text-th-faint">({((d.value / totalAssets) * 100).toFixed(1)}%)</span>
               </div>
             ))}
           </div>
@@ -167,9 +167,9 @@ export default function AccountsPage() {
           {debts.length > 0 ? (
             <ResponsiveContainer width="100%" height={280}>
               <BarChart data={debts} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="#e8ebf3" vertical={false} />
-                <XAxis type="number" tickFormatter={(v) => formatCurrency(v, true)} fontSize={12} stroke="#8b95ad" />
-                <YAxis type="category" dataKey="name" fontSize={11} stroke="#8b95ad" width={120} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} />
+                <XAxis type="number" tickFormatter={(v) => formatCurrency(v, true)} fontSize={12} stroke="var(--chart-axis)" />
+                <YAxis type="category" dataKey="name" fontSize={11} stroke="var(--chart-axis)" width={120} />
                 <Tooltip formatter={(v: any) => formatCurrency(v)} />
                 <Bar dataKey="balance" radius={[0, 6, 6, 0]}>
                   {debts.map((d, i) => (
@@ -179,7 +179,7 @@ export default function AccountsPage() {
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex items-center justify-center h-64 text-surface-400">
+            <div className="flex items-center justify-center h-64 text-th-faint">
               <p>No debts - great job!</p>
             </div>
           )}
@@ -190,31 +190,31 @@ export default function AccountsPage() {
       <div className="chart-container">
         <div className="flex items-center justify-between mb-4">
           <h3 className="section-header flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-success-500" />
+            <TrendingUp className="w-5 h-5 text-success-400" />
             Assets ({assets.length})
           </h3>
-          <p className="text-sm font-semibold text-success-600">Total: {formatCurrency(totalAssets)}</p>
+          <p className="text-sm font-semibold text-success-400">Total: {formatCurrency(totalAssets)}</p>
         </div>
 
         {/* Liquid / Illiquid summary */}
         {assets.length > 0 && (
           <div className="grid grid-cols-2 gap-3 mb-5">
-            <div className="p-3 rounded-xl bg-teal-50/60 border border-teal-100">
-              <p className="text-[10px] font-semibold text-teal-600 uppercase tracking-wider mb-0.5">Liquid</p>
-              <p className="text-lg font-bold text-teal-700 num">{formatCurrency(totalLiquid)}</p>
-              <p className="text-[10px] text-teal-500">{liquidAssets.length} account{liquidAssets.length !== 1 ? 's' : ''}</p>
+            <div className="p-3 rounded-xl bg-teal-500/10 border border-teal-500/20">
+              <p className="text-[10px] font-semibold text-teal-400 uppercase tracking-wider mb-0.5">Liquid</p>
+              <p className="text-lg font-bold text-teal-300 num">{formatCurrency(totalLiquid)}</p>
+              <p className="text-[10px] text-teal-400">{liquidAssets.length} account{liquidAssets.length !== 1 ? 's' : ''}</p>
             </div>
-            <div className="p-3 rounded-xl bg-amber-50/60 border border-amber-100">
-              <p className="text-[10px] font-semibold text-amber-600 uppercase tracking-wider mb-0.5">Illiquid</p>
-              <p className="text-lg font-bold text-amber-700 num">{formatCurrency(totalIlliquid)}</p>
-              <p className="text-[10px] text-amber-500">{illiquidAssets.length} account{illiquidAssets.length !== 1 ? 's' : ''}</p>
+            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+              <p className="text-[10px] font-semibold text-amber-400 uppercase tracking-wider mb-0.5">Illiquid</p>
+              <p className="text-lg font-bold text-amber-300 num">{formatCurrency(totalIlliquid)}</p>
+              <p className="text-[10px] text-amber-400">{illiquidAssets.length} account{illiquidAssets.length !== 1 ? 's' : ''}</p>
             </div>
           </div>
         )}
 
         {liquidAssets.length > 0 && (
           <div className="mb-4">
-            <p className="text-xs font-semibold text-teal-600 uppercase tracking-wider mb-3">Liquid Assets</p>
+            <p className="text-xs font-semibold text-teal-400 uppercase tracking-wider mb-3">Liquid Assets</p>
             <div className="space-y-3">
               {liquidAssets.map(acc => {
                 const isInvestment = isInvestmentAccount(acc.type);
@@ -225,10 +225,10 @@ export default function AccountsPage() {
                 const stocksPnL = stocksValue - stocksCost;
 
                 return (
-                  <div key={acc.id} className="rounded-2xl border border-surface-100 hover:border-surface-200 transition-all overflow-hidden">
+                  <div key={acc.id} className="rounded-2xl border border-[var(--border-color)] hover:border-[var(--border-stronger)] transition-all overflow-hidden">
                     <div className="flex items-center gap-3 p-4 group">
                       {isInvestment ? (
-                        <button onClick={() => toggleExpand(acc.id)} className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-surface-100 transition-colors text-surface-400">
+                        <button onClick={() => toggleExpand(acc.id)} className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-[var(--bg-hover-strong)] transition-colors text-th-faint">
                           {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                         </button>
                       ) : (
@@ -238,11 +238,11 @@ export default function AccountsPage() {
                         {acc.icon}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-surface-800 truncate">{acc.name}</p>
+                        <p className="text-sm font-semibold text-th-heading truncate">{acc.name}</p>
                         <div className="flex items-center gap-2">
-                          <p className="text-xs text-surface-400">{acc.institution || ACCOUNT_TYPES.find(t => t.id === acc.type)?.name || acc.type}</p>
+                          <p className="text-xs text-th-faint">{acc.institution || ACCOUNT_TYPES.find(t => t.id === acc.type)?.name || acc.type}</p>
                           {isInvestment && stocks.length > 0 && (
-                            <span className="text-[10px] text-surface-400 bg-surface-100 px-1.5 py-0.5 rounded-full">{stocks.length} positions</span>
+                            <span className="text-[10px] text-th-faint bg-[var(--bg-hover)] px-1.5 py-0.5 rounded-full">{stocks.length} positions</span>
                           )}
                         </div>
                       </div>
@@ -250,30 +250,30 @@ export default function AccountsPage() {
                         {editingId === acc.id ? (
                           <div className="flex items-center gap-1">
                             <input type="number" value={editBalance} onChange={e => setEditBalance(e.target.value)} className="input-field w-28 py-1 text-sm" autoFocus />
-                            <button onClick={() => saveEdit(acc.id)} className="p-1.5 rounded-lg text-success-500 hover:bg-success-50"><Check className="w-4 h-4" /></button>
-                            <button onClick={() => setEditingId(null)} className="p-1.5 rounded-lg text-surface-400 hover:bg-surface-50"><X className="w-4 h-4" /></button>
+                            <button onClick={() => saveEdit(acc.id)} className="p-1.5 rounded-lg text-success-400 hover:bg-success-500/10"><Check className="w-4 h-4" /></button>
+                            <button onClick={() => setEditingId(null)} className="p-1.5 rounded-lg text-th-faint hover:bg-[var(--bg-hover)]"><X className="w-4 h-4" /></button>
                           </div>
                         ) : (
                           <>
-                            <p className="text-sm font-bold text-surface-800 num">{formatCurrency(acc.balance)}</p>
-                            <button onClick={() => startEdit(acc.id, acc.balance)} className="p-1.5 rounded-lg text-surface-300 hover:text-primary-500 hover:bg-primary-50 opacity-0 group-hover:opacity-100 transition-all"><Edit3 className="w-3.5 h-3.5" /></button>
-                            <button onClick={() => deleteAccount(acc.id)} className="p-1.5 rounded-lg text-surface-300 hover:text-danger-500 hover:bg-danger-50 opacity-0 group-hover:opacity-100 transition-all"><Trash2 className="w-3.5 h-3.5" /></button>
+                            <p className="text-sm font-bold text-th-heading num">{formatCurrency(acc.balance)}</p>
+                            <button onClick={() => startEdit(acc.id, acc.balance)} className="p-1.5 rounded-lg text-th-faint hover:text-primary-500 hover:bg-primary-500/10 opacity-0 group-hover:opacity-100 transition-all"><Edit3 className="w-3.5 h-3.5" /></button>
+                            <button onClick={() => deleteAccount(acc.id)} className="p-1.5 rounded-lg text-th-faint hover:text-danger-400 hover:bg-danger-500/10 opacity-0 group-hover:opacity-100 transition-all"><Trash2 className="w-3.5 h-3.5" /></button>
                           </>
                         )}
                       </div>
                     </div>
 
                     {isInvestment && isExpanded && (
-                      <div className="border-t border-surface-100 bg-surface-50/50 px-4 pb-4">
+                      <div className="border-t border-[var(--border-color)] bg-[var(--bg-inset)] px-4 pb-4">
                         <div className="flex items-center justify-between py-3">
-                          <p className="text-xs font-semibold text-surface-500 uppercase tracking-wider">Stock Positions</p>
+                          <p className="text-xs font-semibold text-th-muted uppercase tracking-wider">Stock Positions</p>
                           <div className="flex items-center gap-3">
                             {stocks.length > 0 && (
-                              <span className={`text-xs font-semibold ${stocksPnL >= 0 ? 'text-success-600' : 'text-danger-600'}`}>
+                              <span className={`text-xs font-semibold ${stocksPnL >= 0 ? 'text-success-400' : 'text-danger-400'}`}>
                                 P&L: {stocksPnL >= 0 ? '+' : ''}{formatCurrency(stocksPnL)}
                               </span>
                             )}
-                            <button onClick={() => setShowStockModal({ accountId: acc.id, accountName: acc.name })} className="flex items-center gap-1 text-xs text-primary-500 hover:text-primary-600 font-medium">
+                            <button onClick={() => setShowStockModal({ accountId: acc.id, accountName: acc.name })} className="flex items-center gap-1 text-xs text-primary-500 hover:text-primary-400 font-medium">
                               <Plus className="w-3.5 h-3.5" /> Add Position
                             </button>
                           </div>
@@ -286,33 +286,33 @@ export default function AccountsPage() {
                               const pnl = value - cost;
                               const pnlPercent = cost > 0 ? (pnl / cost) * 100 : 0;
                               return (
-                                <div key={stock.id} className="flex items-center gap-3 p-3 rounded-xl bg-white border border-surface-100 group/stock">
-                                  <div className="w-9 h-9 rounded-lg bg-primary-50 flex items-center justify-center">
-                                    <span className="text-xs font-bold text-primary-600">{stock.ticker}</span>
+                                <div key={stock.id} className="flex items-center gap-3 p-3 rounded-xl bg-th-card border border-[var(--border-color)] group/stock">
+                                  <div className="w-9 h-9 rounded-lg bg-primary-500/10 flex items-center justify-center">
+                                    <span className="text-xs font-bold text-primary-400">{stock.ticker}</span>
                                   </div>
                                   <div className="flex-1 min-w-0">
-                                    <p className="text-xs font-semibold text-surface-700 truncate">{stock.name}</p>
-                                    <p className="text-[10px] text-surface-400">{stock.shares} shares @ {formatCurrency(stock.avgCostBasis)}</p>
+                                    <p className="text-xs font-semibold text-th-heading truncate">{stock.name}</p>
+                                    <p className="text-[10px] text-th-faint">{stock.shares} shares @ {formatCurrency(stock.avgCostBasis)}</p>
                                   </div>
                                   <div className="text-right">
-                                    <p className="text-xs font-bold text-surface-800">{formatCurrency(value)}</p>
-                                    <p className={`text-[10px] font-semibold ${pnl >= 0 ? 'text-success-600' : 'text-danger-600'}`}>
+                                    <p className="text-xs font-bold text-th-heading">{formatCurrency(value)}</p>
+                                    <p className={`text-[10px] font-semibold ${pnl >= 0 ? 'text-success-400' : 'text-danger-400'}`}>
                                       {pnl >= 0 ? '+' : ''}{formatCurrency(pnl)} ({formatPercent(pnlPercent)})
                                     </p>
                                   </div>
-                                  <button onClick={() => deleteStockHolding(stock.id)} className="p-1 rounded-lg text-surface-300 hover:text-danger-500 hover:bg-danger-50 opacity-0 group-hover/stock:opacity-100 transition-all">
+                                  <button onClick={() => deleteStockHolding(stock.id)} className="p-1 rounded-lg text-th-faint hover:text-danger-400 hover:bg-danger-500/10 opacity-0 group-hover/stock:opacity-100 transition-all">
                                     <Trash2 className="w-3 h-3" />
                                   </button>
                                 </div>
                               );
                             })}
-                            <div className="flex items-center justify-between pt-2 px-1 text-xs text-surface-500 border-t border-surface-100">
+                            <div className="flex items-center justify-between pt-2 px-1 text-xs text-th-muted border-t border-[var(--border-color)]">
                               <span>Total ({stocks.length} positions)</span>
-                              <span className="font-semibold text-surface-700">{formatCurrency(stocksValue)}</span>
+                              <span className="font-semibold text-th-heading">{formatCurrency(stocksValue)}</span>
                             </div>
                           </div>
                         ) : (
-                          <div className="text-center py-6 text-surface-400 text-xs">
+                          <div className="text-center py-6 text-th-faint text-xs">
                             <p>No positions yet.</p>
                             <button onClick={() => setShowStockModal({ accountId: acc.id, accountName: acc.name })} className="mt-1 text-primary-500 hover:underline">Add your first stock position</button>
                           </div>
@@ -328,7 +328,7 @@ export default function AccountsPage() {
 
         {illiquidAssets.length > 0 && (
           <div>
-            <p className="text-xs font-semibold text-amber-600 uppercase tracking-wider mb-3">Illiquid Assets</p>
+            <p className="text-xs font-semibold text-amber-400 uppercase tracking-wider mb-3">Illiquid Assets</p>
             <div className="space-y-3">
               {illiquidAssets.map(acc => {
                 const isInvestment = isInvestmentAccount(acc.type);
@@ -339,10 +339,10 @@ export default function AccountsPage() {
                 const stocksPnL = stocksValue - stocksCost;
 
                 return (
-                  <div key={acc.id} className="rounded-2xl border border-surface-100 hover:border-surface-200 transition-all overflow-hidden">
+                  <div key={acc.id} className="rounded-2xl border border-[var(--border-color)] hover:border-[var(--border-stronger)] transition-all overflow-hidden">
                     <div className="flex items-center gap-3 p-4 group">
                       {isInvestment ? (
-                        <button onClick={() => toggleExpand(acc.id)} className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-surface-100 transition-colors text-surface-400">
+                        <button onClick={() => toggleExpand(acc.id)} className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-[var(--bg-hover-strong)] transition-colors text-th-faint">
                           {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                         </button>
                       ) : (
@@ -352,11 +352,11 @@ export default function AccountsPage() {
                         {acc.icon}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-surface-800 truncate">{acc.name}</p>
+                        <p className="text-sm font-semibold text-th-heading truncate">{acc.name}</p>
                         <div className="flex items-center gap-2">
-                          <p className="text-xs text-surface-400">{acc.institution || ACCOUNT_TYPES.find(t => t.id === acc.type)?.name || acc.type}</p>
+                          <p className="text-xs text-th-faint">{acc.institution || ACCOUNT_TYPES.find(t => t.id === acc.type)?.name || acc.type}</p>
                           {isInvestment && stocks.length > 0 && (
-                            <span className="text-[10px] text-surface-400 bg-surface-100 px-1.5 py-0.5 rounded-full">{stocks.length} positions</span>
+                            <span className="text-[10px] text-th-faint bg-[var(--bg-hover)] px-1.5 py-0.5 rounded-full">{stocks.length} positions</span>
                           )}
                         </div>
                       </div>
@@ -364,30 +364,30 @@ export default function AccountsPage() {
                         {editingId === acc.id ? (
                           <div className="flex items-center gap-1">
                             <input type="number" value={editBalance} onChange={e => setEditBalance(e.target.value)} className="input-field w-28 py-1 text-sm" autoFocus />
-                            <button onClick={() => saveEdit(acc.id)} className="p-1.5 rounded-lg text-success-500 hover:bg-success-50"><Check className="w-4 h-4" /></button>
-                            <button onClick={() => setEditingId(null)} className="p-1.5 rounded-lg text-surface-400 hover:bg-surface-50"><X className="w-4 h-4" /></button>
+                            <button onClick={() => saveEdit(acc.id)} className="p-1.5 rounded-lg text-success-400 hover:bg-success-500/10"><Check className="w-4 h-4" /></button>
+                            <button onClick={() => setEditingId(null)} className="p-1.5 rounded-lg text-th-faint hover:bg-[var(--bg-hover)]"><X className="w-4 h-4" /></button>
                           </div>
                         ) : (
                           <>
-                            <p className="text-sm font-bold text-surface-800 num">{formatCurrency(acc.balance)}</p>
-                            <button onClick={() => startEdit(acc.id, acc.balance)} className="p-1.5 rounded-lg text-surface-300 hover:text-primary-500 hover:bg-primary-50 opacity-0 group-hover:opacity-100 transition-all"><Edit3 className="w-3.5 h-3.5" /></button>
-                            <button onClick={() => deleteAccount(acc.id)} className="p-1.5 rounded-lg text-surface-300 hover:text-danger-500 hover:bg-danger-50 opacity-0 group-hover:opacity-100 transition-all"><Trash2 className="w-3.5 h-3.5" /></button>
+                            <p className="text-sm font-bold text-th-heading num">{formatCurrency(acc.balance)}</p>
+                            <button onClick={() => startEdit(acc.id, acc.balance)} className="p-1.5 rounded-lg text-th-faint hover:text-primary-500 hover:bg-primary-500/10 opacity-0 group-hover:opacity-100 transition-all"><Edit3 className="w-3.5 h-3.5" /></button>
+                            <button onClick={() => deleteAccount(acc.id)} className="p-1.5 rounded-lg text-th-faint hover:text-danger-400 hover:bg-danger-500/10 opacity-0 group-hover:opacity-100 transition-all"><Trash2 className="w-3.5 h-3.5" /></button>
                           </>
                         )}
                       </div>
                     </div>
 
                     {isInvestment && isExpanded && (
-                      <div className="border-t border-surface-100 bg-surface-50/50 px-4 pb-4">
+                      <div className="border-t border-[var(--border-color)] bg-[var(--bg-inset)] px-4 pb-4">
                         <div className="flex items-center justify-between py-3">
-                          <p className="text-xs font-semibold text-surface-500 uppercase tracking-wider">Stock Positions</p>
+                          <p className="text-xs font-semibold text-th-muted uppercase tracking-wider">Stock Positions</p>
                           <div className="flex items-center gap-3">
                             {stocks.length > 0 && (
-                              <span className={`text-xs font-semibold ${stocksPnL >= 0 ? 'text-success-600' : 'text-danger-600'}`}>
+                              <span className={`text-xs font-semibold ${stocksPnL >= 0 ? 'text-success-400' : 'text-danger-400'}`}>
                                 P&L: {stocksPnL >= 0 ? '+' : ''}{formatCurrency(stocksPnL)}
                               </span>
                             )}
-                            <button onClick={() => setShowStockModal({ accountId: acc.id, accountName: acc.name })} className="flex items-center gap-1 text-xs text-primary-500 hover:text-primary-600 font-medium">
+                            <button onClick={() => setShowStockModal({ accountId: acc.id, accountName: acc.name })} className="flex items-center gap-1 text-xs text-primary-500 hover:text-primary-400 font-medium">
                               <Plus className="w-3.5 h-3.5" /> Add Position
                             </button>
                           </div>
@@ -400,33 +400,33 @@ export default function AccountsPage() {
                               const pnl = value - cost;
                               const pnlPercent = cost > 0 ? (pnl / cost) * 100 : 0;
                               return (
-                                <div key={stock.id} className="flex items-center gap-3 p-3 rounded-xl bg-white border border-surface-100 group/stock">
-                                  <div className="w-9 h-9 rounded-lg bg-primary-50 flex items-center justify-center">
-                                    <span className="text-xs font-bold text-primary-600">{stock.ticker}</span>
+                                <div key={stock.id} className="flex items-center gap-3 p-3 rounded-xl bg-th-card border border-[var(--border-color)] group/stock">
+                                  <div className="w-9 h-9 rounded-lg bg-primary-500/10 flex items-center justify-center">
+                                    <span className="text-xs font-bold text-primary-400">{stock.ticker}</span>
                                   </div>
                                   <div className="flex-1 min-w-0">
-                                    <p className="text-xs font-semibold text-surface-700 truncate">{stock.name}</p>
-                                    <p className="text-[10px] text-surface-400">{stock.shares} shares @ {formatCurrency(stock.avgCostBasis)}</p>
+                                    <p className="text-xs font-semibold text-th-heading truncate">{stock.name}</p>
+                                    <p className="text-[10px] text-th-faint">{stock.shares} shares @ {formatCurrency(stock.avgCostBasis)}</p>
                                   </div>
                                   <div className="text-right">
-                                    <p className="text-xs font-bold text-surface-800">{formatCurrency(value)}</p>
-                                    <p className={`text-[10px] font-semibold ${pnl >= 0 ? 'text-success-600' : 'text-danger-600'}`}>
+                                    <p className="text-xs font-bold text-th-heading">{formatCurrency(value)}</p>
+                                    <p className={`text-[10px] font-semibold ${pnl >= 0 ? 'text-success-400' : 'text-danger-400'}`}>
                                       {pnl >= 0 ? '+' : ''}{formatCurrency(pnl)} ({formatPercent(pnlPercent)})
                                     </p>
                                   </div>
-                                  <button onClick={() => deleteStockHolding(stock.id)} className="p-1 rounded-lg text-surface-300 hover:text-danger-500 hover:bg-danger-50 opacity-0 group-hover/stock:opacity-100 transition-all">
+                                  <button onClick={() => deleteStockHolding(stock.id)} className="p-1 rounded-lg text-th-faint hover:text-danger-400 hover:bg-danger-500/10 opacity-0 group-hover/stock:opacity-100 transition-all">
                                     <Trash2 className="w-3 h-3" />
                                   </button>
                                 </div>
                               );
                             })}
-                            <div className="flex items-center justify-between pt-2 px-1 text-xs text-surface-500 border-t border-surface-100">
+                            <div className="flex items-center justify-between pt-2 px-1 text-xs text-th-muted border-t border-[var(--border-color)]">
                               <span>Total ({stocks.length} positions)</span>
-                              <span className="font-semibold text-surface-700">{formatCurrency(stocksValue)}</span>
+                              <span className="font-semibold text-th-heading">{formatCurrency(stocksValue)}</span>
                             </div>
                           </div>
                         ) : (
-                          <div className="text-center py-6 text-surface-400 text-xs">
+                          <div className="text-center py-6 text-th-faint text-xs">
                             <p>No positions yet.</p>
                             <button onClick={() => setShowStockModal({ accountId: acc.id, accountName: acc.name })} className="mt-1 text-primary-500 hover:underline">Add your first stock position</button>
                           </div>
@@ -445,30 +445,30 @@ export default function AccountsPage() {
       <div className="chart-container">
         <div className="flex items-center justify-between mb-4">
           <h3 className="section-header flex items-center gap-2">
-            <TrendingDown className="w-5 h-5 text-danger-500" />
+            <TrendingDown className="w-5 h-5 text-danger-400" />
             Debts & Liabilities ({debts.length})
           </h3>
-          <p className="text-sm font-semibold text-danger-600">Total: {formatCurrency(totalDebts)}</p>
+          <p className="text-sm font-semibold text-danger-400">Total: {formatCurrency(totalDebts)}</p>
         </div>
         {debts.length === 0 ? (
-          <p className="text-center text-surface-400 py-8">No debts recorded</p>
+          <p className="text-center text-th-faint py-8">No debts recorded</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {debts.map(acc => (
-              <div key={acc.id} className="flex items-center gap-3 p-4 rounded-2xl border border-danger-100 hover:border-danger-200 hover:shadow-card transition-all group">
+              <div key={acc.id} className="flex items-center gap-3 p-4 rounded-2xl border border-danger-500/20 hover:border-danger-500/30 hover:shadow-[var(--shadow-card)] transition-all group">
                 <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl" style={{ backgroundColor: acc.color + '18' }}>
                   {acc.icon}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-surface-800 truncate">{acc.name}</p>
+                  <p className="text-sm font-semibold text-th-heading truncate">{acc.name}</p>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <p className="text-xs text-surface-400">{acc.institution}</p>
+                    <p className="text-xs text-th-faint">{acc.institution}</p>
                     {acc.interestRate !== undefined && (
                       <>
-                        <span className="w-1 h-1 rounded-full bg-surface-300" />
-                        <span className="text-xs font-medium text-danger-500">{acc.interestRate}% APR</span>
-                        <span className="w-1 h-1 rounded-full bg-surface-300" />
-                        <span className="text-[10px] text-surface-400">{formatCurrency(acc.balance * acc.interestRate / 100)}/yr interest</span>
+                        <span className="w-1 h-1 rounded-full bg-th-faint" />
+                        <span className="text-xs font-medium text-danger-400">{acc.interestRate}% APR</span>
+                        <span className="w-1 h-1 rounded-full bg-th-faint" />
+                        <span className="text-[10px] text-th-faint">{formatCurrency(acc.balance * acc.interestRate / 100)}/yr interest</span>
                       </>
                     )}
                   </div>
@@ -477,14 +477,14 @@ export default function AccountsPage() {
                   {editingId === acc.id ? (
                     <div className="flex items-center gap-1">
                       <input type="number" value={editBalance} onChange={e => setEditBalance(e.target.value)} className="input-field w-28 py-1 text-sm" autoFocus />
-                      <button onClick={() => saveEdit(acc.id)} className="p-1.5 rounded-lg text-success-500 hover:bg-success-50"><Check className="w-4 h-4" /></button>
-                      <button onClick={() => setEditingId(null)} className="p-1.5 rounded-lg text-surface-400 hover:bg-surface-50"><X className="w-4 h-4" /></button>
+                      <button onClick={() => saveEdit(acc.id)} className="p-1.5 rounded-lg text-success-400 hover:bg-success-500/10"><Check className="w-4 h-4" /></button>
+                      <button onClick={() => setEditingId(null)} className="p-1.5 rounded-lg text-th-faint hover:bg-[var(--bg-hover)]"><X className="w-4 h-4" /></button>
                     </div>
                   ) : (
                     <>
-                      <p className="text-sm font-bold text-danger-600">{formatCurrency(acc.balance)}</p>
-                      <button onClick={() => startEdit(acc.id, acc.balance)} className="p-1.5 rounded-lg text-surface-300 hover:text-primary-500 hover:bg-primary-50 opacity-0 group-hover:opacity-100 transition-all"><Edit3 className="w-3.5 h-3.5" /></button>
-                      <button onClick={() => deleteAccount(acc.id)} className="p-1.5 rounded-lg text-surface-300 hover:text-danger-500 hover:bg-danger-50 opacity-0 group-hover:opacity-100 transition-all"><Trash2 className="w-3.5 h-3.5" /></button>
+                      <p className="text-sm font-bold text-danger-400">{formatCurrency(acc.balance)}</p>
+                      <button onClick={() => startEdit(acc.id, acc.balance)} className="p-1.5 rounded-lg text-th-faint hover:text-primary-500 hover:bg-primary-500/10 opacity-0 group-hover:opacity-100 transition-all"><Edit3 className="w-3.5 h-3.5" /></button>
+                      <button onClick={() => deleteAccount(acc.id)} className="p-1.5 rounded-lg text-th-faint hover:text-danger-400 hover:bg-danger-500/10 opacity-0 group-hover:opacity-100 transition-all"><Trash2 className="w-3.5 h-3.5" /></button>
                     </>
                   )}
                 </div>
@@ -586,7 +586,7 @@ function MonthlyBalanceTracker({ accounts, accountSnapshots, snapshotMonths, get
               <select
                 value={selectedSnapMonth}
                 onChange={e => setSelectedSnapMonth(e.target.value)}
-                className="appearance-none bg-white border border-surface-200 rounded-xl px-3 py-2 pr-8 text-sm font-medium text-surface-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500/30"
+                className="appearance-none bg-th-card border border-[var(--border-strong)] rounded-xl px-3 py-2 pr-8 text-sm font-medium text-th-heading cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500/30"
               >
                 {allMonths.map(m => {
                   const [y, mo] = m.split('-');
@@ -596,7 +596,7 @@ function MonthlyBalanceTracker({ accounts, accountSnapshots, snapshotMonths, get
               </select>
               <button
                 onClick={() => { setAddingMonth(true); setNewMonth(''); }}
-                className="flex items-center gap-1 px-3 py-2 rounded-xl border border-surface-200 text-sm font-medium text-surface-600 hover:bg-surface-50 transition-all"
+                className="flex items-center gap-1 px-3 py-2 rounded-xl border border-[var(--border-strong)] text-sm font-medium text-th-body hover:bg-[var(--bg-hover)] transition-all"
               >
                 <Plus className="w-3.5 h-3.5" />
                 Month
@@ -611,23 +611,23 @@ function MonthlyBalanceTracker({ accounts, accountSnapshots, snapshotMonths, get
                 className="input-field py-1.5 text-sm"
                 autoFocus
               />
-              <button onClick={handleAddMonth} disabled={!newMonth} className="p-1.5 rounded-lg text-success-500 hover:bg-success-50 disabled:opacity-50"><Check className="w-4 h-4" /></button>
-              <button onClick={() => setAddingMonth(false)} className="p-1.5 rounded-lg text-surface-400 hover:bg-surface-50"><X className="w-4 h-4" /></button>
+              <button onClick={handleAddMonth} disabled={!newMonth} className="p-1.5 rounded-lg text-success-400 hover:bg-success-500/10 disabled:opacity-50"><Check className="w-4 h-4" /></button>
+              <button onClick={() => setAddingMonth(false)} className="p-1.5 rounded-lg text-th-faint hover:bg-[var(--bg-hover)]"><X className="w-4 h-4" /></button>
             </div>
           )}
         </div>
       </div>
 
       {/* Summary */}
-      <div className="flex items-center gap-4 mb-4 p-3 rounded-xl bg-surface-50">
+      <div className="flex items-center gap-4 mb-4 p-3 rounded-xl bg-[var(--bg-subtle)]">
         <div>
-          <p className="text-[10px] text-surface-400 uppercase font-semibold">Total (Non-Debt)</p>
-          <p className="text-lg font-bold text-surface-800 num">{formatCurrency(monthTotal)}</p>
+          <p className="text-[10px] text-th-faint uppercase font-semibold">Total (Non-Debt)</p>
+          <p className="text-lg font-bold text-th-heading num">{formatCurrency(monthTotal)}</p>
         </div>
         {prevTotal !== null && prevTotal > 0 && (
           <div>
-            <p className="text-[10px] text-surface-400 uppercase font-semibold">Change</p>
-            <p className={`text-sm font-bold num ${monthTotal - prevTotal >= 0 ? 'text-success-600' : 'text-danger-600'}`}>
+            <p className="text-[10px] text-th-faint uppercase font-semibold">Change</p>
+            <p className={`text-sm font-bold num ${monthTotal - prevTotal >= 0 ? 'text-success-400' : 'text-danger-400'}`}>
               {monthTotal - prevTotal >= 0 ? '+' : ''}{formatCurrency(monthTotal - prevTotal)}
               <span className="text-xs ml-1">({((monthTotal - prevTotal) / prevTotal * 100).toFixed(1)}%)</span>
             </p>
@@ -639,7 +639,7 @@ function MonthlyBalanceTracker({ accounts, accountSnapshots, snapshotMonths, get
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-surface-100">
+            <tr className="border-b border-[var(--border-color)]">
               <th className="text-left stat-label py-3 px-2">Account</th>
               <th className="text-right stat-label py-3 px-2">Balance</th>
               {prevMonth && <th className="text-right stat-label py-3 px-2">Change</th>}
@@ -653,11 +653,11 @@ function MonthlyBalanceTracker({ accounts, accountSnapshots, snapshotMonths, get
               const change = bal !== null && prevBal !== null ? bal - prevBal : null;
 
               return (
-                <tr key={acc.id} className="border-b border-surface-50 group">
+                <tr key={acc.id} className="border-b border-[var(--border-color)] group">
                   <td className="py-3 px-2">
                     <div className="flex items-center gap-2">
                       <span className="text-base">{acc.icon}</span>
-                      <span className="text-sm font-medium text-surface-700">{acc.name}</span>
+                      <span className="text-sm font-medium text-th-heading">{acc.name}</span>
                     </div>
                   </td>
                   <td className="py-3 px-2 text-right">
@@ -671,11 +671,11 @@ function MonthlyBalanceTracker({ accounts, accountSnapshots, snapshotMonths, get
                           className="input-field w-32 py-1 text-sm text-right"
                           autoFocus
                         />
-                        <button onClick={() => saveEdit(acc.id)} className="p-1 rounded text-success-500 hover:bg-success-50"><Check className="w-3.5 h-3.5" /></button>
-                        <button onClick={() => setEditingCell(null)} className="p-1 rounded text-surface-400 hover:bg-surface-50"><X className="w-3.5 h-3.5" /></button>
+                        <button onClick={() => saveEdit(acc.id)} className="p-1 rounded text-success-400 hover:bg-success-500/10"><Check className="w-3.5 h-3.5" /></button>
+                        <button onClick={() => setEditingCell(null)} className="p-1 rounded text-th-faint hover:bg-[var(--bg-hover)]"><X className="w-3.5 h-3.5" /></button>
                       </div>
                     ) : (
-                      <span className={`text-sm font-semibold num ${bal !== null ? 'text-surface-800' : 'text-surface-300'}`}>
+                      <span className={`text-sm font-semibold num ${bal !== null ? 'text-th-heading' : 'text-th-faint'}`}>
                         {bal !== null ? formatCurrency(bal) : '—'}
                       </span>
                     )}
@@ -683,11 +683,11 @@ function MonthlyBalanceTracker({ accounts, accountSnapshots, snapshotMonths, get
                   {prevMonth && (
                     <td className="py-3 px-2 text-right">
                       {change !== null ? (
-                        <span className={`text-xs font-semibold num ${change >= 0 ? 'text-success-600' : 'text-danger-600'}`}>
+                        <span className={`text-xs font-semibold num ${change >= 0 ? 'text-success-400' : 'text-danger-400'}`}>
                           {change >= 0 ? '+' : ''}{formatCurrency(change)}
                         </span>
                       ) : (
-                        <span className="text-xs text-surface-300">—</span>
+                        <span className="text-xs text-th-faint">—</span>
                       )}
                     </td>
                   )}
@@ -695,7 +695,7 @@ function MonthlyBalanceTracker({ accounts, accountSnapshots, snapshotMonths, get
                     {editingCell !== acc.id && (
                       <button
                         onClick={() => startEdit(acc.id, bal)}
-                        className="p-1.5 rounded-lg text-surface-300 hover:text-primary-500 hover:bg-primary-50 opacity-0 group-hover:opacity-100 transition-all"
+                        className="p-1.5 rounded-lg text-th-faint hover:text-primary-500 hover:bg-primary-500/10 opacity-0 group-hover:opacity-100 transition-all"
                       >
                         <Edit3 className="w-3.5 h-3.5" />
                       </button>

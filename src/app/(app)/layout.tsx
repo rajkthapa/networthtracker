@@ -22,10 +22,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-primary-50 via-white to-grape-50">
+      <div className="flex items-center justify-center h-screen bg-th-base">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-surface-500 text-sm">Loading WealthPulse...</p>
+          <div className="w-12 h-12 border-4 border-primary-500/20 border-t-primary-500 rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-th-faint text-sm">Loading WealthPulse...</p>
         </div>
       </div>
     );
@@ -38,7 +38,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <AppProvider>
       <SubscriptionProvider>
-        <div className="flex h-screen overflow-hidden bg-[var(--background)]">
+        <div className="flex h-screen overflow-hidden bg-th-base">
           <Sidebar />
           <div className="flex-1 flex flex-col overflow-hidden">
             <TopBar />

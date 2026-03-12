@@ -30,7 +30,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-grape-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-th-base p-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
@@ -38,22 +38,22 @@ export default function LoginPage() {
             <TrendingUp className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-primary-600 to-grape-600 bg-clip-text text-transparent">WealthPulse</h1>
-          <p className="text-surface-500 text-sm mt-1">Welcome back! Sign in to continue.</p>
+          <p className="text-th-muted text-sm mt-1">Welcome back! Sign in to continue.</p>
         </div>
 
         {/* Form */}
-        <div className="bg-white rounded-3xl shadow-2xl p-8 border border-surface-100">
+        <div className="bg-th-card rounded-3xl shadow-[var(--shadow-glass)] p-8 border border-[var(--border-color)]">
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
-              <div className="p-3 rounded-xl bg-danger-50 border border-danger-200 text-danger-700 text-sm">
+              <div className="p-3 rounded-xl bg-danger-500/10 border border-danger-500/30 text-danger-300 text-sm">
                 {error}
               </div>
             )}
 
             <div>
-              <label className="block text-sm font-medium text-surface-700 mb-1.5">Email</label>
+              <label className="block text-sm font-medium text-th-heading mb-1.5">Email</label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-400" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-th-faint" />
                 <input
                   type="email"
                   value={email}
@@ -66,9 +66,9 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-surface-700 mb-1.5">Password</label>
+              <label className="block text-sm font-medium text-th-heading mb-1.5">Password</label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-400" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-th-faint" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
@@ -77,7 +77,7 @@ export default function LoginPage() {
                   className="input-field pl-10 pr-10"
                   required
                 />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-surface-400 hover:text-surface-600">
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-th-faint hover:text-th-body">
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
@@ -86,7 +86,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 rounded-xl font-semibold text-white bg-gradient-to-r from-primary-500 to-grape-500 hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full py-3.5 rounded-xl font-semibold text-white bg-gradient-to-r from-primary-500 to-grape-500 hover:shadow-[var(--shadow-card-hover)] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -98,10 +98,10 @@ export default function LoginPage() {
 
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-surface-200" />
+              <div className="w-full border-t border-[var(--border-strong)]" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="bg-white px-3 text-surface-400">or continue with</span>
+              <span className="bg-th-card px-3 text-th-faint">or continue with</span>
             </div>
           </div>
 
@@ -117,10 +117,10 @@ export default function LoginPage() {
                 setGoogleLoading(false);
               }
             }}
-            className="w-full py-3.5 rounded-xl font-semibold text-surface-700 bg-white border border-surface-200 hover:bg-surface-50 hover:shadow-md transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+            className="w-full py-3.5 rounded-xl font-semibold text-th-heading bg-[var(--bg-hover)] border border-[var(--border-strong)] hover:bg-[var(--bg-hover)] hover:shadow-[var(--shadow-card)] transition-all disabled:opacity-50 flex items-center justify-center gap-3"
           >
             {googleLoading ? (
-              <div className="w-5 h-5 border-2 border-surface-300 border-t-surface-600 rounded-full animate-spin" />
+              <div className="w-5 h-5 border-2 border-th-faint border-t-th-body rounded-full animate-spin" />
             ) : (
               <>
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -134,9 +134,9 @@ export default function LoginPage() {
             )}
           </button>
 
-          <p className="text-center text-sm text-surface-500 mt-6">
+          <p className="text-center text-sm text-th-muted mt-6">
             Don&apos;t have an account?{' '}
-            <Link href="/auth/signup" className="text-primary-600 font-semibold hover:underline">Sign up</Link>
+            <Link href="/auth/signup" className="text-primary-400 font-semibold hover:underline">Sign up</Link>
           </p>
         </div>
       </div>

@@ -33,7 +33,7 @@ export function AddAccountModal({ onClose }: { onClose: () => void }) {
         type,
         balance: parseFloat(balance),
         institution,
-        color: typeInfo?.color || '#4c6ef5',
+        color: typeInfo?.color || '#14b8a6',
         icon: typeInfo?.icon || '💰',
         isDebt,
         interestRate: interestRate ? parseFloat(interestRate) : undefined,
@@ -47,21 +47,21 @@ export function AddAccountModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-surface-900/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl animate-scale-in overflow-hidden">
+      <div className="absolute inset-0 bg-[var(--bg-overlay)] backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-md bg-th-card rounded-3xl shadow-[var(--shadow-glass)] border border-[var(--border-color)] animate-scale-in overflow-hidden">
         <div className="flex items-center justify-between p-6 pb-4">
-          <h2 className="text-xl font-bold text-surface-900">Add Account</h2>
-          <button onClick={onClose} className="p-2 rounded-xl hover:bg-surface-100 transition-colors">
-            <X className="w-5 h-5 text-surface-500" />
+          <h2 className="text-xl font-bold text-th-heading">Add Account</h2>
+          <button onClick={onClose} className="p-2 rounded-xl hover:bg-[var(--bg-hover-strong)] transition-colors">
+            <X className="w-5 h-5 text-th-muted" />
           </button>
         </div>
 
         <div className="px-6 mb-4">
-          <div className="flex bg-surface-100 rounded-xl p-1">
+          <div className="flex bg-[var(--bg-hover)] rounded-xl p-1">
             <button
               onClick={() => { setIsDebt(false); setType(''); }}
               className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-                !isDebt ? 'bg-success-500 text-white shadow-md' : 'text-surface-500'
+                !isDebt ? 'bg-success-500 text-white shadow-[var(--shadow-card)]' : 'text-th-muted'
               }`}
             >
               Asset
@@ -69,7 +69,7 @@ export function AddAccountModal({ onClose }: { onClose: () => void }) {
             <button
               onClick={() => { setIsDebt(true); setType(''); }}
               className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-                isDebt ? 'bg-danger-500 text-white shadow-md' : 'text-surface-500'
+                isDebt ? 'bg-danger-500 text-white shadow-[var(--shadow-card)]' : 'text-th-muted'
               }`}
             >
               Debt / Liability
@@ -79,18 +79,18 @@ export function AddAccountModal({ onClose }: { onClose: () => void }) {
 
         <form onSubmit={handleSubmit} className="px-6 pb-6 space-y-4">
           {error && (
-            <div className="p-3 rounded-xl bg-danger-50 border border-danger-200 text-danger-700 text-sm">
+            <div className="p-3 rounded-xl bg-danger-500/10 border border-danger-500/30 text-danger-300 text-sm">
               {error}
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-surface-600 mb-1.5">Account Name</label>
+            <label className="block text-sm font-medium text-th-body mb-1.5">Account Name</label>
             <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="e.g., Chase Checking" className="input-field" required />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-surface-600 mb-2">Account Type</label>
+            <label className="block text-sm font-medium text-th-body mb-2">Account Type</label>
             <div className="grid grid-cols-3 gap-2 max-h-40 overflow-y-auto scrollbar-hide">
               {types.map(t => (
                 <button
@@ -98,32 +98,32 @@ export function AddAccountModal({ onClose }: { onClose: () => void }) {
                   type="button"
                   onClick={() => setType(t.id)}
                   className={`flex flex-col items-center gap-1 p-3 rounded-xl border-2 transition-all ${
-                    type === t.id ? 'border-primary-500 bg-primary-50' : 'border-surface-100 hover:border-surface-200'
+                    type === t.id ? 'border-primary-500 bg-primary-500/10' : 'border-[var(--border-color)] hover:border-[var(--border-strong)]'
                   }`}
                 >
                   <span className="text-lg">{t.icon}</span>
-                  <span className="text-[10px] font-medium text-surface-600">{t.name}</span>
+                  <span className="text-[10px] font-medium text-th-body">{t.name}</span>
                 </button>
               ))}
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-surface-600 mb-1.5">Balance</label>
+            <label className="block text-sm font-medium text-th-body mb-1.5">Balance</label>
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400 font-semibold">$</span>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-th-faint font-semibold">$</span>
               <input type="number" step="0.01" value={balance} onChange={e => setBalance(e.target.value)} placeholder="0.00" className="input-field pl-8" required />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-surface-600 mb-1.5">Institution (optional)</label>
+            <label className="block text-sm font-medium text-th-body mb-1.5">Institution (optional)</label>
             <input type="text" value={institution} onChange={e => setInstitution(e.target.value)} placeholder="e.g., Chase, Fidelity" className="input-field" />
           </div>
 
           {isDebt && (
             <div>
-              <label className="block text-sm font-medium text-surface-600 mb-1.5">Interest Rate % (optional)</label>
+              <label className="block text-sm font-medium text-th-body mb-1.5">Interest Rate % (optional)</label>
               <input type="number" step="0.01" value={interestRate} onChange={e => setInterestRate(e.target.value)} placeholder="e.g., 6.5" className="input-field" />
             </div>
           )}

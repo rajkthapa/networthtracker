@@ -17,7 +17,7 @@ function MonthSelector() {
       <select
         value={selectedMonth}
         onChange={e => setSelectedMonth(e.target.value)}
-        className="appearance-none bg-white border border-surface-200 rounded-xl px-4 py-2 pr-8 text-sm font-medium text-surface-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500/30"
+        className="appearance-none bg-th-card border border-[var(--border-strong)] rounded-xl px-4 py-2 pr-8 text-sm font-medium text-th-heading cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500/30"
       >
         {availableMonths.map(m => {
           const [y, mo] = m.split('-');
@@ -25,7 +25,7 @@ function MonthSelector() {
           return <option key={m} value={m}>{label}</option>;
         })}
       </select>
-      <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-400 pointer-events-none" />
+      <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-th-faint pointer-events-none" />
     </div>
   );
 }
@@ -40,10 +40,10 @@ function MonthComparison() {
   const currLabel = new Date(y, m - 1).toLocaleDateString('en-US', { month: 'short' });
 
   const rows = [
-    { label: 'Income', current: monthIncome, previous: prevMonthIncome, color: 'text-success-600' },
-    { label: 'Expenses', current: monthExpenses, previous: prevMonthExpenses, color: 'text-danger-600' },
-    { label: 'Savings', current: monthSavings, previous: prevMonthSavings, color: 'text-primary-600' },
-    { label: 'Savings Rate', current: monthSavingsRate, previous: prevMonthSavingsRate, color: 'text-grape-600', isPercent: true },
+    { label: 'Income', current: monthIncome, previous: prevMonthIncome, color: 'text-success-400' },
+    { label: 'Expenses', current: monthExpenses, previous: prevMonthExpenses, color: 'text-danger-400' },
+    { label: 'Savings', current: monthSavings, previous: prevMonthSavings, color: 'text-primary-400' },
+    { label: 'Savings Rate', current: monthSavingsRate, previous: prevMonthSavingsRate, color: 'text-grape-400', isPercent: true },
   ];
 
   if (monthIncome === 0 && prevMonthIncome === 0) return null;
@@ -52,12 +52,12 @@ function MonthComparison() {
     <details className="chart-container group" open>
       <summary className="flex items-center justify-between cursor-pointer list-none [&::-webkit-details-marker]:hidden">
         <h3 className="section-header">Month-over-Month</h3>
-        <ChevronDown className="w-4 h-4 text-surface-400 group-open:rotate-180 transition-transform duration-200" />
+        <ChevronDown className="w-4 h-4 text-th-faint group-open:rotate-180 transition-transform duration-200" />
       </summary>
       <div className="mt-4 overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-surface-100">
+            <tr className="border-b border-[var(--border-color)]">
               <th className="text-left stat-label py-3 px-2">Metric</th>
               <th className="text-right stat-label py-3 px-2">{prevLabel}</th>
               <th className="text-right stat-label py-3 px-2">{currLabel}</th>
@@ -70,9 +70,9 @@ function MonthComparison() {
               const pctChange = row.previous > 0 ? (diff / row.previous) * 100 : 0;
               const isGood = row.label === 'Expenses' ? diff < 0 : diff > 0;
               return (
-                <tr key={row.label} className="border-b border-surface-50">
-                  <td className="py-3 px-2 text-sm font-medium text-surface-700">{row.label}</td>
-                  <td className="py-3 px-2 text-sm text-right text-surface-500 num">
+                <tr key={row.label} className="border-b border-[var(--border-color)]">
+                  <td className="py-3 px-2 text-sm font-medium text-th-heading">{row.label}</td>
+                  <td className="py-3 px-2 text-sm text-right text-th-muted num">
                     {row.isPercent ? `${row.previous.toFixed(1)}%` : formatCurrency(row.previous)}
                   </td>
                   <td className={`py-3 px-2 text-sm text-right font-semibold num ${row.color}`}>
@@ -107,30 +107,30 @@ function RecentTransactions() {
     <div className="chart-container">
       <div className="flex items-center justify-between mb-4">
         <h3 className="section-header">Recent Transactions</h3>
-        <a href="/transactions" className="text-sm text-primary-600 font-medium hover:text-primary-700">View all</a>
+        <a href="/transactions" className="text-sm text-primary-400 font-medium hover:text-primary-300">View all</a>
       </div>
       <div className="space-y-1">
         {monthTxns.length === 0 && (
           <div className="flex flex-col items-center py-10 gap-3">
-            <div className="w-14 h-14 rounded-2xl bg-surface-50 flex items-center justify-center">
-              <Receipt className="w-7 h-7 text-surface-300" />
+            <div className="w-14 h-14 rounded-2xl bg-[var(--bg-subtle)] flex items-center justify-center">
+              <Receipt className="w-7 h-7 text-th-faint" />
             </div>
-            <p className="text-sm font-medium text-surface-600">No transactions yet</p>
-            <p className="text-xs text-surface-400 text-center max-w-[200px]">Add your first transaction to start tracking cash flow</p>
+            <p className="text-sm font-medium text-th-body">No transactions yet</p>
+            <p className="text-xs text-th-faint text-center max-w-[200px]">Add your first transaction to start tracking cash flow</p>
           </div>
         )}
         {monthTxns.map((txn) => (
-          <div key={txn.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-surface-50 transition-colors">
+          <div key={txn.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--bg-hover)] transition-colors">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-              txn.type === 'income' ? 'bg-success-50 text-success-600' : 'bg-danger-50 text-danger-600'
+              txn.type === 'income' ? 'bg-success-500/10 text-success-400' : 'bg-danger-500/10 text-danger-400'
             }`}>
               {txn.type === 'income' ? <ArrowUpRight className="w-5 h-5" /> : <ArrowDownRight className="w-5 h-5" />}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-surface-800 truncate">{txn.description}</p>
-              <p className="text-xs text-surface-400">{txn.date}</p>
+              <p className="text-sm font-medium text-th-heading truncate">{txn.description}</p>
+              <p className="text-xs text-th-faint">{txn.date}</p>
             </div>
-            <p className={`text-sm font-semibold num ${txn.type === 'income' ? 'text-success-600' : 'text-danger-600'}`}>
+            <p className={`text-sm font-semibold num ${txn.type === 'income' ? 'text-success-400' : 'text-danger-400'}`}>
               {txn.type === 'income' ? '+' : '-'}{formatCurrency(txn.amount)}
             </p>
           </div>
@@ -151,36 +151,36 @@ function AccountsSummary() {
     <div className="chart-container">
       <div className="flex items-center justify-between mb-4">
         <h3 className="section-header">Accounts</h3>
-        <a href="/accounts" className="text-sm text-primary-600 font-medium hover:text-primary-700">View all</a>
+        <a href="/accounts" className="text-sm text-primary-400 font-medium hover:text-primary-300">View all</a>
       </div>
       <div className="space-y-2">
         <p className="stat-label">Assets</p>
         {assets.map(acc => (
-          <div key={acc.id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-surface-50 transition-colors">
+          <div key={acc.id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-[var(--bg-hover)] transition-colors">
             <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg" style={{ backgroundColor: acc.color + '12' }}>
               {acc.icon}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-surface-800 truncate">{acc.name}</p>
-              <p className="text-xs text-surface-400 truncate">{acc.institution || ''}</p>
+              <p className="text-sm font-medium text-th-heading truncate">{acc.name}</p>
+              <p className="text-xs text-th-faint truncate">{acc.institution || ''}</p>
             </div>
-            <p className="text-sm font-semibold text-surface-800 num">{formatCurrency(acc.balance)}</p>
+            <p className="text-sm font-semibold text-th-heading num">{formatCurrency(acc.balance)}</p>
           </div>
         ))}
         {debts.length > 0 && (
           <>
-            <div className="border-t border-surface-100 pt-2 mt-2">
+            <div className="border-t border-[var(--border-color)] pt-2 mt-2">
               <p className="stat-label mb-2">Debts</p>
               {debts.map(acc => (
-                <div key={acc.id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-surface-50 transition-colors">
+                <div key={acc.id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-[var(--bg-hover)] transition-colors">
                   <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg" style={{ backgroundColor: acc.color + '12' }}>
                     {acc.icon}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-surface-800 truncate">{acc.name}</p>
-                    {acc.interestRate !== undefined && <p className="text-xs text-danger-500">{acc.interestRate}% APR</p>}
+                    <p className="text-sm font-medium text-th-heading truncate">{acc.name}</p>
+                    {acc.interestRate !== undefined && <p className="text-xs text-danger-400">{acc.interestRate}% APR</p>}
                   </div>
-                  <p className="text-sm font-semibold text-danger-600 num">-{formatCurrency(acc.balance)}</p>
+                  <p className="text-sm font-semibold text-danger-400 num">-{formatCurrency(acc.balance)}</p>
                 </div>
               ))}
             </div>
@@ -196,21 +196,21 @@ function DividendTracker() {
   if (totalDividends === 0) return null;
 
   return (
-    <div className="chart-container bg-gradient-to-br from-success-50/50 to-teal-50/50">
+    <div className="chart-container bg-gradient-to-br from-success-500/10 to-teal-500/10">
       <h3 className="section-header mb-3">Dividend Income</h3>
       <div className="space-y-3">
         <div>
           <p className="stat-label">Total Dividends ({dividendMonths} quarters)</p>
-          <p className="text-2xl font-bold text-success-600 num">{formatCurrency(totalDividends)}</p>
+          <p className="text-2xl font-bold text-success-400 num">{formatCurrency(totalDividends)}</p>
         </div>
         <div className="flex gap-4">
           <div>
             <p className="stat-label">Quarterly Avg</p>
-            <p className="text-lg font-bold text-surface-800 num">{formatCurrency(monthlyAvgDividend)}</p>
+            <p className="text-lg font-bold text-th-heading num">{formatCurrency(monthlyAvgDividend)}</p>
           </div>
           <div>
             <p className="stat-label">Projected Annual</p>
-            <p className="text-lg font-bold text-surface-800 num">{formatCurrency(monthlyAvgDividend * 4)}</p>
+            <p className="text-lg font-bold text-th-heading num">{formatCurrency(monthlyAvgDividend * 4)}</p>
           </div>
         </div>
       </div>
@@ -223,7 +223,7 @@ function EmptyDashboard() {
     <div className="space-y-6 animate-fade-in">
       <div>
         <h1 className="page-header">Dashboard</h1>
-        <p className="text-sm text-surface-500 mt-1">Welcome to WealthPulse!</p>
+        <p className="text-sm text-th-muted mt-1">Welcome to WealthPulse!</p>
       </div>
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary-600 via-grape-600 to-primary-700 p-8 md:p-12 text-white text-center">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.1),transparent_50%)]" />
@@ -231,7 +231,7 @@ function EmptyDashboard() {
           <h2 className="text-3xl font-bold mb-3 tracking-tight">Start Tracking Your Wealth</h2>
           <p className="text-white/70 text-sm mb-8 leading-relaxed">Add your first account, transaction, or investment to see your financial dashboard come to life.</p>
           <div className="flex flex-wrap gap-3 justify-center">
-            <a href="/accounts" className="px-6 py-2.5 rounded-xl bg-white text-primary-700 font-semibold text-sm hover:bg-white/90 transition-colors">Add Account</a>
+            <a href="/accounts" className="px-6 py-2.5 rounded-xl bg-th-card text-primary-300 font-semibold text-sm hover:bg-th-card/90 transition-colors">Add Account</a>
             <a href="/crypto" className="px-6 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 font-semibold text-sm transition-colors">Add Crypto</a>
           </div>
         </div>
@@ -250,8 +250,8 @@ function EmptyDashboard() {
           >
             <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-primary-400 to-grape-400 rounded-l-2xl" />
             <span className="text-2xl mb-3 block">{item.icon}</span>
-            <p className="text-base font-bold text-surface-800 mb-1">{item.title}</p>
-            <p className="text-xs text-surface-500 leading-relaxed">{item.desc}</p>
+            <p className="text-base font-bold text-th-heading mb-1">{item.title}</p>
+            <p className="text-xs text-th-muted leading-relaxed">{item.desc}</p>
           </a>
         ))}
       </div>
@@ -272,8 +272,8 @@ export default function Dashboard() {
     return (
       <div className="flex items-center justify-center h-[60vh]">
         <div className="text-center">
-          <div className="w-10 h-10 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-surface-500 text-sm">Loading your data...</p>
+          <div className="w-10 h-10 border-4 border-primary-500/30 border-t-primary-500 rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-th-muted text-sm">Loading your data...</p>
         </div>
       </div>
     );
@@ -296,9 +296,9 @@ export default function Dashboard() {
     : 0;
 
   const stats = [
-    { title: 'Monthly Income', value: formatCurrency(monthIncome), change: incomeChange, icon: DollarSign, borderColor: 'border-l-success-500', iconBg: 'bg-success-50 text-success-600' },
-    { title: 'Monthly Expenses', value: formatCurrency(monthExpenses), change: expenseChange, icon: CreditCard, borderColor: 'border-l-danger-500', iconBg: 'bg-danger-50 text-danger-600' },
-    { title: 'Savings Rate', value: `${monthSavingsRate.toFixed(1)}%`, change: undefined, icon: PiggyBank, borderColor: 'border-l-grape-500', iconBg: 'bg-grape-50 text-grape-600' },
+    { title: 'Monthly Income', value: formatCurrency(monthIncome), change: incomeChange, icon: DollarSign, borderColor: 'border-l-success-500/50', iconBg: 'bg-success-500/10 text-success-400' },
+    { title: 'Monthly Expenses', value: formatCurrency(monthExpenses), change: expenseChange, icon: CreditCard, borderColor: 'border-l-danger-500/50', iconBg: 'bg-danger-500/10 text-danger-400' },
+    { title: 'Savings Rate', value: `${monthSavingsRate.toFixed(1)}%`, change: undefined, icon: PiggyBank, borderColor: 'border-l-grape-500/50', iconBg: 'bg-grape-500/10 text-grape-400' },
   ];
 
   return (
@@ -307,33 +307,33 @@ export default function Dashboard() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="page-header">Dashboard</h1>
-          <p className="text-sm text-surface-500 mt-1">{monthLabel}</p>
+          <p className="text-sm text-th-muted mt-1">{monthLabel}</p>
         </div>
         <MonthSelector />
       </div>
 
       {/* Net Worth Hero */}
-      <div className="stat-card border-l-4 border-l-primary-500 p-6 md:p-8">
+      <div className="stat-card border-l-4 border-l-primary-500/50 p-6 md:p-8">
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
           <div>
             <p className="stat-label mb-1">Net Worth</p>
-            <p className="text-4xl md:text-5xl font-bold text-surface-900 num tracking-tight">{formatCurrency(netWorth)}</p>
+            <p className="text-4xl md:text-5xl font-bold text-th-heading num tracking-tight">{formatCurrency(netWorth)}</p>
             {hasNWHistory && (
               <div className="flex items-center gap-2 mt-2">
                 <Delta value={nwChangePercent} />
-                <span className="text-xs text-surface-400">vs last month</span>
-                <span className="text-xs text-surface-500 font-medium num">({nwChange >= 0 ? '+' : ''}{formatCurrency(nwChange)})</span>
+                <span className="text-xs text-th-faint">vs last month</span>
+                <span className="text-xs text-th-muted font-medium num">({nwChange >= 0 ? '+' : ''}{formatCurrency(nwChange)})</span>
               </div>
             )}
           </div>
           <div className="flex gap-6">
             <div>
               <p className="stat-label mb-0.5">Assets</p>
-              <p className="text-lg font-bold text-success-600 num">{formatCurrency(totalAssets)}</p>
+              <p className="text-lg font-bold text-success-400 num">{formatCurrency(totalAssets)}</p>
             </div>
             <div>
               <p className="stat-label mb-0.5">Debts</p>
-              <p className="text-lg font-bold text-danger-600 num">{formatCurrency(totalDebts)}</p>
+              <p className="text-lg font-bold text-danger-400 num">{formatCurrency(totalDebts)}</p>
             </div>
           </div>
         </div>
@@ -356,7 +356,7 @@ export default function Dashboard() {
                 {stat.change !== undefined && <Delta value={stat.change} />}
               </div>
               <p className="stat-label mb-1">{stat.title}</p>
-              <p className="text-2xl font-bold text-surface-900 num">{stat.value}</p>
+              <p className="text-2xl font-bold text-th-heading num">{stat.value}</p>
             </div>
           );
         })}

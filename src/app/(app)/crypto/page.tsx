@@ -47,7 +47,7 @@ export default function CryptoPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="page-header">Crypto Portfolio</h1>
-          <p className="text-sm text-surface-500 mt-1">{cryptoHoldings.length} assets tracked</p>
+          <p className="text-sm text-th-muted mt-1">{cryptoHoldings.length} assets tracked</p>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={refreshCryptoPrices} disabled={pricesLoading} className="btn-secondary flex items-center gap-2 text-sm disabled:opacity-50">
@@ -105,18 +105,18 @@ export default function CryptoPage() {
                   <div key={d.name} className="flex items-center justify-between text-xs">
                     <div className="flex items-center gap-1.5">
                       <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: d.color }} />
-                      <span className="font-medium text-surface-600">{d.name}</span>
+                      <span className="font-medium text-th-body">{d.name}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-surface-500">{formatCurrency(d.value)}</span>
-                      <span className="text-surface-400">({totalValue > 0 ? ((d.value / totalValue) * 100).toFixed(1) : 0}%)</span>
+                      <span className="text-th-muted">{formatCurrency(d.value)}</span>
+                      <span className="text-th-faint">({totalValue > 0 ? ((d.value / totalValue) * 100).toFixed(1) : 0}%)</span>
                     </div>
                   </div>
                 ))}
               </div>
             </>
           ) : (
-            <div className="flex flex-col items-center justify-center h-64 text-surface-400">
+            <div className="flex flex-col items-center justify-center h-64 text-th-faint">
               <p>No holdings yet</p>
               <button onClick={() => setShowAddModal(true)} className="mt-2 text-sm text-primary-500 hover:underline">Add your first coin</button>
             </div>
@@ -129,13 +129,13 @@ export default function CryptoPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-surface-100">
-                  <th className="text-left text-xs font-semibold text-surface-400 uppercase tracking-wider py-3 px-2">Asset</th>
-                  <th className="text-right text-xs font-semibold text-surface-400 uppercase tracking-wider py-3 px-2">Price</th>
-                  <th className="text-right text-xs font-semibold text-surface-400 uppercase tracking-wider py-3 px-2 hidden sm:table-cell">24h</th>
-                  <th className="text-right text-xs font-semibold text-surface-400 uppercase tracking-wider py-3 px-2">Holdings</th>
-                  <th className="text-right text-xs font-semibold text-surface-400 uppercase tracking-wider py-3 px-2">Value</th>
-                  <th className="text-right text-xs font-semibold text-surface-400 uppercase tracking-wider py-3 px-2">P&L</th>
+                <tr className="border-b border-[var(--border-color)]">
+                  <th className="text-left text-xs font-semibold text-th-faint uppercase tracking-wider py-3 px-2">Asset</th>
+                  <th className="text-right text-xs font-semibold text-th-faint uppercase tracking-wider py-3 px-2">Price</th>
+                  <th className="text-right text-xs font-semibold text-th-faint uppercase tracking-wider py-3 px-2 hidden sm:table-cell">24h</th>
+                  <th className="text-right text-xs font-semibold text-th-faint uppercase tracking-wider py-3 px-2">Holdings</th>
+                  <th className="text-right text-xs font-semibold text-th-faint uppercase tracking-wider py-3 px-2">Value</th>
+                  <th className="text-right text-xs font-semibold text-th-faint uppercase tracking-wider py-3 px-2">P&L</th>
                   <th className="py-3 px-2 w-10"></th>
                 </tr>
               </thead>
@@ -148,20 +148,20 @@ export default function CryptoPage() {
                   const color = CRYPTO_COLORS[holding.symbol] || '#868e96';
 
                   return (
-                    <tr key={holding.id} className="border-b border-surface-50 hover:bg-surface-50/50 transition-colors group">
+                    <tr key={holding.id} className="border-b border-[var(--border-color)] hover:bg-[var(--bg-inset)] transition-colors group">
                       <td className="py-4 px-2">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg font-bold text-white" style={{ backgroundColor: color }}>
                             {CRYPTO_ICONS[holding.symbol] || holding.symbol[0]}
                           </div>
                           <div>
-                            <p className="font-semibold text-sm text-surface-800">{holding.name}</p>
-                            <p className="text-xs text-surface-400">{holding.symbol}</p>
+                            <p className="font-semibold text-sm text-th-heading">{holding.name}</p>
+                            <p className="text-xs text-th-faint">{holding.symbol}</p>
                           </div>
                         </div>
                       </td>
                       <td className="py-4 px-2 text-right">
-                        <p className="text-sm font-semibold text-surface-800">{formatCurrency(holding.currentPrice)}</p>
+                        <p className="text-sm font-semibold text-th-heading">{formatCurrency(holding.currentPrice)}</p>
                       </td>
                       <td className="py-4 px-2 text-right hidden sm:table-cell">
                         <div className={`inline-flex items-center gap-1 tag ${holding.priceChange24h >= 0 ? 'tag-success' : 'tag-danger'}`}>
@@ -170,25 +170,25 @@ export default function CryptoPage() {
                         </div>
                       </td>
                       <td className="py-4 px-2 text-right">
-                        <p className="text-sm font-medium text-surface-700">{holding.quantity} {holding.symbol}</p>
-                        <p className="text-xs text-surface-400">Avg: {formatCurrency(holding.avgBuyPrice)}</p>
+                        <p className="text-sm font-medium text-th-heading">{holding.quantity} {holding.symbol}</p>
+                        <p className="text-xs text-th-faint">Avg: {formatCurrency(holding.avgBuyPrice)}</p>
                       </td>
                       <td className="py-4 px-2 text-right">
-                        <p className="text-sm font-bold text-surface-800">{formatCurrency(value)}</p>
-                        <p className="text-xs text-surface-400">Cost: {formatCurrency(cost)}</p>
+                        <p className="text-sm font-bold text-th-heading">{formatCurrency(value)}</p>
+                        <p className="text-xs text-th-faint">Cost: {formatCurrency(cost)}</p>
                       </td>
                       <td className="py-4 px-2 text-right">
-                        <p className={`text-sm font-bold ${pnl >= 0 ? 'text-success-600' : 'text-danger-600'}`}>
+                        <p className={`text-sm font-bold ${pnl >= 0 ? 'text-success-400' : 'text-danger-400'}`}>
                           {pnl >= 0 ? '+' : ''}{formatCurrency(pnl)}
                         </p>
-                        <p className={`text-xs ${pnl >= 0 ? 'text-success-500' : 'text-danger-500'}`}>
+                        <p className={`text-xs ${pnl >= 0 ? 'text-success-400' : 'text-danger-400'}`}>
                           {formatPercent(pnlPercent)}
                         </p>
                       </td>
                       <td className="py-4 px-2">
                         <button
                           onClick={() => deleteCryptoHolding(holding.id)}
-                          className="p-1.5 rounded-lg text-surface-300 hover:text-danger-500 hover:bg-danger-50 opacity-0 group-hover:opacity-100 transition-all"
+                          className="p-1.5 rounded-lg text-th-faint hover:text-danger-400 hover:bg-danger-500/10 opacity-0 group-hover:opacity-100 transition-all"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -199,10 +199,10 @@ export default function CryptoPage() {
               </tbody>
               {cryptoHoldings.length > 0 && (
                 <tfoot>
-                  <tr className="border-t-2 border-surface-200">
-                    <td colSpan={4} className="py-3 px-2 text-sm font-bold text-surface-700">Total</td>
-                    <td className="py-3 px-2 text-right text-sm font-bold text-surface-800">{formatCurrency(totalValue)}</td>
-                    <td className={`py-3 px-2 text-right text-sm font-bold ${totalPnL >= 0 ? 'text-success-600' : 'text-danger-600'}`}>
+                  <tr className="border-t-2 border-[var(--border-strong)]">
+                    <td colSpan={4} className="py-3 px-2 text-sm font-bold text-th-heading">Total</td>
+                    <td className="py-3 px-2 text-right text-sm font-bold text-th-heading">{formatCurrency(totalValue)}</td>
+                    <td className={`py-3 px-2 text-right text-sm font-bold ${totalPnL >= 0 ? 'text-success-400' : 'text-danger-400'}`}>
                       {totalPnL >= 0 ? '+' : ''}{formatCurrency(totalPnL)}
                     </td>
                     <td></td>
@@ -211,7 +211,7 @@ export default function CryptoPage() {
               )}
             </table>
             {cryptoHoldings.length === 0 && (
-              <div className="text-center py-12 text-surface-400">
+              <div className="text-center py-12 text-th-faint">
                 <p className="text-lg mb-2">No crypto holdings yet</p>
                 <button onClick={() => setShowAddModal(true)} className="text-sm text-primary-500 hover:underline">Add your first position</button>
               </div>
@@ -223,21 +223,21 @@ export default function CryptoPage() {
       {/* Stats */}
       {cryptoHoldings.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="stat-card border-l-4 border-[#f7931a]">
+          <div className="stat-card border-l-4 border-warning-500/50">
             <p className="stat-label">Bitcoin Dominance</p>
-            <p className="text-lg font-bold text-surface-800 num">{btcDominance.toFixed(1)}%</p>
+            <p className="text-lg font-bold text-th-heading num">{btcDominance.toFixed(1)}%</p>
           </div>
-          <div className="stat-card border-l-4 border-success-500">
+          <div className="stat-card border-l-4 border-success-500/50">
             <p className="stat-label">Total Cost Basis</p>
-            <p className="text-lg font-bold text-surface-800 num">{formatCurrency(totalCost)}</p>
+            <p className="text-lg font-bold text-th-heading num">{formatCurrency(totalCost)}</p>
           </div>
-          <div className="stat-card border-l-4 border-grape-500">
+          <div className="stat-card border-l-4 border-grape-500/50">
             <p className="stat-label">Best Performer</p>
-            <p className="text-lg font-bold text-success-600 num">{bestPerformer?.symbol} {formatPercent(bestPerformer?.pnlPercent || 0)}</p>
+            <p className="text-lg font-bold text-success-400 num">{bestPerformer?.symbol} {formatPercent(bestPerformer?.pnlPercent || 0)}</p>
           </div>
-          <div className="stat-card border-l-4 border-danger-500">
+          <div className="stat-card border-l-4 border-danger-500/50">
             <p className="stat-label">Worst Performer</p>
-            <p className="text-lg font-bold text-danger-600 num">{worstPerformer?.symbol} {formatPercent(worstPerformer?.pnlPercent || 0)}</p>
+            <p className="text-lg font-bold text-danger-400 num">{worstPerformer?.symbol} {formatPercent(worstPerformer?.pnlPercent || 0)}</p>
           </div>
         </div>
       )}

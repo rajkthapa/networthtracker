@@ -39,7 +39,7 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-grape-50 via-white to-primary-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-th-base p-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
@@ -47,31 +47,31 @@ export default function SignupPage() {
             <TrendingUp className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-primary-600 to-grape-600 bg-clip-text text-transparent">WealthPulse</h1>
-          <p className="text-surface-500 text-sm mt-1">Create your account to start tracking.</p>
+          <p className="text-th-muted text-sm mt-1">Create your account to start tracking.</p>
         </div>
 
         {/* Form */}
-        <div className="bg-white rounded-3xl shadow-2xl p-8 border border-surface-100">
+        <div className="bg-th-card rounded-3xl shadow-[var(--shadow-glass)] p-8 border border-[var(--border-color)]">
           {success ? (
             <div className="text-center py-8">
-              <div className="w-16 h-16 rounded-full bg-success-100 flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-success-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+              <div className="w-16 h-16 rounded-full bg-success-500/15 flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-success-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
               </div>
-              <h2 className="text-xl font-bold text-surface-800 mb-2">Account Created!</h2>
-              <p className="text-sm text-surface-500">Check your email to confirm, or wait to be redirected...</p>
+              <h2 className="text-xl font-bold text-th-heading mb-2">Account Created!</h2>
+              <p className="text-sm text-th-muted">Check your email to confirm, or wait to be redirected...</p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
               {error && (
-                <div className="p-3 rounded-xl bg-danger-50 border border-danger-200 text-danger-700 text-sm">
+                <div className="p-3 rounded-xl bg-danger-500/10 border border-danger-500/30 text-danger-300 text-sm">
                   {error}
                 </div>
               )}
 
               <div>
-                <label className="block text-sm font-medium text-surface-700 mb-1.5">Full Name</label>
+                <label className="block text-sm font-medium text-th-heading mb-1.5">Full Name</label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-400" />
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-th-faint" />
                   <input
                     type="text"
                     value={fullName}
@@ -84,9 +84,9 @@ export default function SignupPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-surface-700 mb-1.5">Email</label>
+                <label className="block text-sm font-medium text-th-heading mb-1.5">Email</label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-400" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-th-faint" />
                   <input
                     type="email"
                     value={email}
@@ -99,9 +99,9 @@ export default function SignupPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-surface-700 mb-1.5">Password</label>
+                <label className="block text-sm font-medium text-th-heading mb-1.5">Password</label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-400" />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-th-faint" />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={password}
@@ -110,7 +110,7 @@ export default function SignupPage() {
                     className="input-field pl-10 pr-10"
                     required
                   />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-surface-400 hover:text-surface-600">
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-th-faint hover:text-th-body">
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
@@ -119,7 +119,7 @@ export default function SignupPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3.5 rounded-xl font-semibold text-white bg-gradient-to-r from-grape-500 to-primary-500 hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full py-3.5 rounded-xl font-semibold text-white bg-gradient-to-r from-grape-500 to-primary-500 hover:shadow-[var(--shadow-card-hover)] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -130,10 +130,10 @@ export default function SignupPage() {
 
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-surface-200" />
+                  <div className="w-full border-t border-[var(--border-strong)]" />
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="bg-white px-3 text-surface-400">or sign up with</span>
+                  <span className="bg-th-card px-3 text-th-faint">or sign up with</span>
                 </div>
               </div>
 
@@ -149,10 +149,10 @@ export default function SignupPage() {
                     setGoogleLoading(false);
                   }
                 }}
-                className="w-full py-3.5 rounded-xl font-semibold text-surface-700 bg-white border border-surface-200 hover:bg-surface-50 hover:shadow-md transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+                className="w-full py-3.5 rounded-xl font-semibold text-th-heading bg-[var(--bg-hover)] border border-[var(--border-strong)] hover:bg-[var(--bg-hover)] hover:shadow-[var(--shadow-card)] transition-all disabled:opacity-50 flex items-center justify-center gap-3"
               >
                 {googleLoading ? (
-                  <div className="w-5 h-5 border-2 border-surface-300 border-t-surface-600 rounded-full animate-spin" />
+                  <div className="w-5 h-5 border-2 border-th-faint border-t-th-body rounded-full animate-spin" />
                 ) : (
                   <>
                     <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -169,9 +169,9 @@ export default function SignupPage() {
           )}
 
           {!success && (
-            <p className="text-center text-sm text-surface-500 mt-6">
+            <p className="text-center text-sm text-th-muted mt-6">
               Already have an account?{' '}
-              <Link href="/auth/login" className="text-primary-600 font-semibold hover:underline">Sign in</Link>
+              <Link href="/auth/login" className="text-primary-400 font-semibold hover:underline">Sign in</Link>
             </p>
           )}
         </div>

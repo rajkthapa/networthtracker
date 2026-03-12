@@ -49,55 +49,55 @@ export function AddCryptoModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-surface-900/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl animate-scale-in overflow-hidden">
+      <div className="absolute inset-0 bg-[var(--bg-overlay)] backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-md bg-th-card rounded-3xl shadow-[var(--shadow-glass)] border border-[var(--border-color)] animate-scale-in overflow-hidden">
         <div className="flex items-center justify-between p-6 pb-4">
-          <h2 className="text-xl font-bold text-surface-900">Add Crypto Position</h2>
-          <button onClick={onClose} className="p-2 rounded-xl hover:bg-surface-100 transition-colors">
-            <X className="w-5 h-5 text-surface-500" />
+          <h2 className="text-xl font-bold text-th-heading">Add Crypto Position</h2>
+          <button onClick={onClose} className="p-2 rounded-xl hover:bg-[var(--bg-hover-strong)] transition-colors">
+            <X className="w-5 h-5 text-th-muted" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="px-6 pb-6 space-y-4">
           {error && (
-            <div className="p-3 rounded-xl bg-danger-50 border border-danger-200 text-danger-700 text-sm">
+            <div className="p-3 rounded-xl bg-danger-500/10 border border-danger-500/30 text-danger-300 text-sm">
               {error}
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-surface-600 mb-1.5">Symbol <span className="text-danger-500">*</span></label>
+            <label className="block text-sm font-medium text-th-body mb-1.5">Symbol <span className="text-danger-400">*</span></label>
             <input type="text" value={symbol} onChange={e => setSymbol(e.target.value)} placeholder="BTC" className="input-field uppercase" required />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-surface-600 mb-1.5">Quantity <span className="text-danger-500">*</span></label>
+            <label className="block text-sm font-medium text-th-body mb-1.5">Quantity <span className="text-danger-400">*</span></label>
             <input type="number" step="any" min="0" value={quantity} onChange={e => setQuantity(e.target.value)} placeholder="0.5" className="input-field" required />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-surface-600 mb-1.5">Avg Buy Price ($)</label>
+              <label className="block text-sm font-medium text-th-body mb-1.5">Avg Buy Price ($)</label>
               <input type="number" step="0.01" min="0" value={avgBuyPrice} onChange={e => setAvgBuyPrice(e.target.value)} placeholder="Optional" className="input-field" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-surface-600 mb-1.5">Current Price ($)</label>
+              <label className="block text-sm font-medium text-th-body mb-1.5">Current Price ($)</label>
               <input type="number" step="0.01" min="0" value={currentPrice} onChange={e => setCurrentPrice(e.target.value)} placeholder="Optional" className="input-field" />
             </div>
           </div>
 
-          <p className="text-xs text-surface-400">Prices can be fetched automatically after adding via the Refresh Prices button.</p>
+          <p className="text-xs text-th-faint">Prices can be fetched automatically after adding via the Refresh Prices button.</p>
 
           {qty > 0 && curPrice > 0 && (
-            <div className="p-3 rounded-xl bg-surface-50 text-sm">
+            <div className="p-3 rounded-xl bg-[var(--bg-subtle)] text-sm">
               <div className="flex justify-between">
-                <span className="text-surface-500">Position Value</span>
-                <span className="font-semibold text-surface-800 num">${positionValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                <span className="text-th-muted">Position Value</span>
+                <span className="font-semibold text-th-heading num">${positionValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
               </div>
               {buyPrice > 0 && (
                 <div className="flex justify-between mt-1">
-                  <span className="text-surface-500">P&L</span>
-                  <span className={`font-semibold num ${pnl >= 0 ? 'text-success-600' : 'text-danger-600'}`}>
+                  <span className="text-th-muted">P&L</span>
+                  <span className={`font-semibold num ${pnl >= 0 ? 'text-success-400' : 'text-danger-400'}`}>
                     ${pnl.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </span>
                 </div>

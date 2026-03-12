@@ -48,10 +48,10 @@ export function CategoryDrilldownModal({ category, name, icon, color, type, onCl
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-surface-900/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-2xl max-h-[90vh] bg-white rounded-3xl shadow-2xl animate-scale-in overflow-hidden flex flex-col">
+      <div className="absolute inset-0 bg-[var(--bg-overlay)] backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-2xl max-h-[90vh] bg-th-card rounded-3xl shadow-[var(--shadow-glass)] border border-[var(--border-color)] animate-scale-in overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 pb-4 border-b border-surface-100">
+        <div className="flex items-center justify-between p-6 pb-4 border-b border-[var(--border-color)]">
           <div className="flex items-center gap-3">
             <div
               className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl"
@@ -60,12 +60,12 @@ export function CategoryDrilldownModal({ category, name, icon, color, type, onCl
               {icon}
             </div>
             <div>
-              <h2 className="text-xl font-bold text-surface-900">{name}</h2>
-              <p className="text-xs text-surface-400 capitalize">{type} category</p>
+              <h2 className="text-xl font-bold text-th-heading">{name}</h2>
+              <p className="text-xs text-th-faint capitalize">{type} category</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 rounded-xl hover:bg-surface-100 transition-colors">
-            <X className="w-5 h-5 text-surface-500" />
+          <button onClick={onClose} className="p-2 rounded-xl hover:bg-[var(--bg-hover-strong)] transition-colors">
+            <X className="w-5 h-5 text-th-muted" />
           </button>
         </div>
 
@@ -74,21 +74,21 @@ export function CategoryDrilldownModal({ category, name, icon, color, type, onCl
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="stat-card border-l-4" style={{ borderColor: color }}>
               <p className="stat-label">Total All Time</p>
-              <p className="text-lg font-bold text-surface-900 num">{formatCurrency(stats.total)}</p>
+              <p className="text-lg font-bold text-th-heading num">{formatCurrency(stats.total)}</p>
             </div>
             <div className="stat-card border-l-4 border-primary-500">
               <p className="stat-label">Monthly Avg</p>
-              <p className="text-lg font-bold text-primary-600 num">{formatCurrency(stats.avg)}</p>
+              <p className="text-lg font-bold text-primary-400 num">{formatCurrency(stats.avg)}</p>
             </div>
             <div className="stat-card border-l-4 border-danger-500">
               <p className="stat-label">Highest</p>
-              <p className="text-lg font-bold text-danger-600 num">{formatCurrency(stats.max)}</p>
-              {stats.maxMonth && <p className="text-[10px] text-surface-400 mt-0.5">{stats.maxMonth.label}</p>}
+              <p className="text-lg font-bold text-danger-400 num">{formatCurrency(stats.max)}</p>
+              {stats.maxMonth && <p className="text-[10px] text-th-faint mt-0.5">{stats.maxMonth.label}</p>}
             </div>
             <div className="stat-card border-l-4 border-success-500">
               <p className="stat-label">Lowest</p>
-              <p className="text-lg font-bold text-success-600 num">{formatCurrency(stats.min)}</p>
-              {stats.minMonth && <p className="text-[10px] text-surface-400 mt-0.5">{stats.minMonth.label}</p>}
+              <p className="text-lg font-bold text-success-400 num">{formatCurrency(stats.min)}</p>
+              {stats.minMonth && <p className="text-[10px] text-th-faint mt-0.5">{stats.minMonth.label}</p>}
             </div>
           </div>
 
@@ -96,10 +96,10 @@ export function CategoryDrilldownModal({ category, name, icon, color, type, onCl
           {stats.monthCount >= 4 && (
             <div className={`flex items-center gap-2 p-3 rounded-xl text-sm font-medium ${
               stats.trendPercent > 5
-                ? type === 'expense' ? 'bg-danger-50 text-danger-700' : 'bg-success-50 text-success-700'
+                ? type === 'expense' ? 'bg-danger-500/10 text-danger-300' : 'bg-success-500/10 text-success-300'
                 : stats.trendPercent < -5
-                  ? type === 'expense' ? 'bg-success-50 text-success-700' : 'bg-danger-50 text-danger-700'
-                  : 'bg-surface-50 text-surface-600'
+                  ? type === 'expense' ? 'bg-success-500/10 text-success-300' : 'bg-danger-500/10 text-danger-300'
+                  : 'bg-[var(--bg-subtle)] text-th-body'
             }`}>
               {stats.trendPercent > 5 ? (
                 <TrendingUp className="w-4 h-4" />
@@ -118,30 +118,30 @@ export function CategoryDrilldownModal({ category, name, icon, color, type, onCl
             {history.length > 0 ? (
               <ResponsiveContainer width="100%" height={260}>
                 <BarChart data={history} barSize={history.length > 12 ? undefined : 32}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e8ebf3" vertical={false} />
-                  <XAxis dataKey="label" stroke="#8b95ad" fontSize={11} tickLine={false} axisLine={false} />
-                  <YAxis stroke="#8b95ad" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => formatCurrency(v, true)} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} />
+                  <XAxis dataKey="label" stroke="var(--chart-axis)" fontSize={11} tickLine={false} axisLine={false} />
+                  <YAxis stroke="var(--chart-axis)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => formatCurrency(v, true)} />
                   <Tooltip
                     content={({ active, payload }) => {
                       if (!active || !payload?.length) return null;
                       const d = payload[0].payload;
                       return (
-                        <div className="bg-white border border-surface-200 rounded-xl px-4 py-3 shadow-lg">
-                          <p className="text-xs text-surface-500 mb-0.5">{d.label}</p>
-                          <p className="text-sm font-bold text-surface-900 num">{formatCurrency(d.amount)}</p>
+                        <div className="bg-th-card/95 border border-[var(--border-strong)] rounded-xl px-4 py-3 shadow-lg">
+                          <p className="text-xs text-th-muted mb-0.5">{d.label}</p>
+                          <p className="text-sm font-bold text-th-heading num">{formatCurrency(d.amount)}</p>
                         </div>
                       );
                     }}
                   />
                   <Bar dataKey="amount" radius={[6, 6, 0, 0]}>
                     {history.map((entry, i) => (
-                      <Cell key={i} fill={entry.amount > 0 ? color : '#e8ebf3'} fillOpacity={entry.amount > 0 ? 0.85 : 0.3} />
+                      <Cell key={i} fill={entry.amount > 0 ? color : 'rgba(255,255,255,0.04)'} fillOpacity={entry.amount > 0 ? 0.85 : 0.3} />
                     ))}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="text-center py-12 text-surface-400 text-sm">No data yet</div>
+              <div className="text-center py-12 text-th-faint text-sm">No data yet</div>
             )}
           </div>
 
@@ -151,12 +151,12 @@ export function CategoryDrilldownModal({ category, name, icon, color, type, onCl
               <h3 className="section-header mb-3">Recent Transactions</h3>
               <div className="space-y-2">
                 {recentTxns.map(txn => (
-                  <div key={txn.id} className="flex items-center justify-between p-3 rounded-xl bg-surface-50/80">
+                  <div key={txn.id} className="flex items-center justify-between p-3 rounded-xl bg-[var(--bg-subtle)]">
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-surface-800 truncate">{txn.description}</p>
-                      <p className="text-xs text-surface-400">{txn.date}</p>
+                      <p className="text-sm font-medium text-th-heading truncate">{txn.description}</p>
+                      <p className="text-xs text-th-faint">{txn.date}</p>
                     </div>
-                    <p className={`text-sm font-bold num ml-3 ${type === 'income' ? 'text-success-600' : 'text-danger-600'}`}>
+                    <p className={`text-sm font-bold num ml-3 ${type === 'income' ? 'text-success-400' : 'text-danger-400'}`}>
                       {type === 'income' ? '+' : '-'}{formatCurrency(txn.amount)}
                     </p>
                   </div>
