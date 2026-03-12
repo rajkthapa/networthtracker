@@ -69,6 +69,13 @@ export interface CategoryBreakdown {
   icon: string;
 }
 
+export interface AccountSnapshot {
+  id: string;
+  accountId: string;
+  month: string;
+  balance: number;
+}
+
 export interface FIREData {
   currentNetWorth: number;
   annualExpenses: number;

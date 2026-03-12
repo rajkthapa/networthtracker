@@ -194,6 +194,22 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+-- Account balance snapshots (month-over-month tracking)
+CREATE TABLE IF NOT EXISTS account_snapshots (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  account_id UUID REFERENCES accounts(id) ON DELETE CASCADE NOT NULL,
+  month TEXT NOT NULL,
+  balance DECIMAL(15,2) NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(account_id, month)
+);
+ALTER TABLE account_snapshots ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can CRUD own account_snapshots" ON account_snapshots;
+CREATE POLICY "Users can CRUD own account_snapshots" ON account_snapshots FOR ALL USING (auth.uid() = user_id);
+CREATE INDEX IF NOT EXISTS idx_account_snapshots_user ON account_snapshots(user_id);
+CREATE INDEX IF NOT EXISTS idx_account_snapshots_account_month ON account_snapshots(account_id, month);
+
 -- Drop trigger if exists, then recreate
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created

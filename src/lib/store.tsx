@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useMemo, useCallback, useEffect, type ReactNode } from 'react';
-import { Account, Transaction, CryptoHolding, StockHolding, NetWorthSnapshot, MonthlyData } from './types';
+import { Account, Transaction, CryptoHolding, StockHolding, NetWorthSnapshot, MonthlyData, AccountSnapshot } from './types';
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, ACCOUNT_TYPES, DEBT_TYPES } from './utils';
 import { useAuth } from './auth-context';
 import { createClient } from './supabase';
@@ -85,6 +85,12 @@ interface AppState {
   dividendMonths: number;
 
   getCategoryHistory: (category: string) => { month: string; label: string; amount: number }[];
+
+  // Account snapshots (month-over-month balances)
+  accountSnapshots: AccountSnapshot[];
+  upsertAccountSnapshot: (accountId: string, month: string, balance: number) => Promise<void>;
+  getAccountBalanceForMonth: (accountId: string, month: string) => number | null;
+  snapshotMonths: string[];
 }
 
 const AppContext = createContext<AppState | null>(null);
@@ -186,6 +192,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [cryptoHoldings, setCryptoHoldings] = useState<CryptoHolding[]>([]);
   const [stockHoldings, setStockHoldings] = useState<StockHolding[]>([]);
   const [netWorthHistory, setNetWorthHistory] = useState<NetWorthSnapshot[]>([]);
+  const [accountSnapshots, setAccountSnapshots] = useState<AccountSnapshot[]>([]);
   const [selectedMonth, setSelectedMonth] = useState(getCurrentMonth());
 
   // === Fetch all data when user changes ===
@@ -196,6 +203,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setCryptoHoldings([]);
       setStockHoldings([]);
       setNetWorthHistory([]);
+      setAccountSnapshots([]);
       setLoading(false);
       return;
     }
@@ -203,12 +211,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
     async function fetchAll() {
       setLoading(true);
-      const [accRes, txnRes, cryptoRes, stockRes, snapRes] = await Promise.all([
+      const [accRes, txnRes, cryptoRes, stockRes, snapRes, accSnapRes] = await Promise.all([
         supabase.from('accounts').select('*').eq('user_id', user!.id).order('created_at', { ascending: false }),
         supabase.from('transactions').select('*').eq('user_id', user!.id).order('date', { ascending: false }),
         supabase.from('crypto_holdings').select('*').eq('user_id', user!.id),
         supabase.from('stock_holdings').select('*').eq('user_id', user!.id),
         supabase.from('net_worth_snapshots').select('*').eq('user_id', user!.id).order('date', { ascending: true }),
+        supabase.from('account_snapshots').select('*').eq('user_id', user!.id).order('month', { ascending: true }),
       ]);
 
       if (cancelled) return;
@@ -218,12 +227,85 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setCryptoHoldings((cryptoRes.data || []).map(mapCrypto));
       setStockHoldings((stockRes.data || []).map(mapStock));
       setNetWorthHistory((snapRes.data || []).map(mapSnapshot));
+      setAccountSnapshots((accSnapRes.data || []).map((r: any) => ({
+        id: r.id, accountId: r.account_id, month: r.month, balance: Number(r.balance),
+      })));
       setLoading(false);
     }
 
     fetchAll();
     return () => { cancelled = true; };
   }, [user, supabase]);
+
+  // Auto-refresh prices on initial load (once per session)
+  const [pricesRefreshed, setPricesRefreshed] = useState(false);
+  useEffect(() => {
+    if (loading || pricesRefreshed) return;
+    if (stockHoldings.length === 0 && cryptoHoldings.length === 0) return;
+    setPricesRefreshed(true);
+
+    async function autoRefresh() {
+      setPricesLoading(true);
+      try {
+        const promises: Promise<void>[] = [];
+        if (stockHoldings.length > 0) {
+          const tickers = Array.from(new Set(stockHoldings.map(h => h.ticker)));
+          promises.push(
+            fetch(`/api/prices?type=stock&symbols=${tickers.join(',')}`)
+              .then(r => r.json())
+              .then(({ prices }) => {
+                if (prices) {
+                  for (const holding of stockHoldings) {
+                    const p = prices[holding.ticker];
+                    if (p) {
+                      supabase.from('stock_holdings').update({
+                        current_price: p.price,
+                        price_change_24h: p.change24h,
+                        updated_at: new Date().toISOString(),
+                      }).eq('id', holding.id).then(() => {});
+                    }
+                  }
+                  setStockHoldings(prev => prev.map(h => {
+                    const p = prices[h.ticker];
+                    return p ? { ...h, currentPrice: p.price, priceChange24h: p.change24h } : h;
+                  }));
+                }
+              })
+          );
+        }
+        if (cryptoHoldings.length > 0) {
+          const symbols = cryptoHoldings.map(h => h.symbol);
+          promises.push(
+            fetch(`/api/prices?type=crypto&symbols=${symbols.join(',')}`)
+              .then(r => r.json())
+              .then(({ prices }) => {
+                if (prices) {
+                  for (const holding of cryptoHoldings) {
+                    const p = prices[holding.symbol];
+                    if (p) {
+                      supabase.from('crypto_holdings').update({
+                        current_price: p.price,
+                        price_change_24h: p.change24h,
+                        updated_at: new Date().toISOString(),
+                      }).eq('id', holding.id).then(() => {});
+                    }
+                  }
+                  setCryptoHoldings(prev => prev.map(h => {
+                    const p = prices[h.symbol];
+                    return p ? { ...h, currentPrice: p.price, priceChange24h: p.change24h } : h;
+                  }));
+                }
+              })
+          );
+        }
+        await Promise.all(promises);
+      } catch (err) {
+        console.error('Auto-refresh prices failed:', err);
+      }
+      setPricesLoading(false);
+    }
+    autoRefresh();
+  }, [loading, stockHoldings.length, cryptoHoldings.length, pricesRefreshed]);
 
   // === Account Actions ===
   const addAccount = useCallback(async (account: Omit<Account, 'id' | 'createdAt'>) => {
@@ -355,6 +437,39 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const getStocksByAccount = useCallback((accountId: string) => {
     return stockHoldings.filter(s => s.accountId === accountId);
   }, [stockHoldings]);
+
+  // === Account Snapshots ===
+  const upsertAccountSnapshot = useCallback(async (accountId: string, month: string, balance: number) => {
+    if (!user) return;
+    const { data, error } = await supabase.from('account_snapshots').upsert({
+      user_id: user.id,
+      account_id: accountId,
+      month,
+      balance,
+    }, { onConflict: 'account_id,month' }).select().single();
+    if (!error && data) {
+      setAccountSnapshots(prev => {
+        const filtered = prev.filter(s => !(s.accountId === accountId && s.month === month));
+        return [...filtered, { id: data.id, accountId: data.account_id, month: data.month, balance: Number(data.balance) }];
+      });
+      // Also update the account's current balance to the latest snapshot
+      const allSnaps = [...accountSnapshots.filter(s => s.accountId !== accountId || s.month !== month), { accountId, month, balance, id: data.id }];
+      const latestSnap = allSnaps.filter(s => s.accountId === accountId).sort((a, b) => b.month.localeCompare(a.month))[0];
+      if (latestSnap) {
+        await updateAccount(accountId, { balance: latestSnap.balance });
+      }
+    }
+  }, [user, supabase, accountSnapshots, updateAccount]);
+
+  const getAccountBalanceForMonth = useCallback((accountId: string, month: string): number | null => {
+    const snap = accountSnapshots.find(s => s.accountId === accountId && s.month === month);
+    return snap ? snap.balance : null;
+  }, [accountSnapshots]);
+
+  const snapshotMonths = useMemo(() => {
+    const set = new Set(accountSnapshots.map(s => s.month));
+    return Array.from(set).sort().reverse();
+  }, [accountSnapshots]);
 
   // === Price Refresh ===
   const refreshCryptoPrices = useCallback(async () => {
@@ -506,6 +621,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       incomeChange, expenseChange, savingsChange,
       monthlyData, getCategoryBreakdown, getMonthTotals,
       totalDividends, monthlyAvgDividend, dividendMonths, getCategoryHistory,
+      accountSnapshots, upsertAccountSnapshot, getAccountBalanceForMonth, snapshotMonths,
     }}>
       {children}
     </AppContext.Provider>

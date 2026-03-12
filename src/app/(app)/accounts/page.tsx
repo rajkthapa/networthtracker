@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import { Plus, Trash2, TrendingUp, TrendingDown, Building2, Edit3, Check, X, ChevronDown, ChevronRight } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Plus, Trash2, TrendingUp, TrendingDown, Building2, Edit3, Check, X, ChevronDown, ChevronRight, RefreshCcw, Calendar } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { formatCurrency, formatPercent, ACCOUNT_TYPES, LIQUID_ACCOUNT_TYPES } from '@/lib/utils';
+import type { Account, AccountSnapshot } from '@/lib/types';
 import { AddAccountModal } from '@/components/modals/AddAccountModal';
 import { AddStockModal } from '@/components/modals/AddStockModal';
 import { UpgradeModal } from '@/components/subscription/UpgradeModal';
@@ -13,7 +14,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis
 const INVESTMENT_TYPES = ['401k', 'ira', 'roth_ira', 'brokerage', 'hsa'];
 
 export default function AccountsPage() {
-  const { accounts, totalAssets, totalDebts, netWorth, deleteAccount, updateAccount, getStocksByAccount, deleteStockHolding } = useApp();
+  const { accounts, totalAssets, totalDebts, netWorth, deleteAccount, updateAccount, getStocksByAccount, deleteStockHolding, refreshStockPrices, pricesLoading, accountSnapshots, upsertAccountSnapshot, getAccountBalanceForMonth, snapshotMonths } = useApp();
   const { isPro } = useSubscription();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -73,17 +74,23 @@ export default function AccountsPage() {
           <h1 className="page-header">Accounts & Assets</h1>
           <p className="text-sm text-surface-500 mt-1">{assets.length} assets, {debts.length} debts</p>
         </div>
-        <button onClick={() => {
-          if (!isPro && accounts.length >= 3) {
-            setShowUpgradeModal(true);
-          } else {
-            setShowAddModal(true);
-          }
-        }} className="btn-primary flex items-center gap-2">
-          <Plus className="w-4 h-4" />
-          Add Account
-          {!isPro && <span className="text-xs opacity-70">({accounts.length}/3)</span>}
-        </button>
+        <div className="flex gap-2">
+          <button onClick={refreshStockPrices} disabled={pricesLoading} className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-surface-200 text-sm font-medium text-surface-600 hover:bg-surface-50 transition-all disabled:opacity-50">
+            <RefreshCcw className={`w-4 h-4 ${pricesLoading ? 'animate-spin' : ''}`} />
+            Refresh Prices
+          </button>
+          <button onClick={() => {
+            if (!isPro && accounts.length >= 3) {
+              setShowUpgradeModal(true);
+            } else {
+              setShowAddModal(true);
+            }
+          }} className="btn-primary flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            Add Account
+            {!isPro && <span className="text-xs opacity-70">({accounts.length}/3)</span>}
+          </button>
+        </div>
       </div>
 
       {/* Summary Cards */}
@@ -487,9 +494,219 @@ export default function AccountsPage() {
         )}
       </div>
 
+      {/* Monthly Balance Tracker */}
+      <MonthlyBalanceTracker
+        accounts={accounts}
+        accountSnapshots={accountSnapshots}
+        snapshotMonths={snapshotMonths}
+        getAccountBalanceForMonth={getAccountBalanceForMonth}
+        upsertAccountSnapshot={upsertAccountSnapshot}
+      />
+
       {showAddModal && <AddAccountModal onClose={() => setShowAddModal(false)} />}
       {showStockModal && <AddStockModal onClose={() => setShowStockModal(null)} accountId={showStockModal.accountId} accountName={showStockModal.accountName} />}
       <UpgradeModal open={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} feature="Unlimited accounts" />
+    </div>
+  );
+}
+
+function MonthlyBalanceTracker({ accounts, accountSnapshots, snapshotMonths, getAccountBalanceForMonth, upsertAccountSnapshot }: {
+  accounts: Account[];
+  accountSnapshots: AccountSnapshot[];
+  snapshotMonths: string[];
+  getAccountBalanceForMonth: (accountId: string, month: string) => number | null;
+  upsertAccountSnapshot: (accountId: string, month: string, balance: number) => Promise<void>;
+}) {
+  const [selectedSnapMonth, setSelectedSnapMonth] = useState(() => {
+    if (snapshotMonths.length > 0) return snapshotMonths[0];
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  });
+  const [editingCell, setEditingCell] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState('');
+  const [addingMonth, setAddingMonth] = useState(false);
+  const [newMonth, setNewMonth] = useState('');
+
+  // All available months (snapshot months + option to add new)
+  const allMonths = useMemo(() => {
+    const set = new Set(snapshotMonths);
+    return Array.from(set).sort().reverse();
+  }, [snapshotMonths]);
+
+  const nonDebtAccounts = accounts.filter(a => !a.isDebt);
+
+  const startEdit = (accountId: string, currentBalance: number | null) => {
+    setEditingCell(accountId);
+    setEditValue(currentBalance !== null ? currentBalance.toString() : '');
+  };
+
+  const saveEdit = async (accountId: string) => {
+    const val = parseFloat(editValue);
+    if (!isNaN(val)) {
+      await upsertAccountSnapshot(accountId, selectedSnapMonth, val);
+    }
+    setEditingCell(null);
+  };
+
+  const handleAddMonth = () => {
+    if (newMonth && !allMonths.includes(newMonth)) {
+      setSelectedSnapMonth(newMonth);
+      setAddingMonth(false);
+      setNewMonth('');
+    }
+  };
+
+  // Calculate totals per month for comparison
+  const monthTotal = nonDebtAccounts.reduce((sum, acc) => {
+    const bal = getAccountBalanceForMonth(acc.id, selectedSnapMonth);
+    return sum + (bal ?? 0);
+  }, 0);
+
+  // Find previous month for comparison
+  const sortedMonths = allMonths.sort();
+  const currentIdx = sortedMonths.indexOf(selectedSnapMonth);
+  const prevMonth = currentIdx > 0 ? sortedMonths[currentIdx - 1] : null;
+  const prevTotal = prevMonth ? nonDebtAccounts.reduce((sum, acc) => {
+    const bal = getAccountBalanceForMonth(acc.id, prevMonth);
+    return sum + (bal ?? 0);
+  }, 0) : null;
+
+  if (accounts.length === 0) return null;
+
+  return (
+    <div className="chart-container">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="section-header flex items-center gap-2">
+          <Calendar className="w-5 h-5 text-primary-500" />
+          Monthly Balance Tracking
+        </h3>
+        <div className="flex items-center gap-2">
+          {!addingMonth ? (
+            <>
+              <select
+                value={selectedSnapMonth}
+                onChange={e => setSelectedSnapMonth(e.target.value)}
+                className="appearance-none bg-white border border-surface-200 rounded-xl px-3 py-2 pr-8 text-sm font-medium text-surface-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500/30"
+              >
+                {allMonths.map(m => {
+                  const [y, mo] = m.split('-');
+                  const label = new Date(parseInt(y), parseInt(mo) - 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+                  return <option key={m} value={m}>{label}</option>;
+                })}
+              </select>
+              <button
+                onClick={() => { setAddingMonth(true); setNewMonth(''); }}
+                className="flex items-center gap-1 px-3 py-2 rounded-xl border border-surface-200 text-sm font-medium text-surface-600 hover:bg-surface-50 transition-all"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Month
+              </button>
+            </>
+          ) : (
+            <div className="flex items-center gap-2">
+              <input
+                type="month"
+                value={newMonth}
+                onChange={e => setNewMonth(e.target.value)}
+                className="input-field py-1.5 text-sm"
+                autoFocus
+              />
+              <button onClick={handleAddMonth} disabled={!newMonth} className="p-1.5 rounded-lg text-success-500 hover:bg-success-50 disabled:opacity-50"><Check className="w-4 h-4" /></button>
+              <button onClick={() => setAddingMonth(false)} className="p-1.5 rounded-lg text-surface-400 hover:bg-surface-50"><X className="w-4 h-4" /></button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Summary */}
+      <div className="flex items-center gap-4 mb-4 p-3 rounded-xl bg-surface-50">
+        <div>
+          <p className="text-[10px] text-surface-400 uppercase font-semibold">Total (Non-Debt)</p>
+          <p className="text-lg font-bold text-surface-800 num">{formatCurrency(monthTotal)}</p>
+        </div>
+        {prevTotal !== null && prevTotal > 0 && (
+          <div>
+            <p className="text-[10px] text-surface-400 uppercase font-semibold">Change</p>
+            <p className={`text-sm font-bold num ${monthTotal - prevTotal >= 0 ? 'text-success-600' : 'text-danger-600'}`}>
+              {monthTotal - prevTotal >= 0 ? '+' : ''}{formatCurrency(monthTotal - prevTotal)}
+              <span className="text-xs ml-1">({((monthTotal - prevTotal) / prevTotal * 100).toFixed(1)}%)</span>
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Account table */}
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-surface-100">
+              <th className="text-left stat-label py-3 px-2">Account</th>
+              <th className="text-right stat-label py-3 px-2">Balance</th>
+              {prevMonth && <th className="text-right stat-label py-3 px-2">Change</th>}
+              <th className="text-right stat-label py-3 px-2 w-20"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {nonDebtAccounts.map(acc => {
+              const bal = getAccountBalanceForMonth(acc.id, selectedSnapMonth);
+              const prevBal = prevMonth ? getAccountBalanceForMonth(acc.id, prevMonth) : null;
+              const change = bal !== null && prevBal !== null ? bal - prevBal : null;
+
+              return (
+                <tr key={acc.id} className="border-b border-surface-50 group">
+                  <td className="py-3 px-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">{acc.icon}</span>
+                      <span className="text-sm font-medium text-surface-700">{acc.name}</span>
+                    </div>
+                  </td>
+                  <td className="py-3 px-2 text-right">
+                    {editingCell === acc.id ? (
+                      <div className="flex items-center justify-end gap-1">
+                        <input
+                          type="number"
+                          value={editValue}
+                          onChange={e => setEditValue(e.target.value)}
+                          onKeyDown={e => { if (e.key === 'Enter') saveEdit(acc.id); if (e.key === 'Escape') setEditingCell(null); }}
+                          className="input-field w-32 py-1 text-sm text-right"
+                          autoFocus
+                        />
+                        <button onClick={() => saveEdit(acc.id)} className="p-1 rounded text-success-500 hover:bg-success-50"><Check className="w-3.5 h-3.5" /></button>
+                        <button onClick={() => setEditingCell(null)} className="p-1 rounded text-surface-400 hover:bg-surface-50"><X className="w-3.5 h-3.5" /></button>
+                      </div>
+                    ) : (
+                      <span className={`text-sm font-semibold num ${bal !== null ? 'text-surface-800' : 'text-surface-300'}`}>
+                        {bal !== null ? formatCurrency(bal) : '—'}
+                      </span>
+                    )}
+                  </td>
+                  {prevMonth && (
+                    <td className="py-3 px-2 text-right">
+                      {change !== null ? (
+                        <span className={`text-xs font-semibold num ${change >= 0 ? 'text-success-600' : 'text-danger-600'}`}>
+                          {change >= 0 ? '+' : ''}{formatCurrency(change)}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-surface-300">—</span>
+                      )}
+                    </td>
+                  )}
+                  <td className="py-3 px-2 text-right">
+                    {editingCell !== acc.id && (
+                      <button
+                        onClick={() => startEdit(acc.id, bal)}
+                        className="p-1.5 rounded-lg text-surface-300 hover:text-primary-500 hover:bg-primary-50 opacity-0 group-hover:opacity-100 transition-all"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

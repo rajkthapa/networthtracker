@@ -106,8 +106,8 @@ export const ACCOUNT_TYPES = [
   { id: 'other_asset', name: 'Other Asset', icon: '💎', color: '#cc5de8' },
 ];
 
-export const LIQUID_ACCOUNT_TYPES = ['checking', 'savings', 'brokerage', 'crypto_wallet', 'hsa'];
-export const ILLIQUID_ACCOUNT_TYPES = ['401k', 'ira', 'roth_ira', '529', 'real_estate', 'vehicle', 'other_asset'];
+export const LIQUID_ACCOUNT_TYPES = ['checking', 'savings', 'brokerage', 'crypto_wallet', 'hsa', '401k', 'ira', 'roth_ira', '529'];
+export const ILLIQUID_ACCOUNT_TYPES = ['real_estate', 'vehicle', 'other_asset'];
 
 export const DEBT_TYPES = [
   { id: 'mortgage_debt', name: 'Mortgage', icon: '🏠', color: '#fa5252' },
