@@ -30,14 +30,14 @@ export function formatNumber(num: number): string {
 }
 
 export function getChangeColor(value: number): string {
-  if (value > 0) return 'text-success-400';
-  if (value < 0) return 'text-danger-400';
+  if (value > 0) return 'text-[var(--text-positive)]';
+  if (value < 0) return 'text-[var(--text-negative)]';
   return 'text-th-faint';
 }
 
 export function getChangeBgColor(value: number): string {
-  if (value > 0) return 'bg-success-500/10 text-success-400';
-  if (value < 0) return 'bg-danger-500/10 text-danger-400';
+  if (value > 0) return 'bg-[var(--bg-positive-subtle)] text-[var(--text-positive)]';
+  if (value < 0) return 'bg-[var(--bg-negative-subtle)] text-[var(--text-negative)]';
   return 'bg-[var(--bg-hover)] text-th-muted';
 }
 

@@ -107,7 +107,7 @@ function RecentTransactions() {
     <div className="chart-container">
       <div className="flex items-center justify-between mb-4">
         <h3 className="section-header">Recent Transactions</h3>
-        <a href="/transactions" className="text-sm text-[var(--text-accent)] font-medium hover:text-primary-300">View all</a>
+        <a href="/transactions" className="text-sm text-[var(--text-accent)] font-medium hover:opacity-80">View all</a>
       </div>
       <div className="space-y-1">
         {monthTxns.length === 0 && (
@@ -151,7 +151,7 @@ function AccountsSummary() {
     <div className="chart-container">
       <div className="flex items-center justify-between mb-4">
         <h3 className="section-header">Accounts</h3>
-        <a href="/accounts" className="text-sm text-[var(--text-accent)] font-medium hover:text-primary-300">View all</a>
+        <a href="/accounts" className="text-sm text-[var(--text-accent)] font-medium hover:opacity-80">View all</a>
       </div>
       <div className="space-y-2">
         <p className="stat-label">Assets</p>

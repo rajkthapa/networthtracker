@@ -22,8 +22,8 @@ export default function FIREPage() {
         </div>
         <div className="relative overflow-hidden rounded-3xl bg-[var(--bg-subtle)] p-10 md:p-16 text-center border border-[var(--border-color)]">
           <div className="max-w-md mx-auto">
-            <div className="w-16 h-16 rounded-2xl bg-danger-500/15 flex items-center justify-center mx-auto mb-6">
-              <Lock className="w-8 h-8 text-danger-400" />
+            <div className="w-16 h-16 rounded-2xl bg-[var(--bg-negative-subtle)] flex items-center justify-center mx-auto mb-6">
+              <Lock className="w-8 h-8 text-[var(--text-negative)]" />
             </div>
             <h2 className="text-2xl font-bold text-th-heading mb-3">Pro Feature</h2>
             <p className="text-th-muted mb-8">
@@ -135,7 +135,7 @@ export default function FIREPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="stat-card border-l-4 border-success-500/50">
           <div className="flex items-center gap-2 mb-2">
-            <Shield className="w-5 h-5 text-success-400" />
+            <Shield className="w-5 h-5 text-[var(--text-positive)]" />
             <p className="text-sm font-semibold text-th-heading">Lean FIRE</p>
           </div>
           <p className="text-xl font-bold text-th-heading num">{formatCurrency(leanFireNumber, true)}</p>

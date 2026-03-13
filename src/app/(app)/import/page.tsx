@@ -124,7 +124,7 @@ export default function ImportPage() {
         >
           {importStatus === 'idle' && (
             <>
-              <div className="w-16 h-16 rounded-2xl bg-primary-500/15 text-primary-400 flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 rounded-2xl bg-[var(--bg-accent-subtle)] text-[var(--text-accent)] flex items-center justify-center mx-auto mb-4">
                 <Upload className="w-8 h-8" />
               </div>
               <h3 className="text-lg font-semibold text-th-heading mb-2">
@@ -151,7 +151,7 @@ export default function ImportPage() {
 
           {importStatus === 'processing' && (
             <div className="space-y-4">
-              <div className="w-16 h-16 rounded-2xl bg-primary-500/15 text-primary-400 flex items-center justify-center mx-auto animate-pulse-soft">
+              <div className="w-16 h-16 rounded-2xl bg-[var(--bg-accent-subtle)] text-[var(--text-accent)] flex items-center justify-center mx-auto animate-pulse-soft">
                 <Upload className="w-8 h-8" />
               </div>
               <h3 className="text-lg font-semibold text-th-heading">Processing your file...</h3>
@@ -164,7 +164,7 @@ export default function ImportPage() {
 
           {importStatus === 'success' && (
             <div className="space-y-4">
-              <div className="w-16 h-16 rounded-2xl bg-success-500/15 text-success-400 flex items-center justify-center mx-auto">
+              <div className="w-16 h-16 rounded-2xl bg-[var(--bg-positive-subtle)] text-[var(--text-positive)] flex items-center justify-center mx-auto">
                 <CheckCircle2 className="w-8 h-8" />
               </div>
               <h3 className="text-lg font-semibold text-th-heading">Import Successful!</h3>
@@ -177,7 +177,7 @@ export default function ImportPage() {
 
           {importStatus === 'error' && (
             <div className="space-y-4">
-              <div className="w-16 h-16 rounded-2xl bg-danger-500/15 text-danger-400 flex items-center justify-center mx-auto">
+              <div className="w-16 h-16 rounded-2xl bg-[var(--bg-negative-subtle)] text-[var(--text-negative)] flex items-center justify-center mx-auto">
                 <AlertCircle className="w-8 h-8" />
               </div>
               <h3 className="text-lg font-semibold text-th-heading">Import Failed</h3>
@@ -278,7 +278,7 @@ export default function ImportPage() {
 
           {importStatus === 'success' && (
             <div className="mt-4 p-3 rounded-xl bg-success-500/10 border border-success-500/30 flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-success-400" />
+              <CheckCircle2 className="w-4 h-4 text-[var(--text-positive)]" />
               <p className="text-sm text-[var(--text-positive)] font-medium">Transaction added successfully!</p>
             </div>
           )}

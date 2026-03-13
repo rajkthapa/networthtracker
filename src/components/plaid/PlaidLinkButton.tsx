@@ -108,7 +108,7 @@ export default function PlaidLinkButton({ onSuccess }: PlaidLinkButtonProps) {
   return (
     <div className="text-center">
       {error && (
-        <div className="mb-4 p-3 rounded-xl bg-danger-500/10 border border-danger-500/30 text-sm text-danger-300">
+        <div className="mb-4 p-3 rounded-xl bg-danger-500/10 border border-danger-500/30 text-sm text-[var(--text-negative)]">
           {error}
         </div>
       )}

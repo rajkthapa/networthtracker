@@ -67,7 +67,7 @@ export default function PlaidConnectionsList({ refreshKey }: PlaidConnectionsLis
       <h4 className="text-sm font-semibold text-th-body mb-3">Linked Banks</h4>
 
       {syncResult && (
-        <div className="mb-3 p-3 rounded-xl bg-primary-500/10 border border-primary-500/20 text-sm text-primary-300">
+        <div className="mb-3 p-3 rounded-xl bg-primary-500/10 border border-primary-500/20 text-sm text-[var(--text-accent)]">
           {syncResult}
         </div>
       )}

@@ -48,7 +48,7 @@ export function UpgradeModal({ open, onClose, feature }: UpgradeModalProps) {
           <h2 className="text-2xl font-bold text-th-heading mb-2">Upgrade to Pro</h2>
           {feature && (
             <p className="text-sm text-th-muted">
-              <span className="font-semibold text-grape-400">{feature}</span> is a Pro feature.
+              <span className="font-semibold text-[var(--text-accent-secondary)]">{feature}</span> is a Pro feature.
               Upgrade to unlock it and much more.
             </p>
           )}

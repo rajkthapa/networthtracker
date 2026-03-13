@@ -17,13 +17,13 @@ const features = [
     icon: Bitcoin,
     title: 'Crypto Portfolio',
     description: 'Monitor your crypto holdings with live CoinGecko prices, 24h changes, and portfolio allocation.',
-    color: 'bg-warning-500/10 text-warning-400',
+    color: 'bg-[var(--bg-amber-subtle)] text-[var(--text-warn)]',
   },
   {
     icon: Landmark,
     title: 'Bank Connections',
     description: 'Connect your bank accounts with Plaid for automatic balance syncing and transaction imports.',
-    color: 'bg-grape-500/10 text-grape-400',
+    color: 'bg-grape-500/10 text-[var(--text-accent-secondary)]',
     pro: true,
   },
   {
