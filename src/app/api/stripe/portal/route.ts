@@ -31,7 +31,8 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (!sub?.stripe_customer_id) {
-      return NextResponse.json({ error: 'No subscription found' }, { status: 404 });
+      // No Stripe customer yet — redirect to checkout instead
+      return NextResponse.json({ error: 'No active subscription. Please upgrade first.', redirect: '/dashboard' }, { status: 404 });
     }
 
     const session = await stripe.billingPortal.sessions.create({

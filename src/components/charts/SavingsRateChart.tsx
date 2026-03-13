@@ -13,7 +13,7 @@ export function SavingsRateChart({ height = 250 }: { height?: number }) {
         <h3 className="section-header mb-4">Savings Rate Trend</h3>
         <div className="flex flex-col items-center justify-center py-16 gap-3">
           <div className="w-14 h-14 rounded-2xl bg-grape-500/10 flex items-center justify-center">
-            <PiggyBank className="w-7 h-7 text-grape-300" />
+            <PiggyBank className="w-7 h-7 text-[var(--text-accent-secondary)]" />
           </div>
           <p className="text-sm font-medium text-th-body">No savings data yet</p>
           <p className="text-xs text-th-muted text-center max-w-[200px]">Track income and expenses to see your savings rate trend</p>
@@ -42,7 +42,7 @@ export function SavingsRateChart({ height = 250 }: { height?: number }) {
               return (
                 <div className="bg-th-card/95 border border-[var(--border-strong)] rounded-xl px-4 py-3 shadow-lg">
                   <p className="text-xs text-th-muted mb-1">{label}</p>
-                  <p className="text-lg font-bold text-grape-400 num">{(payload[0].value as number).toFixed(1)}%</p>
+                  <p className="text-lg font-bold text-[var(--text-accent-secondary)] num">{(payload[0].value as number).toFixed(1)}%</p>
                   <p className="text-[10px] text-th-faint">Savings Rate</p>
                 </div>
               );

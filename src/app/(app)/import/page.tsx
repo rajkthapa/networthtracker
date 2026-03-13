@@ -31,11 +31,11 @@ export default function ImportPage() {
   });
 
   const methods = [
-    { id: 'csv' as const, name: 'CSV / Excel', icon: Table2, description: 'Import from spreadsheet files', color: 'text-success-400 bg-success-500/15' },
-    { id: 'pdf' as const, name: 'PDF Statement', icon: FileText, description: 'Extract from bank statements', color: 'text-primary-400 bg-primary-500/15' },
-    { id: 'image' as const, name: 'Receipt Image', icon: Image, description: 'Scan receipts and invoices', color: 'text-grape-400 bg-grape-500/15' },
-    { id: 'plaid' as const, name: 'Connect Bank', icon: Link2, description: 'Link via Plaid', color: 'text-cyan-400 bg-cyan-500/15' },
-    { id: 'manual' as const, name: 'Manual Entry', icon: Plus, description: 'Add transactions manually', color: 'text-warning-400 bg-warning-500/15' },
+    { id: 'csv' as const, name: 'CSV / Excel', icon: Table2, description: 'Import from spreadsheet files', color: 'text-[var(--text-positive)] bg-[var(--bg-positive-subtle)]' },
+    { id: 'pdf' as const, name: 'PDF Statement', icon: FileText, description: 'Extract from bank statements', color: 'text-[var(--text-accent)] bg-[var(--bg-accent-subtle)]' },
+    { id: 'image' as const, name: 'Receipt Image', icon: Image, description: 'Scan receipts and invoices', color: 'text-[var(--text-accent-secondary)] bg-grape-500/10' },
+    { id: 'plaid' as const, name: 'Connect Bank', icon: Link2, description: 'Link via Plaid', color: 'text-[var(--text-info)] bg-cyan-500/10' },
+    { id: 'manual' as const, name: 'Manual Entry', icon: Plus, description: 'Add transactions manually', color: 'text-[var(--text-warn)] bg-[var(--bg-amber-subtle)]' },
   ];
 
   const handleDrop = (e: React.DragEvent) => {
@@ -279,7 +279,7 @@ export default function ImportPage() {
           {importStatus === 'success' && (
             <div className="mt-4 p-3 rounded-xl bg-success-500/10 border border-success-500/30 flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-success-400" />
-              <p className="text-sm text-success-300 font-medium">Transaction added successfully!</p>
+              <p className="text-sm text-[var(--text-positive)] font-medium">Transaction added successfully!</p>
             </div>
           )}
         </div>

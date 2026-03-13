@@ -55,7 +55,7 @@ export default function SignupPage() {
           {success ? (
             <div className="text-center py-8">
               <div className="w-16 h-16 rounded-full bg-success-500/15 flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-success-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                <svg className="w-8 h-8 text-[var(--text-positive)]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
               </div>
               <h2 className="text-xl font-bold text-th-heading mb-2">Account Created!</h2>
               <p className="text-sm text-th-muted">Check your email to confirm, or wait to be redirected...</p>
@@ -63,7 +63,7 @@ export default function SignupPage() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
               {error && (
-                <div className="p-3 rounded-xl bg-danger-500/10 border border-danger-500/30 text-danger-300 text-sm">
+                <div className="p-3 rounded-xl bg-[var(--bg-negative-subtle)] border border-danger-500/30 text-[var(--text-negative)] text-sm">
                   {error}
                 </div>
               )}
@@ -171,7 +171,7 @@ export default function SignupPage() {
           {!success && (
             <p className="text-center text-sm text-th-muted mt-6">
               Already have an account?{' '}
-              <Link href="/auth/login" className="text-primary-400 font-semibold hover:underline">Sign in</Link>
+              <Link href="/auth/login" className="text-[var(--text-accent)] font-semibold hover:underline">Sign in</Link>
             </p>
           )}
         </div>

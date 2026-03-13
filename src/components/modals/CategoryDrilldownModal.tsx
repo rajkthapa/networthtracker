@@ -78,16 +78,16 @@ export function CategoryDrilldownModal({ category, name, icon, color, type, onCl
             </div>
             <div className="stat-card border-l-4 border-primary-500">
               <p className="stat-label">Monthly Avg</p>
-              <p className="text-lg font-bold text-primary-400 num">{formatCurrency(stats.avg)}</p>
+              <p className="text-lg font-bold text-[var(--text-accent)] num">{formatCurrency(stats.avg)}</p>
             </div>
             <div className="stat-card border-l-4 border-danger-500">
               <p className="stat-label">Highest</p>
-              <p className="text-lg font-bold text-danger-400 num">{formatCurrency(stats.max)}</p>
+              <p className="text-lg font-bold text-[var(--text-negative)] num">{formatCurrency(stats.max)}</p>
               {stats.maxMonth && <p className="text-[10px] text-th-faint mt-0.5">{stats.maxMonth.label}</p>}
             </div>
             <div className="stat-card border-l-4 border-success-500">
               <p className="stat-label">Lowest</p>
-              <p className="text-lg font-bold text-success-400 num">{formatCurrency(stats.min)}</p>
+              <p className="text-lg font-bold text-[var(--text-positive)] num">{formatCurrency(stats.min)}</p>
               {stats.minMonth && <p className="text-[10px] text-th-faint mt-0.5">{stats.minMonth.label}</p>}
             </div>
           </div>
@@ -96,9 +96,9 @@ export function CategoryDrilldownModal({ category, name, icon, color, type, onCl
           {stats.monthCount >= 4 && (
             <div className={`flex items-center gap-2 p-3 rounded-xl text-sm font-medium ${
               stats.trendPercent > 5
-                ? type === 'expense' ? 'bg-danger-500/10 text-danger-300' : 'bg-success-500/10 text-success-300'
+                ? type === 'expense' ? 'bg-[var(--bg-negative-subtle)] text-[var(--text-negative)]' : 'bg-[var(--bg-positive-subtle)] text-[var(--text-positive)]'
                 : stats.trendPercent < -5
-                  ? type === 'expense' ? 'bg-success-500/10 text-success-300' : 'bg-danger-500/10 text-danger-300'
+                  ? type === 'expense' ? 'bg-[var(--bg-positive-subtle)] text-[var(--text-positive)]' : 'bg-[var(--bg-negative-subtle)] text-[var(--text-negative)]'
                   : 'bg-[var(--bg-subtle)] text-th-body'
             }`}>
               {stats.trendPercent > 5 ? (
@@ -156,7 +156,7 @@ export function CategoryDrilldownModal({ category, name, icon, color, type, onCl
                       <p className="text-sm font-medium text-th-heading truncate">{txn.description}</p>
                       <p className="text-xs text-th-faint">{txn.date}</p>
                     </div>
-                    <p className={`text-sm font-bold num ml-3 ${type === 'income' ? 'text-success-400' : 'text-danger-400'}`}>
+                    <p className={`text-sm font-bold num ml-3 ${type === 'income' ? 'text-[var(--text-positive)]' : 'text-[var(--text-negative)]'}`}>
                       {type === 'income' ? '+' : '-'}{formatCurrency(txn.amount)}
                     </p>
                   </div>

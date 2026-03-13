@@ -81,19 +81,19 @@ export default function TransactionsPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="stat-card border-l-4 border-success-500">
           <p className="stat-label">Income</p>
-          <p className="text-lg font-bold text-success-400 num">{formatCurrency(monthTotals.income)}</p>
+          <p className="text-lg font-bold text-[var(--text-positive)] num">{formatCurrency(monthTotals.income)}</p>
         </div>
         <div className="stat-card border-l-4 border-danger-500">
           <p className="stat-label">Expenses</p>
-          <p className="text-lg font-bold text-danger-400 num">{formatCurrency(monthTotals.expenses)}</p>
+          <p className="text-lg font-bold text-[var(--text-negative)] num">{formatCurrency(monthTotals.expenses)}</p>
         </div>
         <div className="stat-card border-l-4 border-primary-500">
           <p className="stat-label">Net Savings</p>
-          <p className={`text-lg font-bold num ${monthTotals.savings >= 0 ? 'text-primary-400' : 'text-danger-400'}`}>{formatCurrency(monthTotals.savings)}</p>
+          <p className={`text-lg font-bold num ${monthTotals.savings >= 0 ? 'text-[var(--text-accent)]' : 'text-[var(--text-negative)]'}`}>{formatCurrency(monthTotals.savings)}</p>
         </div>
         <div className="stat-card border-l-4 border-grape-500">
           <p className="stat-label">Savings Rate</p>
-          <p className="text-lg font-bold text-grape-400 num">{monthTotals.savingsRate.toFixed(1)}%</p>
+          <p className="text-lg font-bold text-[var(--text-accent-secondary)] num">{monthTotals.savingsRate.toFixed(1)}%</p>
         </div>
       </div>
 
@@ -161,8 +161,8 @@ export default function TransactionsPage() {
                 <div className="flex-1 h-px bg-[var(--bg-hover)]" />
                 {daily && (
                   <div className="flex gap-3 text-xs">
-                    {daily.income > 0 && <span className="text-success-400 font-medium">+{formatCurrency(daily.income)}</span>}
-                    {daily.expenses > 0 && <span className="text-danger-400 font-medium">-{formatCurrency(daily.expenses)}</span>}
+                    {daily.income > 0 && <span className="text-[var(--text-positive)] font-medium">+{formatCurrency(daily.income)}</span>}
+                    {daily.expenses > 0 && <span className="text-[var(--text-negative)] font-medium">-{formatCurrency(daily.expenses)}</span>}
                   </div>
                 )}
               </div>
@@ -182,13 +182,13 @@ export default function TransactionsPage() {
                         <div className="flex items-center gap-2 mt-0.5">
                           <button
                             onClick={() => cat && setDrilldown({ category: txn.category, name: cat.name, icon: cat.icon, color: cat.color, type: txn.type })}
-                            className="text-xs text-th-faint hover:text-primary-500 hover:underline transition-colors"
+                            className="text-xs text-th-faint hover:text-[var(--text-accent)] hover:underline transition-colors"
                           >
                             {cat?.name || txn.category}
                           </button>
                         </div>
                       </div>
-                      <p className={`text-sm font-bold num ${txn.type === 'income' ? 'text-success-400' : 'text-danger-400'}`}>
+                      <p className={`text-sm font-bold num ${txn.type === 'income' ? 'text-[var(--text-positive)]' : 'text-[var(--text-negative)]'}`}>
                         {txn.type === 'income' ? '+' : '-'}{formatCurrency(txn.amount)}
                       </p>
                       <button

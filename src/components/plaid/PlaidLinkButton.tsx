@@ -83,7 +83,7 @@ export default function PlaidLinkButton({ onSuccess }: PlaidLinkButtonProps) {
   if (result) {
     return (
       <div className="text-center py-8">
-        <div className="w-16 h-16 rounded-2xl bg-success-500/15 text-success-400 flex items-center justify-center mx-auto mb-4">
+        <div className="w-16 h-16 rounded-2xl bg-[var(--bg-positive-subtle)] text-[var(--text-positive)] flex items-center justify-center mx-auto mb-4">
           <CheckCircle2 className="w-8 h-8" />
         </div>
         <h3 className="text-lg font-bold text-th-heading mb-2">

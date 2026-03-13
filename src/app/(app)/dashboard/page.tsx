@@ -40,10 +40,10 @@ function MonthComparison() {
   const currLabel = new Date(y, m - 1).toLocaleDateString('en-US', { month: 'short' });
 
   const rows = [
-    { label: 'Income', current: monthIncome, previous: prevMonthIncome, color: 'text-success-400' },
-    { label: 'Expenses', current: monthExpenses, previous: prevMonthExpenses, color: 'text-danger-400' },
-    { label: 'Savings', current: monthSavings, previous: prevMonthSavings, color: 'text-primary-400' },
-    { label: 'Savings Rate', current: monthSavingsRate, previous: prevMonthSavingsRate, color: 'text-grape-400', isPercent: true },
+    { label: 'Income', current: monthIncome, previous: prevMonthIncome, color: 'text-[var(--text-positive)]' },
+    { label: 'Expenses', current: monthExpenses, previous: prevMonthExpenses, color: 'text-[var(--text-negative)]' },
+    { label: 'Savings', current: monthSavings, previous: prevMonthSavings, color: 'text-[var(--text-accent)]' },
+    { label: 'Savings Rate', current: monthSavingsRate, previous: prevMonthSavingsRate, color: 'text-[var(--text-accent-secondary)]', isPercent: true },
   ];
 
   if (monthIncome === 0 && prevMonthIncome === 0) return null;
@@ -107,7 +107,7 @@ function RecentTransactions() {
     <div className="chart-container">
       <div className="flex items-center justify-between mb-4">
         <h3 className="section-header">Recent Transactions</h3>
-        <a href="/transactions" className="text-sm text-primary-400 font-medium hover:text-primary-300">View all</a>
+        <a href="/transactions" className="text-sm text-[var(--text-accent)] font-medium hover:text-primary-300">View all</a>
       </div>
       <div className="space-y-1">
         {monthTxns.length === 0 && (
@@ -122,7 +122,7 @@ function RecentTransactions() {
         {monthTxns.map((txn) => (
           <div key={txn.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--bg-hover)] transition-colors">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-              txn.type === 'income' ? 'bg-success-500/10 text-success-400' : 'bg-danger-500/10 text-danger-400'
+              txn.type === 'income' ? 'bg-[var(--bg-positive-subtle)] text-[var(--text-positive)]' : 'bg-[var(--bg-negative-subtle)] text-[var(--text-negative)]'
             }`}>
               {txn.type === 'income' ? <ArrowUpRight className="w-5 h-5" /> : <ArrowDownRight className="w-5 h-5" />}
             </div>
@@ -130,7 +130,7 @@ function RecentTransactions() {
               <p className="text-sm font-medium text-th-heading truncate">{txn.description}</p>
               <p className="text-xs text-th-faint">{txn.date}</p>
             </div>
-            <p className={`text-sm font-semibold num ${txn.type === 'income' ? 'text-success-400' : 'text-danger-400'}`}>
+            <p className={`text-sm font-semibold num ${txn.type === 'income' ? 'text-[var(--text-positive)]' : 'text-[var(--text-negative)]'}`}>
               {txn.type === 'income' ? '+' : '-'}{formatCurrency(txn.amount)}
             </p>
           </div>
@@ -151,7 +151,7 @@ function AccountsSummary() {
     <div className="chart-container">
       <div className="flex items-center justify-between mb-4">
         <h3 className="section-header">Accounts</h3>
-        <a href="/accounts" className="text-sm text-primary-400 font-medium hover:text-primary-300">View all</a>
+        <a href="/accounts" className="text-sm text-[var(--text-accent)] font-medium hover:text-primary-300">View all</a>
       </div>
       <div className="space-y-2">
         <p className="stat-label">Assets</p>
@@ -178,9 +178,9 @@ function AccountsSummary() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-th-heading truncate">{acc.name}</p>
-                    {acc.interestRate !== undefined && <p className="text-xs text-danger-400">{acc.interestRate}% APR</p>}
+                    {acc.interestRate !== undefined && <p className="text-xs text-[var(--text-negative)]">{acc.interestRate}% APR</p>}
                   </div>
-                  <p className="text-sm font-semibold text-danger-400 num">-{formatCurrency(acc.balance)}</p>
+                  <p className="text-sm font-semibold text-[var(--text-negative)] num">-{formatCurrency(acc.balance)}</p>
                 </div>
               ))}
             </div>
@@ -201,7 +201,7 @@ function DividendTracker() {
       <div className="space-y-3">
         <div>
           <p className="stat-label">Total Dividends ({dividendMonths} quarters)</p>
-          <p className="text-2xl font-bold text-success-400 num">{formatCurrency(totalDividends)}</p>
+          <p className="text-2xl font-bold text-[var(--text-positive)] num">{formatCurrency(totalDividends)}</p>
         </div>
         <div className="flex gap-4">
           <div>
@@ -295,9 +295,9 @@ export default function Dashboard() {
     : 0;
 
   const stats = [
-    { title: 'Monthly Income', value: formatCurrency(monthIncome), change: incomeChange, icon: DollarSign, iconBg: 'bg-primary-500/10 text-primary-600 dark:text-primary-400' },
-    { title: 'Monthly Expenses', value: formatCurrency(monthExpenses), change: expenseChange, icon: CreditCard, iconBg: 'bg-danger-500/10 text-danger-600 dark:text-danger-400' },
-    { title: 'Savings Rate', value: `${monthSavingsRate.toFixed(1)}%`, change: undefined, icon: PiggyBank, iconBg: 'bg-grape-500/10 text-grape-600 dark:text-grape-400' },
+    { title: 'Monthly Income', value: formatCurrency(monthIncome), change: incomeChange, icon: DollarSign, iconBg: 'bg-[var(--bg-positive-subtle)] text-[var(--text-accent)]' },
+    { title: 'Monthly Expenses', value: formatCurrency(monthExpenses), change: expenseChange, icon: CreditCard, iconBg: 'bg-[var(--bg-negative-subtle)] text-[var(--text-negative)]' },
+    { title: 'Savings Rate', value: `${monthSavingsRate.toFixed(1)}%`, change: undefined, icon: PiggyBank, iconBg: 'bg-grape-500/10 text-[var(--text-accent-secondary)]' },
   ];
 
   return (
@@ -319,7 +319,7 @@ export default function Dashboard() {
             {formatCurrency(netWorth)}
           </p>
           {hasNWHistory && (
-            <div className="mt-4 inline-flex items-center gap-1.5 bg-primary-500/12 text-primary-600 dark:text-primary-400 px-4 py-1.5 rounded-full text-sm font-semibold">
+            <div className="mt-4 inline-flex items-center gap-1.5 bg-[var(--bg-positive-subtle)] text-[var(--text-accent)] px-4 py-1.5 rounded-full text-sm font-semibold">
               {nwChangePercent >= 0 ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
               {nwChangePercent >= 0 ? '+' : ''}{nwChangePercent.toFixed(2)}%
             </div>

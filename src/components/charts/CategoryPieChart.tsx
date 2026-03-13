@@ -68,7 +68,7 @@ export function CategoryPieChart({ type, height = 280 }: { type: 'income' | 'exp
                       </div>
                       <p className="text-sm font-bold text-th-heading num">{formatCurrency(d.amount)}</p>
                       <p className="text-xs text-th-muted">{d.percentage.toFixed(1)}% of total</p>
-                      <p className="text-[10px] text-primary-500 mt-1">Click to see trends</p>
+                      <p className="text-[10px] text-[var(--text-accent)] mt-1">Click to see trends</p>
                     </div>
                   );
                 }}
@@ -84,7 +84,7 @@ export function CategoryPieChart({ type, height = 280 }: { type: 'income' | 'exp
               >
                 <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }} />
                 <span className="text-th-body text-xs">{item.icon}</span>
-                <span className="text-th-heading font-medium text-xs group-hover:text-primary-400 transition-colors">{item.name}</span>
+                <span className="text-th-heading font-medium text-xs group-hover:text-[var(--text-accent)] transition-colors">{item.name}</span>
                 <span className="text-th-heading text-xs ml-auto pl-3 font-semibold num">{formatCurrency(item.amount)}</span>
                 <span className="text-th-faint text-[10px] w-10 text-right">{item.percentage.toFixed(1)}%</span>
               </button>

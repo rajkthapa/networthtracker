@@ -130,7 +130,7 @@ export function ManageCategoriesModal({ onClose }: { onClose: () => void }) {
             <p className="text-[10px] font-semibold text-th-faint uppercase tracking-wider">Custom</p>
             <button
               onClick={() => setShowAdd(!showAdd)}
-              className="flex items-center gap-1 text-xs text-primary-500 hover:text-primary-400 font-medium"
+              className="flex items-center gap-1 text-xs text-[var(--text-accent)] hover:opacity-80 font-medium"
             >
               <Plus className="w-3.5 h-3.5" />
               Add Category
@@ -210,7 +210,7 @@ export function ManageCategoriesModal({ onClose }: { onClose: () => void }) {
                 <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: cat.color }} />
                 <button
                   onClick={() => handleDelete(cat.id)}
-                  className="p-1 rounded-lg text-th-faint hover:text-danger-400 hover:bg-danger-500/10 opacity-0 group-hover:opacity-100 transition-all"
+                  className="p-1 rounded-lg text-th-faint hover:text-[var(--text-negative)] hover:bg-[var(--bg-negative-subtle)] opacity-0 group-hover:opacity-100 transition-all"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>

@@ -62,7 +62,7 @@ export default function CryptoPage() {
       </div>
 
       {/* Hero */}
-      <div className="relative overflow-hidden rounded-3xl bg-grape-900 p-8 text-white">
+      <div className="relative overflow-hidden rounded-3xl p-8" style={{ background: 'var(--hero-section-bg)', color: 'var(--hero-section-text)' }}>
         <div className="absolute -top-20 -right-20 w-60 h-60 bg-warning-500/10 rounded-full blur-3xl" />
         <div className="absolute -top-20 -right-20 w-60 h-60 bg-white/10 rounded-full blur-3xl" />
         <div className="relative">
@@ -118,7 +118,7 @@ export default function CryptoPage() {
           ) : (
             <div className="flex flex-col items-center justify-center h-64 text-th-faint">
               <p>No holdings yet</p>
-              <button onClick={() => setShowAddModal(true)} className="mt-2 text-sm text-primary-500 hover:underline">Add your first coin</button>
+              <button onClick={() => setShowAddModal(true)} className="mt-2 text-sm text-[var(--text-accent)] hover:underline">Add your first coin</button>
             </div>
           )}
         </div>
@@ -178,10 +178,10 @@ export default function CryptoPage() {
                         <p className="text-xs text-th-faint">Cost: {formatCurrency(cost)}</p>
                       </td>
                       <td className="py-4 px-2 text-right">
-                        <p className={`text-sm font-bold ${pnl >= 0 ? 'text-success-400' : 'text-danger-400'}`}>
+                        <p className={`text-sm font-bold ${pnl >= 0 ? 'text-[var(--text-positive)]' : 'text-[var(--text-negative)]'}`}>
                           {pnl >= 0 ? '+' : ''}{formatCurrency(pnl)}
                         </p>
-                        <p className={`text-xs ${pnl >= 0 ? 'text-success-400' : 'text-danger-400'}`}>
+                        <p className={`text-xs ${pnl >= 0 ? 'text-[var(--text-positive)]' : 'text-[var(--text-negative)]'}`}>
                           {formatPercent(pnlPercent)}
                         </p>
                       </td>
@@ -202,7 +202,7 @@ export default function CryptoPage() {
                   <tr className="border-t-2 border-[var(--border-strong)]">
                     <td colSpan={4} className="py-3 px-2 text-sm font-bold text-th-heading">Total</td>
                     <td className="py-3 px-2 text-right text-sm font-bold text-th-heading">{formatCurrency(totalValue)}</td>
-                    <td className={`py-3 px-2 text-right text-sm font-bold ${totalPnL >= 0 ? 'text-success-400' : 'text-danger-400'}`}>
+                    <td className={`py-3 px-2 text-right text-sm font-bold ${totalPnL >= 0 ? 'text-[var(--text-positive)]' : 'text-[var(--text-negative)]'}`}>
                       {totalPnL >= 0 ? '+' : ''}{formatCurrency(totalPnL)}
                     </td>
                     <td></td>
@@ -213,7 +213,7 @@ export default function CryptoPage() {
             {cryptoHoldings.length === 0 && (
               <div className="text-center py-12 text-th-faint">
                 <p className="text-lg mb-2">No crypto holdings yet</p>
-                <button onClick={() => setShowAddModal(true)} className="text-sm text-primary-500 hover:underline">Add your first position</button>
+                <button onClick={() => setShowAddModal(true)} className="text-sm text-[var(--text-accent)] hover:underline">Add your first position</button>
               </div>
             )}
           </div>
@@ -233,11 +233,11 @@ export default function CryptoPage() {
           </div>
           <div className="stat-card border-l-4 border-grape-500/50">
             <p className="stat-label">Best Performer</p>
-            <p className="text-lg font-bold text-success-400 num">{bestPerformer?.symbol} {formatPercent(bestPerformer?.pnlPercent || 0)}</p>
+            <p className="text-lg font-bold text-[var(--text-positive)] num">{bestPerformer?.symbol} {formatPercent(bestPerformer?.pnlPercent || 0)}</p>
           </div>
           <div className="stat-card border-l-4 border-danger-500/50">
             <p className="stat-label">Worst Performer</p>
-            <p className="text-lg font-bold text-danger-400 num">{worstPerformer?.symbol} {formatPercent(worstPerformer?.pnlPercent || 0)}</p>
+            <p className="text-lg font-bold text-[var(--text-negative)] num">{worstPerformer?.symbol} {formatPercent(worstPerformer?.pnlPercent || 0)}</p>
           </div>
         </div>
       )}

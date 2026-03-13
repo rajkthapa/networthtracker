@@ -47,21 +47,21 @@ export default function NetWorthPage() {
       </div>
 
       {/* Hero */}
-      <div className="relative overflow-hidden rounded-3xl bg-grape-900 p-8 text-white">
+      <div className="relative overflow-hidden rounded-3xl p-8" style={{ background: 'var(--hero-section-bg)', color: 'var(--hero-section-text)' }}>
         <div className="absolute -top-20 -right-20 w-60 h-60 bg-primary-500/10 rounded-full blur-3xl" />
         <div className="absolute -top-20 -right-20 w-60 h-60 bg-white/10 rounded-full blur-3xl" />
         <div className="relative">
-          <p className="text-white/70 text-sm font-medium mb-2">Current Net Worth</p>
+          <p className="text-[var(--hero-section-muted)] text-sm font-medium mb-2">Current Net Worth</p>
           <h2 className="text-4xl md:text-5xl font-bold mb-4 num">{formatCurrency(netWorth)}</h2>
           <div className="flex flex-wrap gap-4">
             {hasHistory && (
               <>
-                <div className="flex items-center gap-2 bg-white/15 backdrop-blur-sm rounded-xl px-4 py-2">
+                <div className="flex items-center gap-2 bg-[var(--hero-badge-bg)] backdrop-blur-sm rounded-xl px-4 py-2">
                   <ArrowUpRight className="w-4 h-4 text-success-300" />
                   <span className="text-sm font-semibold">{formatCurrency(monthlyChange)} this month</span>
                   <span className="text-xs text-white/60">({formatPercent(monthlyChangePercent)})</span>
                 </div>
-                <div className="flex items-center gap-2 bg-white/15 backdrop-blur-sm rounded-xl px-4 py-2">
+                <div className="flex items-center gap-2 bg-[var(--hero-badge-bg)] backdrop-blur-sm rounded-xl px-4 py-2">
                   <Calendar className="w-4 h-4 text-warning-300" />
                   <span className="text-sm font-semibold">{formatCurrency(totalChange)} total growth</span>
                   <span className="text-xs text-white/60">({formatPercent(totalChangePercent)})</span>
@@ -76,19 +76,19 @@ export default function NetWorthPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="stat-card border-l-4 border-success-500/50">
           <p className="stat-label">Assets</p>
-          <p className="text-lg font-bold text-success-400 num">{formatCurrency(totalAssets)}</p>
+          <p className="text-lg font-bold text-[var(--text-positive)] num">{formatCurrency(totalAssets)}</p>
         </div>
         <div className="stat-card border-l-4 border-danger-500/50">
           <p className="stat-label">Debts</p>
-          <p className="text-lg font-bold text-danger-400 num">{formatCurrency(totalDebts)}</p>
+          <p className="text-lg font-bold text-[var(--text-negative)] num">{formatCurrency(totalDebts)}</p>
         </div>
         <div className="stat-card border-l-4 border-primary-500/50">
           <p className="stat-label">Debt-to-Asset Ratio</p>
-          <p className="text-lg font-bold text-primary-400 num">{totalAssets > 0 ? ((totalDebts / totalAssets) * 100).toFixed(1) : 0}%</p>
+          <p className="text-lg font-bold text-[var(--text-accent)] num">{totalAssets > 0 ? ((totalDebts / totalAssets) * 100).toFixed(1) : 0}%</p>
         </div>
         <div className="stat-card border-l-4 border-grape-500/50">
           <p className="stat-label">Avg Monthly Growth</p>
-          <p className="text-lg font-bold text-grape-400 num">{netWorthHistory.length > 1 ? formatCurrency(totalChange / (netWorthHistory.length - 1)) : '$0'}</p>
+          <p className="text-lg font-bold text-[var(--text-accent-secondary)] num">{netWorthHistory.length > 1 ? formatCurrency(totalChange / (netWorthHistory.length - 1)) : '$0'}</p>
         </div>
       </div>
 
@@ -190,7 +190,7 @@ export default function NetWorthPage() {
             return (
               <div key={milestone} className={`p-4 rounded-2xl ${achieved ? 'bg-success-500/15 border-2 border-success-500/30' : 'bg-th-card/80 border border-[var(--border-color)]'}`}>
                 <p className="text-xs text-th-muted mb-1">{achieved ? 'Achieved!' : 'Target'}</p>
-                <p className={`text-lg font-bold ${achieved ? 'text-success-400' : 'text-th-heading'}`}>{formatCurrency(milestone, true)}</p>
+                <p className={`text-lg font-bold ${achieved ? 'text-[var(--text-positive)]' : 'text-th-heading'}`}>{formatCurrency(milestone, true)}</p>
                 <div className="w-full h-2 bg-[var(--bg-hover-strong)] rounded-full mt-2 overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all duration-1000 ${achieved ? 'bg-success-500' : 'bg-primary-500'}`}

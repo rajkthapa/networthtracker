@@ -97,34 +97,34 @@ export default function AccountsPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="stat-card border-l-4 border-success-500/50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-success-500/15 text-success-400 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-2xl bg-[var(--bg-positive-subtle)] text-[var(--text-positive)] flex items-center justify-center">
               <TrendingUp className="w-4 h-4" />
             </div>
             <div>
               <p className="stat-label">Total Assets</p>
-              <p className="text-lg font-bold text-success-400 num">{formatCurrency(totalAssets)}</p>
+              <p className="text-lg font-bold text-[var(--text-positive)] num">{formatCurrency(totalAssets)}</p>
             </div>
           </div>
         </div>
         <div className="stat-card border-l-4 border-danger-500/50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-danger-500/15 text-danger-400 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-2xl bg-[var(--bg-negative-subtle)] text-[var(--text-negative)] flex items-center justify-center">
               <TrendingDown className="w-4 h-4" />
             </div>
             <div>
               <p className="stat-label">Total Debts</p>
-              <p className="text-lg font-bold text-danger-400 num">{formatCurrency(totalDebts)}</p>
+              <p className="text-lg font-bold text-[var(--text-negative)] num">{formatCurrency(totalDebts)}</p>
             </div>
           </div>
         </div>
         <div className="stat-card border-l-4 border-primary-500/50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-primary-500/15 text-primary-400 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-2xl bg-primary-500/15 text-[var(--text-accent)] flex items-center justify-center">
               <Building2 className="w-4 h-4" />
             </div>
             <div>
               <p className="stat-label">Net Worth</p>
-              <p className="text-lg font-bold text-primary-400 num">{formatCurrency(netWorth)}</p>
+              <p className="text-lg font-bold text-[var(--text-accent)] num">{formatCurrency(netWorth)}</p>
             </div>
           </div>
         </div>
@@ -190,31 +190,31 @@ export default function AccountsPage() {
       <div className="chart-container">
         <div className="flex items-center justify-between mb-4">
           <h3 className="section-header flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-success-400" />
+            <TrendingUp className="w-5 h-5 text-[var(--text-positive)]" />
             Assets ({assets.length})
           </h3>
-          <p className="text-sm font-semibold text-success-400">Total: {formatCurrency(totalAssets)}</p>
+          <p className="text-sm font-semibold text-[var(--text-positive)]">Total: {formatCurrency(totalAssets)}</p>
         </div>
 
         {/* Liquid / Illiquid summary */}
         {assets.length > 0 && (
           <div className="grid grid-cols-2 gap-3 mb-5">
-            <div className="p-3 rounded-xl bg-teal-500/10 border border-teal-500/20">
-              <p className="text-[10px] font-semibold text-teal-400 uppercase tracking-wider mb-0.5">Liquid</p>
-              <p className="text-lg font-bold text-teal-300 num">{formatCurrency(totalLiquid)}</p>
-              <p className="text-[10px] text-teal-400">{liquidAssets.length} account{liquidAssets.length !== 1 ? 's' : ''}</p>
+            <div className="p-3 rounded-xl bg-[var(--bg-teal-subtle)] border border-[var(--border-teal)]">
+              <p className="text-[10px] font-semibold text-[var(--text-teal-label)] uppercase tracking-wider mb-0.5">Liquid</p>
+              <p className="text-lg font-bold text-[var(--text-teal)] num">{formatCurrency(totalLiquid)}</p>
+              <p className="text-[10px] text-[var(--text-teal-label)]">{liquidAssets.length} account{liquidAssets.length !== 1 ? 's' : ''}</p>
             </div>
-            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
-              <p className="text-[10px] font-semibold text-amber-400 uppercase tracking-wider mb-0.5">Illiquid</p>
-              <p className="text-lg font-bold text-amber-300 num">{formatCurrency(totalIlliquid)}</p>
-              <p className="text-[10px] text-amber-400">{illiquidAssets.length} account{illiquidAssets.length !== 1 ? 's' : ''}</p>
+            <div className="p-3 rounded-xl bg-[var(--bg-amber-subtle)] border border-[var(--border-amber)]">
+              <p className="text-[10px] font-semibold text-[var(--text-amber-label)] uppercase tracking-wider mb-0.5">Illiquid</p>
+              <p className="text-lg font-bold text-[var(--text-amber)] num">{formatCurrency(totalIlliquid)}</p>
+              <p className="text-[10px] text-[var(--text-amber-label)]">{illiquidAssets.length} account{illiquidAssets.length !== 1 ? 's' : ''}</p>
             </div>
           </div>
         )}
 
         {liquidAssets.length > 0 && (
           <div className="mb-4">
-            <p className="text-xs font-semibold text-teal-400 uppercase tracking-wider mb-3">Liquid Assets</p>
+            <p className="text-xs font-semibold text-[var(--text-teal-label)] uppercase tracking-wider mb-3">Liquid Assets</p>
             <div className="space-y-3">
               {liquidAssets.map(acc => {
                 const isInvestment = isInvestmentAccount(acc.type);
@@ -269,11 +269,11 @@ export default function AccountsPage() {
                           <p className="text-xs font-semibold text-th-muted uppercase tracking-wider">Stock Positions</p>
                           <div className="flex items-center gap-3">
                             {stocks.length > 0 && (
-                              <span className={`text-xs font-semibold ${stocksPnL >= 0 ? 'text-success-400' : 'text-danger-400'}`}>
+                              <span className={`text-xs font-semibold ${stocksPnL >= 0 ? 'text-[var(--text-positive)]' : 'text-[var(--text-negative)]'}`}>
                                 P&L: {stocksPnL >= 0 ? '+' : ''}{formatCurrency(stocksPnL)}
                               </span>
                             )}
-                            <button onClick={() => setShowStockModal({ accountId: acc.id, accountName: acc.name })} className="flex items-center gap-1 text-xs text-primary-500 hover:text-primary-400 font-medium">
+                            <button onClick={() => setShowStockModal({ accountId: acc.id, accountName: acc.name })} className="flex items-center gap-1 text-xs text-[var(--text-accent)] hover:text-[var(--text-accent)] font-medium">
                               <Plus className="w-3.5 h-3.5" /> Add Position
                             </button>
                           </div>
@@ -288,7 +288,7 @@ export default function AccountsPage() {
                               return (
                                 <div key={stock.id} className="flex items-center gap-3 p-3 rounded-xl bg-th-card border border-[var(--border-color)] group/stock">
                                   <div className="w-9 h-9 rounded-lg bg-primary-500/10 flex items-center justify-center">
-                                    <span className="text-xs font-bold text-primary-400">{stock.ticker}</span>
+                                    <span className="text-xs font-bold text-[var(--text-accent)]">{stock.ticker}</span>
                                   </div>
                                   <div className="flex-1 min-w-0">
                                     <p className="text-xs font-semibold text-th-heading truncate">{stock.name}</p>
@@ -296,7 +296,7 @@ export default function AccountsPage() {
                                   </div>
                                   <div className="text-right">
                                     <p className="text-xs font-bold text-th-heading">{formatCurrency(value)}</p>
-                                    <p className={`text-[10px] font-semibold ${pnl >= 0 ? 'text-success-400' : 'text-danger-400'}`}>
+                                    <p className={`text-[10px] font-semibold ${pnl >= 0 ? 'text-[var(--text-positive)]' : 'text-[var(--text-negative)]'}`}>
                                       {pnl >= 0 ? '+' : ''}{formatCurrency(pnl)} ({formatPercent(pnlPercent)})
                                     </p>
                                   </div>
@@ -314,7 +314,7 @@ export default function AccountsPage() {
                         ) : (
                           <div className="text-center py-6 text-th-faint text-xs">
                             <p>No positions yet.</p>
-                            <button onClick={() => setShowStockModal({ accountId: acc.id, accountName: acc.name })} className="mt-1 text-primary-500 hover:underline">Add your first stock position</button>
+                            <button onClick={() => setShowStockModal({ accountId: acc.id, accountName: acc.name })} className="mt-1 text-[var(--text-accent)] hover:underline">Add your first stock position</button>
                           </div>
                         )}
                       </div>
@@ -328,7 +328,7 @@ export default function AccountsPage() {
 
         {illiquidAssets.length > 0 && (
           <div>
-            <p className="text-xs font-semibold text-amber-400 uppercase tracking-wider mb-3">Illiquid Assets</p>
+            <p className="text-xs font-semibold text-[var(--text-amber-label)] uppercase tracking-wider mb-3">Illiquid Assets</p>
             <div className="space-y-3">
               {illiquidAssets.map(acc => {
                 const isInvestment = isInvestmentAccount(acc.type);
@@ -383,11 +383,11 @@ export default function AccountsPage() {
                           <p className="text-xs font-semibold text-th-muted uppercase tracking-wider">Stock Positions</p>
                           <div className="flex items-center gap-3">
                             {stocks.length > 0 && (
-                              <span className={`text-xs font-semibold ${stocksPnL >= 0 ? 'text-success-400' : 'text-danger-400'}`}>
+                              <span className={`text-xs font-semibold ${stocksPnL >= 0 ? 'text-[var(--text-positive)]' : 'text-[var(--text-negative)]'}`}>
                                 P&L: {stocksPnL >= 0 ? '+' : ''}{formatCurrency(stocksPnL)}
                               </span>
                             )}
-                            <button onClick={() => setShowStockModal({ accountId: acc.id, accountName: acc.name })} className="flex items-center gap-1 text-xs text-primary-500 hover:text-primary-400 font-medium">
+                            <button onClick={() => setShowStockModal({ accountId: acc.id, accountName: acc.name })} className="flex items-center gap-1 text-xs text-[var(--text-accent)] hover:text-[var(--text-accent)] font-medium">
                               <Plus className="w-3.5 h-3.5" /> Add Position
                             </button>
                           </div>
@@ -402,7 +402,7 @@ export default function AccountsPage() {
                               return (
                                 <div key={stock.id} className="flex items-center gap-3 p-3 rounded-xl bg-th-card border border-[var(--border-color)] group/stock">
                                   <div className="w-9 h-9 rounded-lg bg-primary-500/10 flex items-center justify-center">
-                                    <span className="text-xs font-bold text-primary-400">{stock.ticker}</span>
+                                    <span className="text-xs font-bold text-[var(--text-accent)]">{stock.ticker}</span>
                                   </div>
                                   <div className="flex-1 min-w-0">
                                     <p className="text-xs font-semibold text-th-heading truncate">{stock.name}</p>
@@ -410,7 +410,7 @@ export default function AccountsPage() {
                                   </div>
                                   <div className="text-right">
                                     <p className="text-xs font-bold text-th-heading">{formatCurrency(value)}</p>
-                                    <p className={`text-[10px] font-semibold ${pnl >= 0 ? 'text-success-400' : 'text-danger-400'}`}>
+                                    <p className={`text-[10px] font-semibold ${pnl >= 0 ? 'text-[var(--text-positive)]' : 'text-[var(--text-negative)]'}`}>
                                       {pnl >= 0 ? '+' : ''}{formatCurrency(pnl)} ({formatPercent(pnlPercent)})
                                     </p>
                                   </div>
@@ -428,7 +428,7 @@ export default function AccountsPage() {
                         ) : (
                           <div className="text-center py-6 text-th-faint text-xs">
                             <p>No positions yet.</p>
-                            <button onClick={() => setShowStockModal({ accountId: acc.id, accountName: acc.name })} className="mt-1 text-primary-500 hover:underline">Add your first stock position</button>
+                            <button onClick={() => setShowStockModal({ accountId: acc.id, accountName: acc.name })} className="mt-1 text-[var(--text-accent)] hover:underline">Add your first stock position</button>
                           </div>
                         )}
                       </div>
@@ -448,7 +448,7 @@ export default function AccountsPage() {
             <TrendingDown className="w-5 h-5 text-danger-400" />
             Debts & Liabilities ({debts.length})
           </h3>
-          <p className="text-sm font-semibold text-danger-400">Total: {formatCurrency(totalDebts)}</p>
+          <p className="text-sm font-semibold text-[var(--text-negative)]">Total: {formatCurrency(totalDebts)}</p>
         </div>
         {debts.length === 0 ? (
           <p className="text-center text-th-faint py-8">No debts recorded</p>
@@ -466,7 +466,7 @@ export default function AccountsPage() {
                     {acc.interestRate !== undefined && (
                       <>
                         <span className="w-1 h-1 rounded-full bg-th-faint" />
-                        <span className="text-xs font-medium text-danger-400">{acc.interestRate}% APR</span>
+                        <span className="text-xs font-medium text-[var(--text-negative)]">{acc.interestRate}% APR</span>
                         <span className="w-1 h-1 rounded-full bg-th-faint" />
                         <span className="text-[10px] text-th-faint">{formatCurrency(acc.balance * acc.interestRate / 100)}/yr interest</span>
                       </>
@@ -482,7 +482,7 @@ export default function AccountsPage() {
                     </div>
                   ) : (
                     <>
-                      <p className="text-sm font-bold text-danger-400">{formatCurrency(acc.balance)}</p>
+                      <p className="text-sm font-bold text-[var(--text-negative)]">{formatCurrency(acc.balance)}</p>
                       <button onClick={() => startEdit(acc.id, acc.balance)} className="p-1.5 rounded-lg text-th-faint hover:text-primary-500 hover:bg-primary-500/10 opacity-0 group-hover:opacity-100 transition-all"><Edit3 className="w-3.5 h-3.5" /></button>
                       <button onClick={() => deleteAccount(acc.id)} className="p-1.5 rounded-lg text-th-faint hover:text-danger-400 hover:bg-danger-500/10 opacity-0 group-hover:opacity-100 transition-all"><Trash2 className="w-3.5 h-3.5" /></button>
                     </>
@@ -517,21 +517,27 @@ function MonthlyBalanceTracker({ accounts, accountSnapshots, snapshotMonths, get
   getAccountBalanceForMonth: (accountId: string, month: string) => number | null;
   upsertAccountSnapshot: (accountId: string, month: string, balance: number) => Promise<void>;
 }) {
-  const [selectedSnapMonth, setSelectedSnapMonth] = useState(() => {
-    if (snapshotMonths.length > 0) return snapshotMonths[0];
+  const currentMonthStr = useMemo(() => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  }, []);
+
+  const [selectedSnapMonth, setSelectedSnapMonth] = useState(() => {
+    if (snapshotMonths.length > 0) return snapshotMonths[0];
+    return currentMonthStr;
   });
   const [editingCell, setEditingCell] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
   const [addingMonth, setAddingMonth] = useState(false);
   const [newMonth, setNewMonth] = useState('');
+  const [copyingBalances, setCopyingBalances] = useState(false);
 
-  // All available months (snapshot months + option to add new)
+  // All available months (snapshot months + current month always available)
   const allMonths = useMemo(() => {
     const set = new Set(snapshotMonths);
+    set.add(currentMonthStr);
     return Array.from(set).sort().reverse();
-  }, [snapshotMonths]);
+  }, [snapshotMonths, currentMonthStr]);
 
   const nonDebtAccounts = accounts.filter(a => !a.isDebt);
 
@@ -556,14 +562,42 @@ function MonthlyBalanceTracker({ accounts, accountSnapshots, snapshotMonths, get
     }
   };
 
+  // Copy balances from previous month or current account balances into this month
+  const handleCopyBalances = async (source: 'previous' | 'current') => {
+    setCopyingBalances(true);
+    const sortedMs = [...allMonths].sort();
+    const curIdx = sortedMs.indexOf(selectedSnapMonth);
+    const prevM = curIdx > 0 ? sortedMs[curIdx - 1] : null;
+
+    for (const acc of nonDebtAccounts) {
+      const existingBal = getAccountBalanceForMonth(acc.id, selectedSnapMonth);
+      if (existingBal !== null) continue;
+
+      let balanceToCopy: number | null = null;
+      if (source === 'previous' && prevM) {
+        balanceToCopy = getAccountBalanceForMonth(acc.id, prevM);
+      } else if (source === 'current') {
+        balanceToCopy = acc.balance;
+      }
+
+      if (balanceToCopy !== null) {
+        await upsertAccountSnapshot(acc.id, selectedSnapMonth, balanceToCopy);
+      }
+    }
+    setCopyingBalances(false);
+  };
+
   // Calculate totals per month for comparison
   const monthTotal = nonDebtAccounts.reduce((sum, acc) => {
     const bal = getAccountBalanceForMonth(acc.id, selectedSnapMonth);
     return sum + (bal ?? 0);
   }, 0);
 
+  // Check if any accounts are missing data for this month
+  const missingCount = nonDebtAccounts.filter(acc => getAccountBalanceForMonth(acc.id, selectedSnapMonth) === null).length;
+
   // Find previous month for comparison
-  const sortedMonths = allMonths.sort();
+  const sortedMonths = [...allMonths].sort();
   const currentIdx = sortedMonths.indexOf(selectedSnapMonth);
   const prevMonth = currentIdx > 0 ? sortedMonths[currentIdx - 1] : null;
   const prevTotal = prevMonth ? nonDebtAccounts.reduce((sum, acc) => {
@@ -577,7 +611,7 @@ function MonthlyBalanceTracker({ accounts, accountSnapshots, snapshotMonths, get
     <div className="chart-container">
       <div className="flex items-center justify-between mb-4">
         <h3 className="section-header flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-primary-500" />
+          <Calendar className="w-5 h-5 text-[var(--text-accent)]" />
           Monthly Balance Tracking
         </h3>
         <div className="flex items-center gap-2">
@@ -611,12 +645,35 @@ function MonthlyBalanceTracker({ accounts, accountSnapshots, snapshotMonths, get
                 className="input-field py-1.5 text-sm"
                 autoFocus
               />
-              <button onClick={handleAddMonth} disabled={!newMonth} className="p-1.5 rounded-lg text-success-400 hover:bg-success-500/10 disabled:opacity-50"><Check className="w-4 h-4" /></button>
+              <button onClick={handleAddMonth} disabled={!newMonth} className="p-1.5 rounded-lg text-[var(--text-positive)] hover:bg-[var(--bg-positive-subtle)] disabled:opacity-50"><Check className="w-4 h-4" /></button>
               <button onClick={() => setAddingMonth(false)} className="p-1.5 rounded-lg text-th-faint hover:bg-[var(--bg-hover)]"><X className="w-4 h-4" /></button>
             </div>
           )}
         </div>
       </div>
+
+      {/* Quick-fill buttons when accounts are missing data */}
+      {missingCount > 0 && (
+        <div className="flex flex-wrap items-center gap-2 mb-4 p-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-subtle)]">
+          <p className="text-xs text-th-muted mr-2">{missingCount} account{missingCount !== 1 ? 's' : ''} missing data:</p>
+          <button
+            onClick={() => handleCopyBalances('current')}
+            disabled={copyingBalances}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--bg-accent-subtle)] text-[var(--text-accent)] border border-primary-500/20 hover:bg-primary-500/20 transition-all disabled:opacity-50"
+          >
+            {copyingBalances ? 'Copying...' : 'Use current balances'}
+          </button>
+          {prevMonth && (
+            <button
+              onClick={() => handleCopyBalances('previous')}
+              disabled={copyingBalances}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--bg-hover)] text-th-body border border-[var(--border-color)] hover:bg-[var(--bg-hover-strong)] transition-all disabled:opacity-50"
+            >
+              Copy from prev month
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Summary */}
       <div className="flex items-center gap-4 mb-4 p-3 rounded-xl bg-[var(--bg-subtle)]">
@@ -627,7 +684,7 @@ function MonthlyBalanceTracker({ accounts, accountSnapshots, snapshotMonths, get
         {prevTotal !== null && prevTotal > 0 && (
           <div>
             <p className="text-[10px] text-th-faint uppercase font-semibold">Change</p>
-            <p className={`text-sm font-bold num ${monthTotal - prevTotal >= 0 ? 'text-success-400' : 'text-danger-400'}`}>
+            <p className={`text-sm font-bold num ${monthTotal - prevTotal >= 0 ? 'text-[var(--text-positive)]' : 'text-[var(--text-negative)]'}`}>
               {monthTotal - prevTotal >= 0 ? '+' : ''}{formatCurrency(monthTotal - prevTotal)}
               <span className="text-xs ml-1">({((monthTotal - prevTotal) / prevTotal * 100).toFixed(1)}%)</span>
             </p>
@@ -671,19 +728,22 @@ function MonthlyBalanceTracker({ accounts, accountSnapshots, snapshotMonths, get
                           className="input-field w-32 py-1 text-sm text-right"
                           autoFocus
                         />
-                        <button onClick={() => saveEdit(acc.id)} className="p-1 rounded text-success-400 hover:bg-success-500/10"><Check className="w-3.5 h-3.5" /></button>
+                        <button onClick={() => saveEdit(acc.id)} className="p-1 rounded text-[var(--text-positive)] hover:bg-[var(--bg-positive-subtle)]"><Check className="w-3.5 h-3.5" /></button>
                         <button onClick={() => setEditingCell(null)} className="p-1 rounded text-th-faint hover:bg-[var(--bg-hover)]"><X className="w-3.5 h-3.5" /></button>
                       </div>
                     ) : (
-                      <span className={`text-sm font-semibold num ${bal !== null ? 'text-th-heading' : 'text-th-faint'}`}>
-                        {bal !== null ? formatCurrency(bal) : '—'}
-                      </span>
+                      <button
+                        onClick={() => startEdit(acc.id, bal)}
+                        className={`text-sm font-semibold num cursor-pointer hover:underline ${bal !== null ? 'text-th-heading' : 'text-th-faint italic'}`}
+                      >
+                        {bal !== null ? formatCurrency(bal) : 'Add balance'}
+                      </button>
                     )}
                   </td>
                   {prevMonth && (
                     <td className="py-3 px-2 text-right">
                       {change !== null ? (
-                        <span className={`text-xs font-semibold num ${change >= 0 ? 'text-success-400' : 'text-danger-400'}`}>
+                        <span className={`text-xs font-semibold num ${change >= 0 ? 'text-[var(--text-positive)]' : 'text-[var(--text-negative)]'}`}>
                           {change >= 0 ? '+' : ''}{formatCurrency(change)}
                         </span>
                       ) : (
@@ -695,7 +755,7 @@ function MonthlyBalanceTracker({ accounts, accountSnapshots, snapshotMonths, get
                     {editingCell !== acc.id && (
                       <button
                         onClick={() => startEdit(acc.id, bal)}
-                        className="p-1.5 rounded-lg text-th-faint hover:text-primary-500 hover:bg-primary-500/10 opacity-0 group-hover:opacity-100 transition-all"
+                        className="p-1.5 rounded-lg text-th-faint hover:text-[var(--text-accent)] hover:bg-[var(--bg-accent-subtle)] opacity-0 group-hover:opacity-100 transition-all"
                       >
                         <Edit3 className="w-3.5 h-3.5" />
                       </button>

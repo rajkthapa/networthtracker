@@ -45,7 +45,7 @@ export default function LoginPage() {
         <div className="bg-th-card rounded-3xl shadow-[var(--shadow-glass)] p-8 border border-[var(--border-color)]">
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
-              <div className="p-3 rounded-xl bg-danger-500/10 border border-danger-500/30 text-danger-300 text-sm">
+              <div className="p-3 rounded-xl bg-[var(--bg-negative-subtle)] border border-danger-500/30 text-[var(--text-negative)] text-sm">
                 {error}
               </div>
             )}
@@ -136,7 +136,7 @@ export default function LoginPage() {
 
           <p className="text-center text-sm text-th-muted mt-6">
             Don&apos;t have an account?{' '}
-            <Link href="/auth/signup" className="text-primary-400 font-semibold hover:underline">Sign up</Link>
+            <Link href="/auth/signup" className="text-[var(--text-accent)] font-semibold hover:underline">Sign up</Link>
           </p>
         </div>
       </div>

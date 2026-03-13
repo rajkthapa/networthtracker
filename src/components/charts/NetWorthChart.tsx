@@ -14,7 +14,7 @@ export function NetWorthChart({ height = 300 }: { height?: number }) {
         <h3 className="section-header mb-4">Net Worth Over Time</h3>
         <div className="flex flex-col items-center justify-center py-16 gap-3">
           <div className="w-14 h-14 rounded-2xl bg-primary-500/10 flex items-center justify-center">
-            <TrendingUp className="w-7 h-7 text-primary-300" />
+            <TrendingUp className="w-7 h-7 text-[var(--text-accent)]" />
           </div>
           <p className="text-sm font-medium text-th-body">No history yet</p>
           <p className="text-xs text-th-muted text-center max-w-[220px]">Your net worth will be tracked over time as you add accounts</p>

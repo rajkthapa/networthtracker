@@ -78,7 +78,7 @@ export function AddTransactionModal({ onClose }: { onClose: () => void }) {
 
         <form onSubmit={handleSubmit} className="px-6 pb-6 space-y-4">
           {error && (
-            <div className="p-3 rounded-xl bg-danger-500/10 border border-danger-500/30 text-danger-300 text-sm">
+            <div className="p-3 rounded-xl bg-[var(--bg-negative-subtle)] border border-danger-500/30 text-[var(--text-negative)] text-sm">
               {error}
             </div>
           )}
@@ -124,7 +124,7 @@ export function AddTransactionModal({ onClose }: { onClose: () => void }) {
 
           <div>
             <label className="block text-sm font-medium text-th-body mb-2">
-              Category {!category && <span className="text-danger-400">*</span>}
+              Category {!category && <span className="text-[var(--text-negative)]">*</span>}
             </label>
             <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto scrollbar-hide">
               {categories.map(cat => (

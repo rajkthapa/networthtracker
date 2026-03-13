@@ -63,7 +63,7 @@ export function UpgradeModal({ open, onClose, feature }: UpgradeModalProps) {
             {proFeatures.map(f => (
               <li key={f} className="flex items-center gap-2.5">
                 <div className="w-5 h-5 rounded-full bg-success-500/15 flex items-center justify-center flex-shrink-0">
-                  <Check className="w-3 h-3 text-success-400" />
+                  <Check className="w-3 h-3 text-[var(--text-positive)]" />
                 </div>
                 <span className="text-sm text-th-body">{f}</span>
               </li>

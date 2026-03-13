@@ -60,18 +60,18 @@ export function AddCryptoModal({ onClose }: { onClose: () => void }) {
 
         <form onSubmit={handleSubmit} className="px-6 pb-6 space-y-4">
           {error && (
-            <div className="p-3 rounded-xl bg-danger-500/10 border border-danger-500/30 text-danger-300 text-sm">
+            <div className="p-3 rounded-xl bg-[var(--bg-negative-subtle)] border border-danger-500/30 text-[var(--text-negative)] text-sm">
               {error}
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-th-body mb-1.5">Symbol <span className="text-danger-400">*</span></label>
+            <label className="block text-sm font-medium text-th-body mb-1.5">Symbol <span className="text-[var(--text-negative)]">*</span></label>
             <input type="text" value={symbol} onChange={e => setSymbol(e.target.value)} placeholder="BTC" className="input-field uppercase" required />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-th-body mb-1.5">Quantity <span className="text-danger-400">*</span></label>
+            <label className="block text-sm font-medium text-th-body mb-1.5">Quantity <span className="text-[var(--text-negative)]">*</span></label>
             <input type="number" step="any" min="0" value={quantity} onChange={e => setQuantity(e.target.value)} placeholder="0.5" className="input-field" required />
           </div>
 
@@ -97,7 +97,7 @@ export function AddCryptoModal({ onClose }: { onClose: () => void }) {
               {buyPrice > 0 && (
                 <div className="flex justify-between mt-1">
                   <span className="text-th-muted">P&L</span>
-                  <span className={`font-semibold num ${pnl >= 0 ? 'text-success-400' : 'text-danger-400'}`}>
+                  <span className={`font-semibold num ${pnl >= 0 ? 'text-[var(--text-positive)]' : 'text-[var(--text-negative)]'}`}>
                     ${pnl.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </span>
                 </div>

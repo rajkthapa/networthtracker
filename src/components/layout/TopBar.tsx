@@ -49,7 +49,7 @@ export function TopBar() {
           <div className="relative">
             <button
               onClick={() => setShowMenu(!showMenu)}
-              className="w-9 h-9 rounded-xl bg-grape-800 dark:bg-grape-700 flex items-center justify-center text-white font-semibold text-sm cursor-pointer"
+              className="w-9 h-9 rounded-xl bg-grape-800 flex items-center justify-center text-white font-semibold text-sm cursor-pointer"
             >
               {initials}
             </button>
@@ -63,7 +63,7 @@ export function TopBar() {
                   </div>
                   <button
                     onClick={async () => { setShowMenu(false); await signOut(); }}
-                    className="w-full flex items-center gap-2 px-4 py-3 text-sm text-danger-400 hover:bg-danger-500/10 transition-colors"
+                    className="w-full flex items-center gap-2 px-4 py-3 text-sm text-[var(--text-negative)] hover:bg-[var(--bg-negative-subtle)] transition-colors"
                   >
                     <LogOut className="w-4 h-4" />
                     Sign Out

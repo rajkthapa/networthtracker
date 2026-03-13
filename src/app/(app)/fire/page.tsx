@@ -105,7 +105,7 @@ export default function FIREPage() {
       </div>
 
       {/* Hero */}
-      <div className="relative overflow-hidden rounded-3xl bg-grape-900 p-8 text-white">
+      <div className="relative overflow-hidden rounded-3xl p-8" style={{ background: 'var(--hero-section-bg)', color: 'var(--hero-section-text)' }}>
         <div className="absolute -top-20 -right-20 w-60 h-60 bg-warning-500/10 rounded-full blur-3xl" />
         <div className="absolute -top-20 -right-20 w-60 h-60 bg-white/10 rounded-full blur-3xl animate-float" />
         <div className="relative">
@@ -124,7 +124,7 @@ export default function FIREPage() {
               <p className="text-white/70 text-sm font-medium mb-1">FIRE Progress</p>
               <h2 className="text-3xl md:text-4xl font-bold">{fireProgress.toFixed(1)}%</h2>
               <div className="w-full h-3 bg-white/20 rounded-full mt-2 overflow-hidden">
-                <div className="h-full bg-th-card rounded-full transition-all duration-1000" style={{ width: `${Math.min(fireProgress, 100)}%` }} />
+                <div className="h-full bg-[var(--hero-progress-fill)] rounded-full transition-all duration-1000" style={{ width: `${Math.min(fireProgress, 100)}%` }} />
               </div>
             </div>
           </div>
@@ -219,27 +219,27 @@ export default function FIREPage() {
             </div>
             <div className="flex justify-between items-center p-3 bg-th-card/80 rounded-xl">
               <span className="text-sm text-th-body">Monthly Expenses</span>
-              <span className="text-sm font-bold text-danger-400">{formatCurrency(monthExpenses)}</span>
+              <span className="text-sm font-bold text-[var(--text-negative)]">{formatCurrency(monthExpenses)}</span>
             </div>
             <div className="flex justify-between items-center p-3 bg-th-card/80 rounded-xl">
               <span className="text-sm text-th-body">Monthly Savings</span>
-              <span className="text-sm font-bold text-success-400">{formatCurrency(monthlySavings)}</span>
+              <span className="text-sm font-bold text-[var(--text-positive)]">{formatCurrency(monthlySavings)}</span>
             </div>
             <div className="flex justify-between items-center p-3 bg-th-card/80 rounded-xl">
               <span className="text-sm text-th-body">Current Savings Rate</span>
-              <span className="text-sm font-bold text-grape-400">{savingsRate.toFixed(1)}%</span>
+              <span className="text-sm font-bold text-[var(--text-accent-secondary)]">{savingsRate.toFixed(1)}%</span>
             </div>
             <div className="flex justify-between items-center p-3 bg-th-card/80 rounded-xl">
               <span className="text-sm text-th-body">Avg Savings Rate (all months)</span>
-              <span className="text-sm font-bold text-grape-400">{avgSavingsRate.toFixed(1)}%</span>
+              <span className="text-sm font-bold text-[var(--text-accent-secondary)]">{avgSavingsRate.toFixed(1)}%</span>
             </div>
             <div className="flex justify-between items-center p-3 bg-th-card/80 rounded-xl">
               <span className="text-sm text-th-body">Passive Income (4% rule)</span>
-              <span className="text-sm font-bold text-primary-400">{formatCurrency(monthlyPassiveIncome)}/mo</span>
+              <span className="text-sm font-bold text-[var(--text-accent)]">{formatCurrency(monthlyPassiveIncome)}/mo</span>
             </div>
             <div className="flex justify-between items-center p-3 bg-th-card/80 rounded-xl">
               <span className="text-sm text-th-body">Expense Coverage</span>
-              <span className="text-sm font-bold text-primary-400">{expenseCoverage.toFixed(1)}%</span>
+              <span className="text-sm font-bold text-[var(--text-accent)]">{expenseCoverage.toFixed(1)}%</span>
             </div>
             <div className="flex justify-between items-center p-3 bg-th-card/80 rounded-xl">
               <span className="text-sm text-th-body">Remaining to FIRE</span>

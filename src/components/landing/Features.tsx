@@ -5,13 +5,13 @@ const features = [
     icon: LayoutDashboard,
     title: 'Beautiful Dashboard',
     description: 'See your complete financial picture at a glance with charts, stats, and month-over-month comparisons.',
-    color: 'bg-primary-500/10 text-primary-400',
+    color: 'bg-[var(--bg-accent-subtle)] text-[var(--text-accent)]',
   },
   {
     icon: TrendingUp,
     title: 'Net Worth Tracking',
     description: 'Track your net worth over time with automatic snapshots, trends, and growth analysis.',
-    color: 'bg-success-500/10 text-success-400',
+    color: 'bg-[var(--bg-positive-subtle)] text-[var(--text-positive)]',
   },
   {
     icon: Bitcoin,
@@ -30,7 +30,7 @@ const features = [
     icon: Flame,
     title: 'FIRE Calculator',
     description: 'Plan your path to financial independence with FIRE projections, savings rate tracking, and goal setting.',
-    color: 'bg-danger-500/10 text-danger-400',
+    color: 'bg-[var(--bg-negative-subtle)] text-[var(--text-negative)]',
     pro: true,
   },
   {

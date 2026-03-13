@@ -46,7 +46,7 @@ export function MobileNav() {
                     href={item.href}
                     onClick={() => setShowMore(false)}
                     className={`flex items-center gap-3 p-3 rounded-xl transition-colors ${
-                      isActive ? 'bg-primary-500/15 text-primary-400' : 'text-th-body hover:bg-[var(--bg-hover)]'
+                      isActive ? 'bg-primary-500/15 text-[var(--text-accent)]' : 'text-th-body hover:bg-[var(--bg-hover)]'
                     }`}
                   >
                     <Icon className="w-5 h-5" />
@@ -70,7 +70,7 @@ export function MobileNav() {
                 key={item.href}
                 href={item.href}
                 className={`flex flex-col items-center gap-0.5 py-1.5 px-3 rounded-xl transition-all duration-150 min-w-[52px] ${
-                  isActive ? 'text-primary-400' : 'text-th-faint'
+                  isActive ? 'text-[var(--text-accent)]' : 'text-th-faint'
                 }`}
               >
                 <div className={`p-1.5 rounded-xl transition-all duration-150 ${isActive ? 'bg-primary-500/15' : ''}`}>
@@ -83,7 +83,7 @@ export function MobileNav() {
           <button
             onClick={() => setShowMore(true)}
             className={`flex flex-col items-center gap-0.5 py-1.5 px-3 rounded-xl transition-all duration-150 min-w-[52px] ${
-              isMoreActive ? 'text-primary-400' : 'text-th-faint'
+              isMoreActive ? 'text-[var(--text-accent)]' : 'text-th-faint'
             }`}
           >
             <div className={`p-1.5 rounded-xl transition-all duration-150 ${isMoreActive ? 'bg-primary-500/15' : ''}`}>
