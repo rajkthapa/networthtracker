@@ -21,7 +21,7 @@ export function DashboardMockup() {
         <div className="flex">
           {/* Mini sidebar */}
           <div className="hidden sm:flex flex-col w-16 bg-[var(--bg-subtle)] border-r border-[var(--border-color)] py-4 px-2 gap-3">
-            <div className="w-10 h-10 mx-auto rounded-xl bg-gradient-to-br from-primary-600 to-grape-600 flex items-center justify-center mb-2">
+            <div className="w-10 h-10 mx-auto rounded-xl bg-primary-600 flex items-center justify-center mb-2">
               <div className="w-4 h-4 border-2 border-white rounded-sm" />
             </div>
             {[true, false, false, false, false].map((active, i) => (
@@ -32,11 +32,11 @@ export function DashboardMockup() {
           {/* Main area */}
           <div className="flex-1 p-4 sm:p-6 space-y-4">
             {/* Net worth hero */}
-            <div className="bg-gradient-to-r from-primary-500/10 to-grape-500/10 rounded-xl p-4 border border-primary-500/20">
+            <div className="rounded-xl p-4" style={{ background: 'var(--hero-bg)' }}>
               <div className="text-[10px] text-th-faint uppercase tracking-wider mb-1">Net Worth</div>
               <div className="text-2xl sm:text-3xl font-bold text-th-heading">$284,750</div>
               <div className="flex items-center gap-1 mt-1">
-                <span className="text-xs font-semibold text-success-400 bg-success-500/10 px-2 py-0.5 rounded-full">+12.4%</span>
+                <span className="text-xs font-semibold text-primary-600 bg-primary-500/10 px-2 py-0.5 rounded-full">+12.4%</span>
                 <span className="text-[10px] text-th-faint">vs last month</span>
               </div>
             </div>
@@ -44,11 +44,11 @@ export function DashboardMockup() {
             {/* Stat cards */}
             <div className="grid grid-cols-3 gap-3">
               {[
-                { label: 'Income', value: '$8,450', color: 'border-l-success-500/50', change: '+5.2%' },
-                { label: 'Expenses', value: '$4,120', color: 'border-l-danger-500/50', change: '-8.1%' },
-                { label: 'Savings', value: '51.2%', color: 'border-l-grape-500/50', change: '' },
+                { label: 'Income', value: '$8,450', change: '+5.2%' },
+                { label: 'Expenses', value: '$4,120', change: '-8.1%' },
+                { label: 'Savings', value: '51.2%', change: '' },
               ].map(stat => (
-                <div key={stat.label} className={`bg-th-card rounded-xl p-3 border border-[var(--border-color)] border-l-4 ${stat.color}`}>
+                <div key={stat.label} className="bg-th-card rounded-xl p-3 shadow-[var(--shadow-card)]">
                   <div className="text-[10px] text-th-faint uppercase tracking-wider">{stat.label}</div>
                   <div className="text-sm sm:text-lg font-bold text-th-heading mt-0.5">{stat.value}</div>
                 </div>
@@ -56,13 +56,13 @@ export function DashboardMockup() {
             </div>
 
             {/* Chart placeholder */}
-            <div className="bg-th-card rounded-xl border border-[var(--border-color)] p-4">
+            <div className="bg-th-card rounded-xl shadow-[var(--shadow-card)] p-4">
               <div className="text-xs font-semibold text-th-heading mb-3">Net Worth Trend</div>
               <div className="flex items-end gap-1 h-20">
                 {[35, 42, 38, 50, 48, 55, 60, 58, 65, 72, 70, 78].map((h, i) => (
                   <div
                     key={i}
-                    className="flex-1 rounded-t bg-gradient-to-t from-primary-500 to-grape-400 opacity-80"
+                    className="flex-1 rounded-t bg-primary-500 opacity-80"
                     style={{ height: `${h}%` }}
                   />
                 ))}

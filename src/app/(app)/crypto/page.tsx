@@ -62,8 +62,8 @@ export default function CryptoPage() {
       </div>
 
       {/* Hero */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#f7931a] via-[#627eea] to-[#9945ff] p-8 text-white">
-        <div className="absolute inset-0 bg-gradient-to-br from-black/10 to-transparent" />
+      <div className="relative overflow-hidden rounded-3xl bg-grape-900 p-8 text-white">
+        <div className="absolute -top-20 -right-20 w-60 h-60 bg-warning-500/10 rounded-full blur-3xl" />
         <div className="absolute -top-20 -right-20 w-60 h-60 bg-white/10 rounded-full blur-3xl" />
         <div className="relative">
           <div className="flex items-center gap-2 mb-2">

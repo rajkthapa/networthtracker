@@ -194,7 +194,7 @@ export default function ImportPage() {
       {activeMethod === 'plaid' && (
         isPro ? (
           <div className="chart-container text-center py-12">
-            <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-cyan-500/15 to-primary-500/15 flex items-center justify-center mx-auto mb-4">
+            <div className="w-20 h-20 rounded-3xl bg-cyan-500/10 flex items-center justify-center mx-auto mb-4">
               <Link2 className="w-10 h-10 text-cyan-400" />
             </div>
             <h3 className="text-xl font-bold text-th-heading mb-2">Connect Your Bank Account</h3>
@@ -216,7 +216,7 @@ export default function ImportPage() {
             </p>
             <button
               onClick={() => setShowUpgrade(true)}
-              className="px-8 py-3 bg-gradient-to-r from-grape-500 to-accent-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all"
+              className="btn-primary px-8 py-3"
             >
               Upgrade to Pro
             </button>
@@ -270,7 +270,7 @@ export default function ImportPage() {
             </div>
 
             <button type="submit" className={`w-full py-3.5 rounded-xl font-semibold text-white ${
-              manualForm.type === 'expense' ? 'bg-gradient-to-r from-danger-500 to-accent-500' : 'bg-gradient-to-r from-success-500 to-teal-500'
+              manualForm.type === 'expense' ? 'bg-danger-500 hover:bg-danger-600' : 'bg-success-500 hover:bg-success-600'
             }`}>
               Add Transaction
             </button>
@@ -286,7 +286,7 @@ export default function ImportPage() {
       )}
 
       {/* Import Tips */}
-      <div className="chart-container bg-gradient-to-br from-white/[0.02] to-primary-500/5">
+      <div className="chart-container">
         <h3 className="section-header mb-4">Import Tips</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="p-4 bg-th-card/80 rounded-2xl">

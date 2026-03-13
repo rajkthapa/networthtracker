@@ -30,10 +30,10 @@ export function LandingNavbar() {
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-600 to-grape-600 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-primary-600 flex items-center justify-center">
               <TrendingUp className="w-4.5 h-4.5 text-white" />
             </div>
-            <span className="text-lg font-bold bg-gradient-to-r from-primary-600 to-grape-600 bg-clip-text text-transparent">
+            <span className="text-lg font-bold text-th-heading">
               WealthPulse
             </span>
           </Link>
@@ -68,7 +68,7 @@ export function LandingNavbar() {
             </Link>
             <Link
               href="/auth/signup"
-              className="text-sm font-semibold text-white bg-gradient-to-r from-primary-600 to-grape-600 px-5 py-2.5 rounded-xl hover:shadow-lg hover:shadow-primary-500/25 transition-all"
+              className="btn-primary text-sm px-5 py-2.5"
             >
               Get Started Free
             </Link>
@@ -102,7 +102,7 @@ export function LandingNavbar() {
               <Link href="/auth/login" className="block w-full text-center px-4 py-3 rounded-xl text-sm font-medium text-th-heading hover:bg-[var(--bg-hover)]">
                 Log in
               </Link>
-              <Link href="/auth/signup" className="block w-full text-center px-4 py-3 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-primary-600 to-grape-600">
+              <Link href="/auth/signup" className="block w-full text-center px-4 py-3 rounded-xl btn-primary text-sm">
                 Get Started Free
               </Link>
             </div>

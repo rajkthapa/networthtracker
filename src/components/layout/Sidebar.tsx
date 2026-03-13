@@ -24,12 +24,12 @@ export function Sidebar() {
     <aside className={`hidden md:flex flex-col bg-th-card border-r border-[var(--border-color)] p-3 transition-all duration-200 ${collapsed ? 'w-[72px]' : 'w-60'}`}>
       {/* Logo */}
       <div className={`flex items-center gap-3 px-3 py-3 mb-6 ${collapsed ? 'justify-center' : ''}`}>
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-500 to-grape-500 flex items-center justify-center flex-shrink-0 shadow-glow-primary">
+        <div className="w-9 h-9 rounded-xl bg-primary-600 flex items-center justify-center flex-shrink-0">
           <TrendingUp className="w-4.5 h-4.5 text-white" />
         </div>
         {!collapsed && (
           <div>
-            <h1 className="text-base font-bold text-gradient-primary bg-gradient-to-r from-primary-400 to-grape-400">WealthPulse</h1>
+            <h1 className="text-base font-bold text-th-heading">WealthPulse</h1>
             <p className="text-[9px] text-th-faint font-medium tracking-widest uppercase">Smart Finance</p>
           </div>
         )}

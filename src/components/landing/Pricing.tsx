@@ -40,7 +40,7 @@ const plans = [
 
 export function Pricing() {
   return (
-    <section id="pricing" className="py-20 md:py-32 bg-gradient-to-b from-[var(--bg-subtle)] to-th-base">
+    <section id="pricing" className="py-20 md:py-32 bg-[var(--bg-subtle)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-th-heading mb-4">
@@ -57,13 +57,13 @@ export function Pricing() {
               key={plan.name}
               className={`relative rounded-3xl p-8 ${
                 plan.highlight
-                  ? 'bg-gradient-to-br from-primary-600 via-grape-600 to-primary-700 text-white shadow-[var(--shadow-glass)] shadow-primary-500/20 scale-[1.02]'
+                  ? 'bg-grape-900 text-white shadow-[var(--shadow-glass)] scale-[1.02]'
                   : 'bg-th-card border border-[var(--border-color)] shadow-[var(--shadow-card)]'
               }`}
             >
               {plan.highlight && (
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                  <span className="inline-flex items-center gap-1.5 bg-th-card text-grape-500 text-xs font-bold uppercase tracking-wider px-4 py-1.5 rounded-full shadow-lg">
+                  <span className="inline-flex items-center gap-1.5 bg-primary-600 text-white text-xs font-bold uppercase tracking-wider px-4 py-1.5 rounded-full shadow-lg">
                     <Sparkles className="w-3.5 h-3.5" />
                     Most Popular
                   </span>
@@ -92,9 +92,9 @@ export function Pricing() {
                 {plan.features.map((feature) => (
                   <li key={feature} className="flex items-center gap-3">
                     <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      plan.highlight ? 'bg-white/20' : 'bg-success-500/10'
+                      plan.highlight ? 'bg-white/20' : 'bg-primary-500/10'
                     }`}>
-                      <Check className={`w-3 h-3 ${plan.highlight ? 'text-white' : 'text-success-400'}`} />
+                      <Check className={`w-3 h-3 ${plan.highlight ? 'text-white' : 'text-primary-500'}`} />
                     </div>
                     <span className={`text-sm ${plan.highlight ? 'text-white/90' : 'text-th-heading'}`}>
                       {feature}
@@ -107,8 +107,8 @@ export function Pricing() {
                 href={plan.href}
                 className={`block w-full text-center py-3.5 rounded-xl font-semibold transition-all ${
                   plan.highlight
-                    ? 'bg-th-card text-primary-300 hover:bg-th-card/90 shadow-lg'
-                    : 'bg-th-card text-th-heading hover:bg-th-card/90'
+                    ? 'bg-primary-600 text-white hover:bg-primary-500 shadow-lg'
+                    : 'btn-secondary'
                 }`}
               >
                 {plan.cta}

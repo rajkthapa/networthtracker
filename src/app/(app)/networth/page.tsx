@@ -47,8 +47,8 @@ export default function NetWorthPage() {
       </div>
 
       {/* Hero */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary-600 via-grape-600 to-accent-600 p-8 text-white">
-        <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent" />
+      <div className="relative overflow-hidden rounded-3xl bg-grape-900 p-8 text-white">
+        <div className="absolute -top-20 -right-20 w-60 h-60 bg-primary-500/10 rounded-full blur-3xl" />
         <div className="absolute -top-20 -right-20 w-60 h-60 bg-white/10 rounded-full blur-3xl" />
         <div className="relative">
           <p className="text-white/70 text-sm font-medium mb-2">Current Net Worth</p>
@@ -178,7 +178,7 @@ export default function NetWorthPage() {
       </div>
 
       {/* Milestones */}
-      <div className="chart-container bg-gradient-to-br from-primary-500/10 to-grape-500/10">
+      <div className="chart-container">
         <h3 className="section-header mb-4 flex items-center gap-2">
           <Target className="w-5 h-5 text-primary-500" />
           Net Worth Milestones

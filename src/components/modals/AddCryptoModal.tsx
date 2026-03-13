@@ -108,7 +108,7 @@ export function AddCryptoModal({ onClose }: { onClose: () => void }) {
           <button
             type="submit"
             disabled={saving}
-            className="w-full py-3.5 rounded-xl font-semibold text-white bg-gradient-to-r from-[#f7931a] to-[#627eea] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full py-3.5 btn-primary disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {saving ? (
               <Loader2 className="w-5 h-5 animate-spin" />

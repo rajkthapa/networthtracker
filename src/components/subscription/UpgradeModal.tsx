@@ -42,7 +42,7 @@ export function UpgradeModal({ open, onClose, feature }: UpgradeModalProps) {
         </button>
 
         <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-grape-500 to-accent-500 mb-4">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-grape-800 mb-4">
             <Sparkles className="w-7 h-7 text-white" />
           </div>
           <h2 className="text-2xl font-bold text-th-heading mb-2">Upgrade to Pro</h2>
@@ -74,7 +74,7 @@ export function UpgradeModal({ open, onClose, feature }: UpgradeModalProps) {
         <button
           onClick={handleUpgrade}
           disabled={loading}
-          className="w-full py-3.5 rounded-xl font-semibold text-white bg-gradient-to-r from-grape-500 to-accent-500 hover:shadow-[var(--shadow-card-hover)] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+          className="w-full py-3.5 btn-primary disabled:opacity-50 flex items-center justify-center gap-2"
         >
           {loading ? (
             <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

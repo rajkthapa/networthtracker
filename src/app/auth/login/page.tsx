@@ -34,10 +34,10 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-gradient-to-br from-primary-500 via-grape-500 to-accent-500 shadow-glow-primary mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-primary-600 shadow-glow-primary mb-4">
             <TrendingUp className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary-600 to-grape-600 bg-clip-text text-transparent">WealthPulse</h1>
+          <h1 className="text-3xl font-bold text-th-heading">WealthPulse</h1>
           <p className="text-th-muted text-sm mt-1">Welcome back! Sign in to continue.</p>
         </div>
 
@@ -86,7 +86,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 rounded-xl font-semibold text-white bg-gradient-to-r from-primary-500 to-grape-500 hover:shadow-[var(--shadow-card-hover)] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full py-3.5 btn-primary disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

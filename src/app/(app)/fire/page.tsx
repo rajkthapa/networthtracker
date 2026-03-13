@@ -20,18 +20,18 @@ export default function FIREPage() {
           <h1 className="page-header">FIRE Calculator</h1>
           <p className="text-sm text-th-muted mt-1">Financial Independence, Retire Early</p>
         </div>
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-danger-500/10 via-warning-500/5 to-danger-500/10 p-10 md:p-16 text-center border border-danger-500/20">
+        <div className="relative overflow-hidden rounded-3xl bg-[var(--bg-subtle)] p-10 md:p-16 text-center border border-[var(--border-color)]">
           <div className="max-w-md mx-auto">
             <div className="w-16 h-16 rounded-2xl bg-danger-500/15 flex items-center justify-center mx-auto mb-6">
               <Lock className="w-8 h-8 text-danger-400" />
             </div>
-            <h2 className="text-2xl font-bold text-white mb-3">Pro Feature</h2>
+            <h2 className="text-2xl font-bold text-th-heading mb-3">Pro Feature</h2>
             <p className="text-th-muted mb-8">
               FIRE planning tools including retirement projections, savings rate analysis, and Coast FIRE calculations are available on the Pro plan.
             </p>
             <button
               onClick={() => setShowUpgrade(true)}
-              className="px-8 py-3.5 bg-gradient-to-r from-grape-500 to-accent-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all"
+              className="btn-primary px-8 py-3.5"
             >
               Upgrade to Pro
             </button>
@@ -105,8 +105,8 @@ export default function FIREPage() {
       </div>
 
       {/* Hero */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-warning-500 via-danger-500 to-accent-500 p-8 text-white">
-        <div className="absolute inset-0 bg-gradient-to-br from-black/5 to-transparent" />
+      <div className="relative overflow-hidden rounded-3xl bg-grape-900 p-8 text-white">
+        <div className="absolute -top-20 -right-20 w-60 h-60 bg-warning-500/10 rounded-full blur-3xl" />
         <div className="absolute -top-20 -right-20 w-60 h-60 bg-white/10 rounded-full blur-3xl animate-float" />
         <div className="relative">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -210,7 +210,7 @@ export default function FIREPage() {
 
       {/* Key Metrics + Tips */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="chart-container bg-gradient-to-br from-primary-500/10 to-grape-500/10">
+        <div className="chart-container bg-[var(--bg-subtle)]">
           <h3 className="section-header mb-4">Key Metrics</h3>
           <div className="space-y-3">
             <div className="flex justify-between items-center p-3 bg-th-card/80 rounded-xl">
@@ -248,7 +248,7 @@ export default function FIREPage() {
           </div>
         </div>
 
-        <div className="chart-container bg-gradient-to-br from-warning-500/10 to-danger-500/10">
+        <div className="chart-container">
           <h3 className="section-header mb-4">FIRE Insights</h3>
           <div className="space-y-3">
             <div className="flex items-start gap-3 p-3 bg-th-card/80 rounded-xl">

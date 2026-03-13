@@ -196,7 +196,7 @@ function DividendTracker() {
   if (totalDividends === 0) return null;
 
   return (
-    <div className="chart-container bg-gradient-to-br from-success-500/10 to-teal-500/10">
+    <div className="chart-container">
       <h3 className="section-header mb-3">Dividend Income</h3>
       <div className="space-y-3">
         <div>
@@ -225,14 +225,13 @@ function EmptyDashboard() {
         <h1 className="page-header">Dashboard</h1>
         <p className="text-sm text-th-muted mt-1">Welcome to WealthPulse!</p>
       </div>
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary-600 via-grape-600 to-primary-700 p-8 md:p-12 text-white text-center">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.1),transparent_50%)]" />
+      <div className="relative overflow-hidden rounded-3xl p-8 md:p-12 text-center" style={{ background: 'var(--hero-bg)' }}>
         <div className="relative max-w-lg mx-auto">
-          <h2 className="text-3xl font-bold mb-3 tracking-tight">Start Tracking Your Wealth</h2>
-          <p className="text-white/70 text-sm mb-8 leading-relaxed">Add your first account, transaction, or investment to see your financial dashboard come to life.</p>
+          <h2 className="text-3xl font-bold mb-3 tracking-tight text-th-heading">Start Tracking Your Wealth</h2>
+          <p className="text-th-muted text-sm mb-8 leading-relaxed">Add your first account, transaction, or investment to see your financial dashboard come to life.</p>
           <div className="flex flex-wrap gap-3 justify-center">
-            <a href="/accounts" className="px-6 py-2.5 rounded-xl bg-th-card text-primary-300 font-semibold text-sm hover:bg-th-card/90 transition-colors">Add Account</a>
-            <a href="/crypto" className="px-6 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 font-semibold text-sm transition-colors">Add Crypto</a>
+            <a href="/accounts" className="btn-primary text-sm">Add Account</a>
+            <a href="/crypto" className="btn-secondary text-sm">Add Crypto</a>
           </div>
         </div>
       </div>
@@ -248,7 +247,7 @@ function EmptyDashboard() {
             className="stat-card hover:shadow-lg transition-all group cursor-pointer animate-slide-up"
             style={{ animationDelay: `${i * 75}ms`, animationFillMode: 'both' }}
           >
-            <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-primary-400 to-grape-400 rounded-l-2xl" />
+            <div className="absolute top-0 left-0 w-1 h-full bg-primary-500 rounded-l-2xl" />
             <span className="text-2xl mb-3 block">{item.icon}</span>
             <p className="text-base font-bold text-th-heading mb-1">{item.title}</p>
             <p className="text-xs text-th-muted leading-relaxed">{item.desc}</p>
@@ -296,9 +295,9 @@ export default function Dashboard() {
     : 0;
 
   const stats = [
-    { title: 'Monthly Income', value: formatCurrency(monthIncome), change: incomeChange, icon: DollarSign, borderColor: 'border-l-success-500/50', iconBg: 'bg-success-500/10 text-success-400' },
-    { title: 'Monthly Expenses', value: formatCurrency(monthExpenses), change: expenseChange, icon: CreditCard, borderColor: 'border-l-danger-500/50', iconBg: 'bg-danger-500/10 text-danger-400' },
-    { title: 'Savings Rate', value: `${monthSavingsRate.toFixed(1)}%`, change: undefined, icon: PiggyBank, borderColor: 'border-l-grape-500/50', iconBg: 'bg-grape-500/10 text-grape-400' },
+    { title: 'Monthly Income', value: formatCurrency(monthIncome), change: incomeChange, icon: DollarSign, iconBg: 'bg-primary-500/10 text-primary-600 dark:text-primary-400' },
+    { title: 'Monthly Expenses', value: formatCurrency(monthExpenses), change: expenseChange, icon: CreditCard, iconBg: 'bg-danger-500/10 text-danger-600 dark:text-danger-400' },
+    { title: 'Savings Rate', value: `${monthSavingsRate.toFixed(1)}%`, change: undefined, icon: PiggyBank, iconBg: 'bg-grape-500/10 text-grape-600 dark:text-grape-400' },
   ];
 
   return (
@@ -312,29 +311,29 @@ export default function Dashboard() {
         <MonthSelector />
       </div>
 
-      {/* Net Worth Hero */}
-      <div className="stat-card border-l-4 border-l-primary-500/50 p-6 md:p-8">
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-          <div>
-            <p className="stat-label mb-1">Net Worth</p>
-            <p className="text-4xl md:text-5xl font-bold text-th-heading num tracking-tight">{formatCurrency(netWorth)}</p>
-            {hasNWHistory && (
-              <div className="flex items-center gap-2 mt-2">
-                <Delta value={nwChangePercent} />
-                <span className="text-xs text-th-faint">vs last month</span>
-                <span className="text-xs text-th-muted font-medium num">({nwChange >= 0 ? '+' : ''}{formatCurrency(nwChange)})</span>
-              </div>
-            )}
+      {/* Net Worth Hero — inspired by clean fintech cards */}
+      <div className="rounded-3xl p-8 md:p-10 relative overflow-hidden" style={{ background: 'var(--hero-bg)' }}>
+        <div className="flex flex-col items-center text-center mb-6">
+          <p className="text-th-muted text-sm font-medium mb-3 tracking-wide uppercase">Net Worth</p>
+          <p className="text-5xl md:text-6xl lg:text-7xl font-bold text-th-heading num tracking-tighter leading-none">
+            {formatCurrency(netWorth)}
+          </p>
+          {hasNWHistory && (
+            <div className="mt-4 inline-flex items-center gap-1.5 bg-primary-500/12 text-primary-600 dark:text-primary-400 px-4 py-1.5 rounded-full text-sm font-semibold">
+              {nwChangePercent >= 0 ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
+              {nwChangePercent >= 0 ? '+' : ''}{nwChangePercent.toFixed(2)}%
+            </div>
+          )}
+        </div>
+        <div className="flex justify-center gap-8 md:gap-12">
+          <div className="text-center">
+            <p className="text-th-faint text-xs font-medium uppercase tracking-wider mb-1">Assets</p>
+            <p className="text-xl md:text-2xl font-bold text-th-heading num">{formatCurrency(totalAssets)}</p>
           </div>
-          <div className="flex gap-6">
-            <div>
-              <p className="stat-label mb-0.5">Assets</p>
-              <p className="text-lg font-bold text-success-400 num">{formatCurrency(totalAssets)}</p>
-            </div>
-            <div>
-              <p className="stat-label mb-0.5">Debts</p>
-              <p className="text-lg font-bold text-danger-400 num">{formatCurrency(totalDebts)}</p>
-            </div>
+          <div className="w-px bg-[var(--border-color)] self-stretch" />
+          <div className="text-center">
+            <p className="text-th-faint text-xs font-medium uppercase tracking-wider mb-1">Debts</p>
+            <p className="text-xl md:text-2xl font-bold text-th-heading num">{formatCurrency(totalDebts)}</p>
           </div>
         </div>
       </div>
@@ -346,7 +345,7 @@ export default function Dashboard() {
           return (
             <div
               key={stat.title}
-              className={`stat-card border-l-4 ${stat.borderColor} animate-slide-up`}
+              className="stat-card animate-slide-up"
               style={{ animationDelay: `${i * 75}ms`, animationFillMode: 'both' }}
             >
               <div className="flex items-start justify-between mb-3">

@@ -48,7 +48,7 @@ export function Features() {
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-th-heading mb-4">
             Everything You Need to{' '}
-            <span className="bg-gradient-to-r from-primary-600 to-grape-600 bg-clip-text text-transparent">
+            <span className="text-primary-600">
               Master Your Money
             </span>
           </h2>
@@ -66,7 +66,7 @@ export function Features() {
                 className="relative group bg-th-card rounded-2xl p-6 border border-[var(--border-color)] hover:border-[var(--border-strong)] hover:shadow-[var(--shadow-card-hover)] transition-all duration-300"
               >
                 {feature.pro && (
-                  <span className="absolute top-4 right-4 text-[10px] font-bold uppercase tracking-wider bg-gradient-to-r from-grape-500 to-accent-500 text-white px-2.5 py-1 rounded-full">
+                  <span className="absolute top-4 right-4 text-[10px] font-bold uppercase tracking-wider bg-grape-800 text-white px-2.5 py-1 rounded-full">
                     Pro
                   </span>
                 )}

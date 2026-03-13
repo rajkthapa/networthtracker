@@ -3,21 +3,21 @@ const testimonials = [
     name: 'Sarah Chen',
     role: 'Software Engineer',
     avatar: 'SC',
-    color: 'from-primary-500 to-grape-500',
+    color: 'bg-primary-600',
     quote: 'WealthPulse finally made me feel in control of my finances. The dashboard is beautiful and the FIRE calculator keeps me motivated.',
   },
   {
     name: 'Marcus Johnson',
     role: 'Small Business Owner',
     avatar: 'MJ',
-    color: 'from-success-500 to-teal-500',
+    color: 'bg-grape-700',
     quote: 'I love how easy it is to track everything in one place. The crypto tracking with live prices is a game-changer for my portfolio.',
   },
   {
     name: 'Emily Rodriguez',
     role: 'Product Designer',
     avatar: 'ER',
-    color: 'from-grape-500 to-accent-500',
+    color: 'bg-accent-600',
     quote: 'The Plaid integration saves me so much time. My bank balances update automatically and I can focus on what matters - growing my wealth.',
   },
 ];
@@ -39,7 +39,7 @@ export function Testimonials() {
           {testimonials.map((t) => (
             <div key={t.name} className="bg-[var(--bg-subtle)] rounded-2xl p-6 border border-[var(--border-color)]">
               <div className="flex items-center gap-3 mb-4">
-                <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${t.color} flex items-center justify-center text-white text-sm font-bold`}>
+                <div className={`w-10 h-10 rounded-full ${t.color} flex items-center justify-center text-white text-sm font-bold`}>
                   {t.avatar}
                 </div>
                 <div>

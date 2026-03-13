@@ -18,10 +18,10 @@ export function TopBar() {
     <>
       <header className="flex items-center justify-between px-4 md:px-8 py-3 bg-th-card/60 backdrop-blur-xl border-b border-[var(--border-color)]">
         <div className="flex items-center gap-3 md:hidden">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary-500 to-grape-500 flex items-center justify-center shadow-glow-primary">
+          <div className="w-8 h-8 rounded-xl bg-primary-600 flex items-center justify-center">
             <span className="text-white font-bold text-sm">W</span>
           </div>
-          <h1 className="text-lg font-bold text-gradient-primary bg-gradient-to-r from-primary-400 to-grape-400">WealthPulse</h1>
+          <h1 className="text-lg font-bold text-th-heading">WealthPulse</h1>
         </div>
 
         <div className="hidden md:flex items-center gap-3 flex-1 max-w-md">
@@ -49,7 +49,7 @@ export function TopBar() {
           <div className="relative">
             <button
               onClick={() => setShowMenu(!showMenu)}
-              className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-500 to-grape-500 flex items-center justify-center text-white font-semibold text-sm cursor-pointer"
+              className="w-9 h-9 rounded-xl bg-grape-800 dark:bg-grape-700 flex items-center justify-center text-white font-semibold text-sm cursor-pointer"
             >
               {initials}
             </button>

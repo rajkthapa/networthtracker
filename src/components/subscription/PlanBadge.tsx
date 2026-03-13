@@ -26,7 +26,7 @@ export function PlanBadge({ collapsed }: { collapsed: boolean }) {
     return (
       <div className="flex justify-center">
         <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-          isPro ? 'bg-gradient-to-br from-grape-500 to-accent-500' : 'bg-[var(--bg-hover)]'
+          isPro ? 'bg-grape-800' : 'bg-[var(--bg-hover)]'
         }`}>
           {isPro ? (
             <Crown className="w-4 h-4 text-white" />
@@ -45,7 +45,7 @@ export function PlanBadge({ collapsed }: { collapsed: boolean }) {
         disabled={portalLoading}
         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-grape-500/10 border border-grape-500/20 hover:border-grape-500/30 transition-all text-left"
       >
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-grape-500 to-accent-500 flex items-center justify-center flex-shrink-0">
+        <div className="w-8 h-8 rounded-lg bg-grape-800 flex items-center justify-center flex-shrink-0">
           <Crown className="w-4 h-4 text-white" />
         </div>
         <div className="min-w-0">
