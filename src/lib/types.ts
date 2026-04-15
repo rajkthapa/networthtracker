@@ -69,6 +69,15 @@ export interface CategoryBreakdown {
   icon: string;
 }
 
+export interface Category {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+  type: 'income' | 'expense';
+  sortOrder: number;
+}
+
 export interface AccountSnapshot {
   id: string;
   accountId: string;

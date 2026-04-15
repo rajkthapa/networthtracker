@@ -210,6 +210,116 @@ CREATE POLICY "Users can CRUD own account_snapshots" ON account_snapshots FOR AL
 CREATE INDEX IF NOT EXISTS idx_account_snapshots_user ON account_snapshots(user_id);
 CREATE INDEX IF NOT EXISTS idx_account_snapshots_account_month ON account_snapshots(account_id, month);
 
+-- =====================================================================
+-- Categories: shared defaults + per-user deltas
+--   * default_categories: global base list (shared by all users)
+--   * user_categories:    per-user additions only
+--   * profiles.hidden_category_ids: ids of defaults this user has hidden
+-- =====================================================================
+
+-- Clean up the previous per-user design if it was ever applied
+DROP TABLE IF EXISTS categories CASCADE;
+DROP FUNCTION IF EXISTS public.seed_default_categories(UUID);
+
+-- Restore plain handle_new_user (no category seeding — defaults are global)
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger AS $$
+BEGIN
+  INSERT INTO public.profiles (id, email, full_name)
+  VALUES (new.id, new.email, COALESCE(new.raw_user_meta_data->>'full_name', ''));
+  RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Global default category list (one row per category, shared across users)
+CREATE TABLE IF NOT EXISTS default_categories (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  icon TEXT NOT NULL,
+  color TEXT NOT NULL,
+  type TEXT NOT NULL CHECK (type IN ('income', 'expense')),
+  sort_order INT NOT NULL DEFAULT 0
+);
+
+ALTER TABLE default_categories ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Authenticated users can read default_categories" ON default_categories;
+CREATE POLICY "Authenticated users can read default_categories"
+  ON default_categories FOR SELECT USING (auth.role() = 'authenticated');
+
+-- Seed defaults. ON CONFLICT DO UPDATE lets us tweak the base list by re-running schema.
+INSERT INTO default_categories (id, name, icon, color, type, sort_order) VALUES
+  ('mortgage',        'Rent/Mortgage',      '🏠', '#4c6ef5', 'expense',  1),
+  ('rent',            'Rent',               '🏢', '#7950f2', 'expense',  2),
+  ('utilities',       'Utilities',          '⚡', '#f59f00', 'expense',  3),
+  ('utility_gas',     'Utility - Gas',      '🔥', '#f59f00', 'expense',  4),
+  ('utility_electric','Utility - Electric', '⚡', '#fab005', 'expense',  5),
+  ('utility_garbage', 'Utility - Garbage',  '🗑️', '#868e96', 'expense',  6),
+  ('internet',        'Internet',           '🌐', '#15aabf', 'expense',  7),
+  ('phone',           'Phone',              '📱', '#20c997', 'expense',  8),
+  ('groceries',       'Groceries',          '🛒', '#40c057', 'expense',  9),
+  ('dining',          'Dining Out',         '🍽️', '#f06595', 'expense', 10),
+  ('transportation',  'Transportation',     '🚗', '#fd7e14', 'expense', 11),
+  ('car_payment',     'Car Payment',        '🚗', '#fd7e14', 'expense', 12),
+  ('car_gas',         'Car Gas',            '⛽', '#e64980', 'expense', 13),
+  ('car_maintenance', 'Car Maintenance',    '🔧', '#495057', 'expense', 14),
+  ('gas',             'Gas',                '⛽', '#e64980', 'expense', 15),
+  ('insurance',       'Insurance',          '🛡️', '#be4bdb', 'expense', 16),
+  ('healthcare',      'Healthcare',         '🏥', '#fa5252', 'expense', 17),
+  ('subscriptions',   'Subscriptions',      '📺', '#cc5de8', 'expense', 18),
+  ('shopping',        'Shopping',           '🛍️', '#f783ac', 'expense', 19),
+  ('entertainment',   'Entertainment',      '🎬', '#748ffc', 'expense', 20),
+  ('education',       'Education',          '📚', '#3bc9db', 'expense', 21),
+  ('travel',          'Travel',             '✈️', '#22b8cf', 'expense', 22),
+  ('fitness',         'Fitness',            '💪', '#69db7c', 'expense', 23),
+  ('personal',        'Personal Care',      '💅', '#fcc419', 'expense', 24),
+  ('pets',            'Pets',               '🐾', '#ff8787', 'expense', 25),
+  ('gifts',           'Gifts & Donations',  '🎁', '#da77f2', 'expense', 26),
+  ('taxes',           'Taxes',              '📋', '#868e96', 'expense', 27),
+  ('other_expense',   'Other',              '📦', '#adb5bd', 'expense', 28),
+  ('paycheck',        'Paycheck',           '💰', '#4c6ef5', 'income',   1),
+  ('w2',              'W-2 Salary',         '💼', '#5c7cfa', 'income',   2),
+  ('freelance',       'Freelance',          '💻', '#7950f2', 'income',   3),
+  ('business',        'Business Income',    '🏪', '#f59f00', 'income',   4),
+  ('dividend',        'Dividend Income',    '📈', '#40c057', 'income',   5),
+  ('interest',        'Interest Income',    '🏦', '#15aabf', 'income',   6),
+  ('options_income',  'Options Income',     '📊', '#be4bdb', 'income',   7),
+  ('rental',          'Rental Income',      '🏠', '#20c997', 'income',   8),
+  ('social_media',    'Social Media',       '📱', '#f06595', 'income',   9),
+  ('youtube',         'YouTube',            '▶️', '#fa5252', 'income',  10),
+  ('capital_gains',   'Capital Gains',      '📊', '#845ef7', 'income',  11),
+  ('bonus',           'Bonus',              '🎉', '#fd7e14', 'income',  12),
+  ('commission',      'Commission',         '🤝', '#e64980', 'income',  13),
+  ('side_hustle',     'Side Hustle',        '🔥', '#cc5de8', 'income',  14),
+  ('crypto',          'Crypto Income',      '₿', '#f7931a', 'income',  15),
+  ('other_income',    'Other Income',       '💰', '#adb5bd', 'income',  16)
+ON CONFLICT (id) DO UPDATE SET
+  name = EXCLUDED.name,
+  icon = EXCLUDED.icon,
+  color = EXCLUDED.color,
+  type = EXCLUDED.type,
+  sort_order = EXCLUDED.sort_order;
+
+-- Per-user additions (only rows when a user actually creates a custom category)
+CREATE TABLE IF NOT EXISTS user_categories (
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  id TEXT NOT NULL,
+  name TEXT NOT NULL,
+  icon TEXT NOT NULL DEFAULT '📦',
+  color TEXT NOT NULL DEFAULT '#14b8a6',
+  type TEXT NOT NULL CHECK (type IN ('income', 'expense')),
+  sort_order INT DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  PRIMARY KEY (user_id, id)
+);
+
+ALTER TABLE user_categories ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can CRUD own user_categories" ON user_categories;
+CREATE POLICY "Users can CRUD own user_categories" ON user_categories FOR ALL USING (auth.uid() = user_id);
+CREATE INDEX IF NOT EXISTS idx_user_categories_user_type ON user_categories(user_id, type);
+
+-- Per-user list of hidden default category IDs (empty array for untouched users)
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS hidden_category_ids TEXT[] NOT NULL DEFAULT '{}';
+
 -- Drop trigger if exists, then recreate
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created

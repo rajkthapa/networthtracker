@@ -1,8 +1,8 @@
 'use client';
 
 import React, { createContext, useContext, useState, useMemo, useCallback, useEffect, type ReactNode } from 'react';
-import { Account, Transaction, CryptoHolding, StockHolding, NetWorthSnapshot, MonthlyData, AccountSnapshot } from './types';
-import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, ACCOUNT_TYPES, DEBT_TYPES } from './utils';
+import { Account, Transaction, CryptoHolding, StockHolding, NetWorthSnapshot, MonthlyData, AccountSnapshot, Category } from './types';
+import { ACCOUNT_TYPES, DEBT_TYPES } from './utils';
 import { useAuth } from './auth-context';
 import { createClient } from './supabase';
 
@@ -34,6 +34,16 @@ interface AppState {
   // Transaction actions
   addTransaction: (transaction: Omit<Transaction, 'id' | 'createdAt'>) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
+
+  // Categories
+  defaultCategories: Category[];
+  userCategories: Category[];
+  hiddenCategoryIds: string[];
+  expenseCategories: Category[];
+  incomeCategories: Category[];
+  addCategory: (cat: { name: string; icon: string; color: string; type: 'income' | 'expense' }) => Promise<void>;
+  deleteCategory: (id: string) => Promise<void>;
+  restoreCategory: (id: string) => Promise<void>;
 
   // Crypto actions
   addCryptoHolding: (holding: Omit<CryptoHolding, 'id'>) => Promise<void>;
@@ -95,9 +105,7 @@ interface AppState {
 
 const AppContext = createContext<AppState | null>(null);
 
-import { getCustomCategories } from '@/components/modals/ManageCategoriesModal';
-
-const ALL_CATEGORIES = [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES, ...ACCOUNT_TYPES, ...DEBT_TYPES];
+const ACCOUNT_AND_DEBT_TYPES = [...ACCOUNT_TYPES, ...DEBT_TYPES];
 
 function getMonthLabel(yyyymm: string): string {
   const [y, m] = yyyymm.split('-');
@@ -181,6 +189,17 @@ function mapSnapshot(row: any): NetWorthSnapshot {
   };
 }
 
+function mapCategory(row: any): Category {
+  return {
+    id: row.id,
+    name: row.name,
+    icon: row.icon,
+    color: row.color,
+    type: row.type,
+    sortOrder: Number(row.sort_order ?? 0),
+  };
+}
+
 export function AppProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const supabase = createClient();
@@ -193,6 +212,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [stockHoldings, setStockHoldings] = useState<StockHolding[]>([]);
   const [netWorthHistory, setNetWorthHistory] = useState<NetWorthSnapshot[]>([]);
   const [accountSnapshots, setAccountSnapshots] = useState<AccountSnapshot[]>([]);
+  const [defaultCategories, setDefaultCategories] = useState<Category[]>([]);
+  const [userCategories, setUserCategories] = useState<Category[]>([]);
+  const [hiddenCategoryIds, setHiddenCategoryIds] = useState<string[]>([]);
   const [selectedMonth, setSelectedMonth] = useState(getCurrentMonth());
 
   // === Fetch all data when user changes ===
@@ -204,6 +226,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setStockHoldings([]);
       setNetWorthHistory([]);
       setAccountSnapshots([]);
+      setDefaultCategories([]);
+      setUserCategories([]);
+      setHiddenCategoryIds([]);
       setLoading(false);
       return;
     }
@@ -211,13 +236,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
     async function fetchAll() {
       setLoading(true);
-      const [accRes, txnRes, cryptoRes, stockRes, snapRes, accSnapRes] = await Promise.all([
+      const [accRes, txnRes, cryptoRes, stockRes, snapRes, accSnapRes, defCatRes, userCatRes, profileRes] = await Promise.all([
         supabase.from('accounts').select('*').eq('user_id', user!.id).order('created_at', { ascending: false }),
         supabase.from('transactions').select('*').eq('user_id', user!.id).order('date', { ascending: false }),
         supabase.from('crypto_holdings').select('*').eq('user_id', user!.id),
         supabase.from('stock_holdings').select('*').eq('user_id', user!.id),
         supabase.from('net_worth_snapshots').select('*').eq('user_id', user!.id).order('date', { ascending: true }),
         supabase.from('account_snapshots').select('*').eq('user_id', user!.id).order('month', { ascending: true }),
+        supabase.from('default_categories').select('*').order('sort_order', { ascending: true }),
+        supabase.from('user_categories').select('*').eq('user_id', user!.id).order('sort_order', { ascending: true }),
+        supabase.from('profiles').select('hidden_category_ids').eq('id', user!.id).single(),
       ]);
 
       if (cancelled) return;
@@ -230,6 +258,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setAccountSnapshots((accSnapRes.data || []).map((r: any) => ({
         id: r.id, accountId: r.account_id, month: r.month, balance: Number(r.balance),
       })));
+      setDefaultCategories((defCatRes.data || []).map(mapCategory));
+      setUserCategories((userCatRes.data || []).map(mapCategory));
+      setHiddenCategoryIds(profileRes.data?.hidden_category_ids || []);
+
       setLoading(false);
     }
 
@@ -368,6 +400,71 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const { error } = await supabase.from('transactions').delete().eq('id', id);
     if (!error) setTransactions(prev => prev.filter(t => t.id !== id));
   }, [supabase]);
+
+  // === Category Actions ===
+  const addCategory = useCallback(async (cat: { name: string; icon: string; color: string; type: 'income' | 'expense' }) => {
+    if (!user) return;
+    const baseId = cat.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') || 'custom';
+    let id = baseId;
+    const taken = new Set([...defaultCategories.map(c => c.id), ...userCategories.map(c => c.id)]);
+    let n = 2;
+    while (taken.has(id)) { id = `${baseId}_${n++}`; }
+    const nextSort = userCategories.filter(c => c.type === cat.type).reduce((m, c) => Math.max(m, c.sortOrder), 100) + 1;
+    const { data, error } = await supabase.from('user_categories').insert({
+      user_id: user.id,
+      id,
+      name: cat.name.trim(),
+      icon: cat.icon,
+      color: cat.color,
+      type: cat.type,
+      sort_order: nextSort,
+    }).select().single();
+    if (!error && data) setUserCategories(prev => [...prev, mapCategory(data)]);
+  }, [user, supabase, defaultCategories, userCategories]);
+
+  const deleteCategory = useCallback(async (id: string) => {
+    if (!user) return;
+    const isDefault = defaultCategories.some(c => c.id === id);
+    if (isDefault) {
+      if (hiddenCategoryIds.includes(id)) return;
+      const next = [...hiddenCategoryIds, id];
+      const { error } = await supabase.from('profiles').update({ hidden_category_ids: next }).eq('id', user.id);
+      if (!error) setHiddenCategoryIds(next);
+    } else {
+      const { error } = await supabase.from('user_categories').delete().eq('user_id', user.id).eq('id', id);
+      if (!error) setUserCategories(prev => prev.filter(c => c.id !== id));
+    }
+  }, [user, supabase, defaultCategories, hiddenCategoryIds]);
+
+  const restoreCategory = useCallback(async (id: string) => {
+    if (!user) return;
+    if (!hiddenCategoryIds.includes(id)) return;
+    const next = hiddenCategoryIds.filter(h => h !== id);
+    const { error } = await supabase.from('profiles').update({ hidden_category_ids: next }).eq('id', user.id);
+    if (!error) setHiddenCategoryIds(next);
+  }, [user, supabase, hiddenCategoryIds]);
+
+  const expenseCategories = useMemo(() => {
+    const hidden = new Set(hiddenCategoryIds);
+    const visibleDefaults = defaultCategories.filter(c => c.type === 'expense' && !hidden.has(c.id));
+    const additions = userCategories.filter(c => c.type === 'expense');
+    return [...visibleDefaults, ...additions].sort((a, b) => a.sortOrder - b.sortOrder);
+  }, [defaultCategories, userCategories, hiddenCategoryIds]);
+
+  const incomeCategories = useMemo(() => {
+    const hidden = new Set(hiddenCategoryIds);
+    const visibleDefaults = defaultCategories.filter(c => c.type === 'income' && !hidden.has(c.id));
+    const additions = userCategories.filter(c => c.type === 'income');
+    return [...visibleDefaults, ...additions].sort((a, b) => a.sortOrder - b.sortOrder);
+  }, [defaultCategories, userCategories, hiddenCategoryIds]);
+
+  // Full lookup (includes hidden defaults) for rendering historical transactions
+  const allCategoriesLookup = useMemo(() => {
+    const map: Record<string, Category> = {};
+    for (const c of defaultCategories) map[c.id] = c;
+    for (const c of userCategories) map[c.id] = c;
+    return map;
+  }, [defaultCategories, userCategories]);
 
   // === Crypto Actions ===
   const addCryptoHolding = useCallback(async (holding: Omit<CryptoHolding, 'id'>) => {
@@ -576,14 +673,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const total = filteredTxns.reduce((s, t) => s + t.amount, 0);
     const grouped: Record<string, number> = {};
     filteredTxns.forEach(t => { grouped[t.category] = (grouped[t.category] || 0) + t.amount; });
-    const allCats = [...ALL_CATEGORIES, ...getCustomCategories()];
+    const lookup: Record<string, { name: string; color: string; icon: string }> = {};
+    for (const c of Object.values(allCategoriesLookup)) lookup[c.id] = { name: c.name, color: c.color, icon: c.icon };
+    for (const c of ACCOUNT_AND_DEBT_TYPES) if (!lookup[c.id]) lookup[c.id] = { name: c.name, color: c.color, icon: c.icon };
     return Object.entries(grouped)
       .map(([cat, amount]) => {
-        const catInfo = allCats.find(c => c.id === cat) || { name: cat, color: '#868e96', icon: '📦' };
+        const catInfo = lookup[cat] || { name: cat, color: '#868e96', icon: '📦' };
         return { category: cat, name: catInfo.name, amount: Math.round(amount * 100) / 100, percentage: total > 0 ? Math.round((amount / total) * 1000) / 10 : 0, color: catInfo.color, icon: catInfo.icon };
       })
       .sort((a, b) => b.amount - a.amount);
-  }, [transactions, selectedMonth]);
+  }, [transactions, selectedMonth, allCategoriesLookup]);
 
   const getCategoryHistory = useCallback((category: string) => {
     const sorted = [...availableMonths].sort();
@@ -609,6 +708,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       accounts, transactions, cryptoHoldings, stockHoldings, netWorthHistory,
       addAccount, updateAccount, deleteAccount,
       addTransaction, deleteTransaction,
+      defaultCategories, userCategories, hiddenCategoryIds,
+      expenseCategories, incomeCategories,
+      addCategory, deleteCategory, restoreCategory,
       addCryptoHolding, updateCryptoHolding, deleteCryptoHolding,
       addStockHolding, updateStockHolding, deleteStockHolding, getStocksByAccount,
       refreshCryptoPrices, refreshStockPrices, pricesLoading,

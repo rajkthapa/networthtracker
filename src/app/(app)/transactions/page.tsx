@@ -6,10 +6,10 @@ import { useApp } from '@/lib/store';
 import { formatCurrency } from '@/lib/utils';
 import { AddTransactionModal } from '@/components/modals/AddTransactionModal';
 import { CategoryDrilldownModal } from '@/components/modals/CategoryDrilldownModal';
-import { ManageCategoriesModal, getAllExpenseCategories, getAllIncomeCategories } from '@/components/modals/ManageCategoriesModal';
+import { ManageCategoriesModal } from '@/components/modals/ManageCategoriesModal';
 
 export default function TransactionsPage() {
-  const { transactions, deleteTransaction, getMonthTotals, availableMonths, selectedMonth, setSelectedMonth } = useApp();
+  const { transactions, deleteTransaction, getMonthTotals, availableMonths, selectedMonth, setSelectedMonth, expenseCategories, incomeCategories } = useApp();
   const [filter, setFilter] = useState<'all' | 'income' | 'expense'>('all');
   const [search, setSearch] = useState('');
   const [viewMonth, setViewMonth] = useState(selectedMonth);
@@ -22,7 +22,7 @@ export default function TransactionsPage() {
   const [drilldown, setDrilldown] = useState<{ category: string; name: string; icon: string; color: string; type: 'income' | 'expense' } | null>(null);
   const [showCategoryManager, setShowCategoryManager] = useState(false);
 
-  const allCategories = [...getAllIncomeCategories(), ...getAllExpenseCategories()];
+  const allCategories = [...incomeCategories, ...expenseCategories];
   const monthTotals = getMonthTotals(viewMonth);
 
   const filtered = useMemo(() => {
