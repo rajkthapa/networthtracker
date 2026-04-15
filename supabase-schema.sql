@@ -248,7 +248,7 @@ CREATE POLICY "Authenticated users can read default_categories"
 
 -- Remove legacy defaults that were superseded: generic "Utilities" bucket
 -- and standalone "Gas" (duplicated car_gas and clashed with utility "Gas").
-DELETE FROM default_categories WHERE id IN ('utilities', 'gas');
+DELETE FROM default_categories WHERE id IN ('utilities', 'gas', 'insurance');
 
 -- Seed defaults. ON CONFLICT DO UPDATE lets us tweak the base list by re-running schema.
 INSERT INTO default_categories (id, name, icon, color, type, sort_order) VALUES
@@ -271,23 +271,22 @@ INSERT INTO default_categories (id, name, icon, color, type, sort_order) VALUES
   ('car_gas',         'Car Gas',            '⛽', '#e64980', 'expense', 17),
   ('car_maintenance', 'Car Maintenance',    '🔧', '#495057', 'expense', 18),
   ('car_insurance',   'Car Insurance',      '🛡️', '#be4bdb', 'expense', 19),
-  ('insurance',       'Insurance',          '🛡️', '#be4bdb', 'expense', 20),
-  ('healthcare',      'Healthcare',         '🏥', '#fa5252', 'expense', 21),
-  ('childcare',       'Childcare',          '👶', '#f06595', 'expense', 22),
-  ('subscriptions',   'Subscription',       '📺', '#cc5de8', 'expense', 23),
-  ('shopping',        'Shopping',           '🛍️', '#f783ac', 'expense', 24),
-  ('entertainment',   'Entertainment',      '🎬', '#748ffc', 'expense', 25),
-  ('education',       'Education',          '📚', '#3bc9db', 'expense', 26),
-  ('travel',          'Travel - Airfare/Transportation', '✈️', '#22b8cf', 'expense', 27),
-  ('travel_food',     'Travel - Food',      '🥘', '#f06595', 'expense', 28),
-  ('travel_hotel',    'Travel - Hotel',     '🏨', '#845ef7', 'expense', 29),
-  ('travel_other',    'Travel - Others',    '🧳', '#adb5bd', 'expense', 30),
-  ('fitness',         'Fitness',            '💪', '#69db7c', 'expense', 31),
-  ('personal',        'Personal Care',      '💅', '#fcc419', 'expense', 32),
-  ('pets',            'Pets',               '🐾', '#ff8787', 'expense', 33),
-  ('gifts',           'Gift',               '🎁', '#da77f2', 'expense', 34),
-  ('taxes',           'Taxes',              '📋', '#868e96', 'expense', 35),
-  ('other_expense',   'Others',             '📦', '#adb5bd', 'expense', 36),
+  ('healthcare',      'Healthcare',         '🏥', '#fa5252', 'expense', 20),
+  ('childcare',       'Childcare',          '👶', '#f06595', 'expense', 21),
+  ('subscriptions',   'Subscription',       '📺', '#cc5de8', 'expense', 22),
+  ('shopping',        'Shopping',           '🛍️', '#f783ac', 'expense', 23),
+  ('entertainment',   'Entertainment',      '🎬', '#748ffc', 'expense', 24),
+  ('education',       'Education',          '📚', '#3bc9db', 'expense', 25),
+  ('travel',          'Travel - Airfare/Transportation', '✈️', '#22b8cf', 'expense', 26),
+  ('travel_food',     'Travel - Food',      '🥘', '#f06595', 'expense', 27),
+  ('travel_hotel',    'Travel - Hotel',     '🏨', '#845ef7', 'expense', 28),
+  ('travel_other',    'Travel - Others',    '🧳', '#adb5bd', 'expense', 29),
+  ('fitness',         'Fitness',            '💪', '#69db7c', 'expense', 30),
+  ('personal',        'Personal Care',      '💅', '#fcc419', 'expense', 31),
+  ('pets',            'Pets',               '🐾', '#ff8787', 'expense', 32),
+  ('gifts',           'Gift',               '🎁', '#da77f2', 'expense', 33),
+  ('taxes',           'Taxes',              '📋', '#868e96', 'expense', 34),
+  ('other_expense',   'Others',             '📦', '#adb5bd', 'expense', 35),
   ('paycheck',        'Paycheck',           '💰', '#4c6ef5', 'income',   1),
   ('w2',              'W-2 Salary',         '💼', '#5c7cfa', 'income',   2),
   ('freelance',       'Freelance',          '💻', '#7950f2', 'income',   3),
