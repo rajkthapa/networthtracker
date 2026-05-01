@@ -24,7 +24,7 @@ async function fetchCryptoPrices(symbols: string[]): Promise<Record<string, { pr
   const result: Record<string, { price: number; change24h: number }> = {};
 
   const symbolToId: Record<string, string> = {
-    BTC: 'bitcoin', ETH: 'ethereum', SOL: 'solana', ADA: 'cardano',
+    BTC: 'bitcoin', ETH: 'ethereum', BNB: 'binancecoin', SOL: 'solana', ADA: 'cardano',
     LINK: 'chainlink', DOT: 'polkadot', DOGE: 'dogecoin', XRP: 'ripple',
     AVAX: 'avalanche-2', MATIC: 'matic-network', ATOM: 'cosmos',
     UNI: 'uniswap', AAVE: 'aave', LTC: 'litecoin', NEAR: 'near',
