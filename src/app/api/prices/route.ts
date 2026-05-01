@@ -80,7 +80,7 @@ async function fetchCryptoPrices(symbols: string[]): Promise<Record<string, { pr
 
     const historyEntries: { symbol: string; assetType: 'crypto' | 'stock'; price: number }[] = [];
     for (const symbol of symbols) {
-      const id = symbolToId[symbol.toUpperCase()];
+      const id = map[symbol.toUpperCase()];
       if (id && data[id]) {
         const price = data[id].usd || 0;
         result[symbol.toUpperCase()] = {
