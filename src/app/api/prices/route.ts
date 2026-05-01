@@ -27,7 +27,7 @@ async function fetchCryptoPrices(symbols: string[]): Promise<Record<string, { pr
     BTC: 'bitcoin', ETH: 'ethereum', BNB: 'binancecoin', SOL: 'solana', ADA: 'cardano',
     LINK: 'chainlink', DOT: 'polkadot', DOGE: 'dogecoin', XRP: 'ripple',
     AVAX: 'avalanche-2', MATIC: 'matic-network', ATOM: 'cosmos',
-    UNI: 'uniswap', AAVE: 'aave', LTC: 'litecoin', NEAR: 'near',
+    UNI: 'uniswap', AAVE: 'aave', LTC: 'litecoin', NEAR: 'near', CRO: 'crypto-com-chain',
     APT: 'aptos', SUI: 'sui', ARB: 'arbitrum', OP: 'optimism',
     FIL: 'filecoin', ALGO: 'algorand', HBAR: 'hedera-hashgraph',
   };

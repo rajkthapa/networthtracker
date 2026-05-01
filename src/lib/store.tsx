@@ -157,7 +157,7 @@ function mapTransaction(row: any): Transaction {
 function mapCrypto(row: any): CryptoHolding {
   return {
     id: row.id,
-    symbol: row.symbol,
+    symbol: (row.symbol || '').toUpperCase(),
     name: row.name,
     quantity: Number(row.quantity),
     avgBuyPrice: Number(row.avg_buy_price),
@@ -171,7 +171,7 @@ function mapStock(row: any): StockHolding {
   return {
     id: row.id,
     accountId: row.account_id,
-    ticker: row.ticker,
+    ticker: (row.ticker || '').toUpperCase(),
     name: row.name,
     shares: Number(row.shares),
     avgCostBasis: Number(row.avg_cost_basis),
