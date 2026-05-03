@@ -48,6 +48,7 @@ async function fetchCryptoPrices(symbols: string[]): Promise<Record<string, { pr
         BTC: 'bitcoin', ETH: 'ethereum', BNB: 'binancecoin', SOL: 'solana', ADA: 'cardano',
         MATIC: 'matic-network', AVAX: 'avalanche-2', AAVE: 'aave', NEAR: 'near', CRO: 'crypto-com-chain',
         USDC: 'usd-coin', USDT: 'tether', ORCA: 'orca', RENDER: 'render-token',
+        PEPE: 'pepe', DOGE: 'dogecoin', SHIB: 'shiba-inu', FLOKI: 'floki', BONK: 'bonk',
       });
       COINGECKO_SYMBOL_MAP = map;
       COINGECKO_MAP_TS = Date.now();
