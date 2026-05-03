@@ -2,10 +2,13 @@
 
 import { useState } from 'react';
 import { useApp } from '@/lib/store';
+import { useToast } from '@/lib/toast-context';
 import { formatCurrency, formatPercent } from '@/lib/utils';
-import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, RefreshCcw, Bitcoin, Plus, Trash2 } from 'lucide-react';
+import { CryptoHolding } from '@/lib/types';
+import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, RefreshCcw, Bitcoin, Plus, Trash2, Pencil } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { AddCryptoModal } from '@/components/modals/AddCryptoModal';
+import { EditCryptoModal } from '@/components/modals/EditCryptoModal';
 
 const CRYPTO_COLORS: Record<string, string> = {
   BTC: '#f7931a', ETH: '#627eea', SOL: '#9945ff', ADA: '#0033ad', LINK: '#2a5ada', DOT: '#e6007a',
@@ -17,7 +20,9 @@ const CRYPTO_ICONS: Record<string, string> = {
 
 export default function CryptoPage() {
   const { cryptoHoldings, deleteCryptoHolding, refreshCryptoPrices, pricesLoading } = useApp();
+  const { toast } = useToast();
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingHolding, setEditingHolding] = useState<CryptoHolding | null>(null);
 
   const totalValue = cryptoHoldings.reduce((s, h) => s + h.quantity * h.currentPrice, 0);
   const totalCost = cryptoHoldings.reduce((s, h) => s + h.quantity * h.avgBuyPrice, 0);
@@ -186,12 +191,20 @@ export default function CryptoPage() {
                         </p>
                       </td>
                       <td className="py-4 px-2">
-                        <button
-                          onClick={() => deleteCryptoHolding(holding.id)}
-                          className="p-1.5 rounded-lg text-th-faint hover:text-danger-400 hover:bg-danger-500/10 opacity-0 group-hover:opacity-100 transition-all"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                          <button
+                            onClick={() => setEditingHolding(holding)}
+                            className="p-1.5 rounded-lg text-th-faint hover:text-primary-500 hover:bg-primary-500/10"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => { deleteCryptoHolding(holding.id); toast(`${holding.symbol} removed`); }}
+                            className="p-1.5 rounded-lg text-th-faint hover:text-danger-400 hover:bg-danger-500/10"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -243,6 +256,7 @@ export default function CryptoPage() {
       )}
 
       {showAddModal && <AddCryptoModal onClose={() => setShowAddModal(false)} />}
+      {editingHolding && <EditCryptoModal holding={editingHolding} onClose={() => setEditingHolding(null)} />}
     </div>
   );
 }

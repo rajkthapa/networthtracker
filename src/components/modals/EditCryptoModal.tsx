@@ -4,48 +4,41 @@ import { useState } from 'react';
 import { X, Loader2 } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { useToast } from '@/lib/toast-context';
+import { CryptoHolding } from '@/lib/types';
 
-export function AddCryptoModal({ onClose }: { onClose: () => void }) {
-  const { addCryptoHolding } = useApp();
+export function EditCryptoModal({ holding, onClose }: { holding: CryptoHolding; onClose: () => void }) {
+  const { updateCryptoHolding } = useApp();
   const { toast } = useToast();
-  const [symbol, setSymbol] = useState('');
-  const [quantity, setQuantity] = useState('');
-  const [avgBuyPrice, setAvgBuyPrice] = useState('');
-  const [currentPrice, setCurrentPrice] = useState('');
+  const [quantity, setQuantity] = useState(holding.quantity.toString());
+  const [avgBuyPrice, setAvgBuyPrice] = useState(holding.avgBuyPrice.toString());
+  const [name, setName] = useState(holding.name);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (!symbol || !quantity) {
-      setError('Symbol and quantity are required');
-      return;
-    }
-    if (parseFloat(quantity) <= 0) {
+    if (!quantity || parseFloat(quantity) <= 0) {
       setError('Quantity must be greater than 0');
       return;
     }
     setSaving(true);
     try {
-      await addCryptoHolding({
-        symbol: symbol.toUpperCase(),
-        name: symbol.toUpperCase(),
+      await updateCryptoHolding(holding.id, {
+        name: name || holding.symbol,
         quantity: parseFloat(quantity),
-        avgBuyPrice: avgBuyPrice ? parseFloat(avgBuyPrice) : 0,
-        currentPrice: currentPrice ? parseFloat(currentPrice) : 0,
-        priceChange24h: 0,
+        avgBuyPrice: avgBuyPrice ? parseFloat(avgBuyPrice) : holding.avgBuyPrice,
       });
-      toast(`${symbol.toUpperCase()} added to portfolio`);
+      toast(`${holding.symbol} updated`);
       onClose();
     } catch {
-      setError('Failed to save crypto position. Please try again.');
+      setError('Failed to update. Please try again.');
       setSaving(false);
     }
   };
 
   const qty = parseFloat(quantity) || 0;
-  const curPrice = parseFloat(currentPrice) || 0;
+  const curPrice = holding.currentPrice;
   const buyPrice = parseFloat(avgBuyPrice) || 0;
   const positionValue = qty * curPrice;
   const pnl = (curPrice - buyPrice) * qty;
@@ -55,7 +48,7 @@ export function AddCryptoModal({ onClose }: { onClose: () => void }) {
       <div className="absolute inset-0 bg-[var(--bg-overlay)] backdrop-blur-sm" onClick={onClose} />
       <div className="relative w-full max-w-md bg-th-card rounded-3xl shadow-[var(--shadow-glass)] border border-[var(--border-color)] animate-scale-in overflow-hidden">
         <div className="flex items-center justify-between p-6 pb-4">
-          <h2 className="text-xl font-bold text-th-heading">Add Crypto Position</h2>
+          <h2 className="text-xl font-bold text-th-heading">Edit {holding.symbol}</h2>
           <button onClick={onClose} className="p-2 rounded-xl hover:bg-[var(--bg-hover-strong)] transition-colors">
             <X className="w-5 h-5 text-th-muted" />
           </button>
@@ -68,37 +61,34 @@ export function AddCryptoModal({ onClose }: { onClose: () => void }) {
             </div>
           )}
 
+          <div className="p-3 rounded-xl bg-[var(--bg-subtle)] flex items-center justify-between">
+            <span className="text-sm text-th-muted">Current Price</span>
+            <span className="text-sm font-bold text-th-heading num">${curPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+          </div>
+
           <div>
-            <label className="block text-sm font-medium text-th-body mb-1.5">Symbol <span className="text-[var(--text-negative)]">*</span></label>
-            <input type="text" value={symbol} onChange={e => setSymbol(e.target.value)} placeholder="BTC" className="input-field uppercase" required />
+            <label className="block text-sm font-medium text-th-body mb-1.5">Name</label>
+            <input type="text" value={name} onChange={e => setName(e.target.value)} className="input-field" />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-th-body mb-1.5">Quantity <span className="text-[var(--text-negative)]">*</span></label>
-            <input type="number" step="any" min="0" value={quantity} onChange={e => setQuantity(e.target.value)} placeholder="0.5" className="input-field" required />
+            <input type="number" step="any" min="0" value={quantity} onChange={e => setQuantity(e.target.value)} className="input-field" required />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-medium text-th-body mb-1.5">Avg Buy Price ($)</label>
-              <input type="number" step="0.01" min="0" value={avgBuyPrice} onChange={e => setAvgBuyPrice(e.target.value)} placeholder="Optional" className="input-field" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-th-body mb-1.5">Current Price ($)</label>
-              <input type="number" step="0.01" min="0" value={currentPrice} onChange={e => setCurrentPrice(e.target.value)} placeholder="Optional" className="input-field" />
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-th-body mb-1.5">Avg Buy Price ($)</label>
+            <input type="number" step="0.01" min="0" value={avgBuyPrice} onChange={e => setAvgBuyPrice(e.target.value)} className="input-field" />
           </div>
-
-          <p className="text-xs text-th-faint">Prices can be fetched automatically after adding via the Refresh Prices button.</p>
 
           {qty > 0 && curPrice > 0 && (
-            <div className="p-3 rounded-xl bg-[var(--bg-subtle)] text-sm">
+            <div className="p-3 rounded-xl bg-[var(--bg-subtle)] text-sm space-y-1">
               <div className="flex justify-between">
                 <span className="text-th-muted">Position Value</span>
                 <span className="font-semibold text-th-heading num">${positionValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
               </div>
               {buyPrice > 0 && (
-                <div className="flex justify-between mt-1">
+                <div className="flex justify-between">
                   <span className="text-th-muted">P&L</span>
                   <span className={`font-semibold num ${pnl >= 0 ? 'text-[var(--text-positive)]' : 'text-[var(--text-negative)]'}`}>
                     ${pnl.toLocaleString('en-US', { minimumFractionDigits: 2 })}
@@ -116,7 +106,7 @@ export function AddCryptoModal({ onClose }: { onClose: () => void }) {
             {saving ? (
               <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
-              'Add Crypto Position'
+              'Save Changes'
             )}
           </button>
         </form>

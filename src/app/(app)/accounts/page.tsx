@@ -9,13 +9,15 @@ import { AddAccountModal } from '@/components/modals/AddAccountModal';
 import { AddStockModal } from '@/components/modals/AddStockModal';
 import { UpgradeModal } from '@/components/subscription/UpgradeModal';
 import { useSubscription } from '@/lib/subscription-context';
+import { useToast } from '@/lib/toast-context';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 
 const INVESTMENT_TYPES = ['401k', 'ira', 'roth_ira', 'brokerage', 'hsa'];
 
 export default function AccountsPage() {
-  const { accounts, totalAssets, totalDebts, netWorth, deleteAccount, updateAccount, getStocksByAccount, deleteStockHolding, refreshStockPrices, pricesLoading, accountSnapshots, upsertAccountSnapshot, getAccountBalanceForMonth, snapshotMonths } = useApp();
+  const { accounts, totalAssets, totalDebts, netWorth, totalCryptoValue, deleteAccount, updateAccount, getStocksByAccount, deleteStockHolding, refreshStockPrices, pricesLoading, accountSnapshots, upsertAccountSnapshot, getAccountBalanceForMonth, snapshotMonths } = useApp();
   const { isPro } = useSubscription();
+  const { toast } = useToast();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showStockModal, setShowStockModal] = useState<{ accountId: string; accountName: string } | null>(null);
@@ -26,7 +28,7 @@ export default function AccountsPage() {
   const assets = accounts.filter(a => !a.isDebt).sort((a, b) => b.balance - a.balance);
   const liquidAssets = assets.filter(a => LIQUID_ACCOUNT_TYPES.includes(a.type));
   const illiquidAssets = assets.filter(a => !LIQUID_ACCOUNT_TYPES.includes(a.type));
-  const totalLiquid = liquidAssets.reduce((s, a) => s + a.balance, 0);
+  const totalLiquid = liquidAssets.reduce((s, a) => s + a.balance, 0) + totalCryptoValue;
   const totalIlliquid = illiquidAssets.reduce((s, a) => s + a.balance, 0);
   const debts = accounts.filter(a => a.isDebt).sort((a, b) => b.balance - a.balance);
 
@@ -257,7 +259,7 @@ export default function AccountsPage() {
                           <>
                             <p className="text-sm font-bold text-th-heading num">{formatCurrency(acc.balance)}</p>
                             <button onClick={() => startEdit(acc.id, acc.balance)} className="p-1.5 rounded-lg text-th-faint hover:text-primary-500 hover:bg-primary-500/10 opacity-0 group-hover:opacity-100 transition-all"><Edit3 className="w-3.5 h-3.5" /></button>
-                            <button onClick={() => deleteAccount(acc.id)} className="p-1.5 rounded-lg text-th-faint hover:text-danger-400 hover:bg-danger-500/10 opacity-0 group-hover:opacity-100 transition-all"><Trash2 className="w-3.5 h-3.5" /></button>
+                            <button onClick={() => { deleteAccount(acc.id); toast('Account deleted'); }} className="p-1.5 rounded-lg text-th-faint hover:text-danger-400 hover:bg-danger-500/10 opacity-0 group-hover:opacity-100 transition-all"><Trash2 className="w-3.5 h-3.5" /></button>
                           </>
                         )}
                       </div>
@@ -300,7 +302,7 @@ export default function AccountsPage() {
                                       {pnl >= 0 ? '+' : ''}{formatCurrency(pnl)} ({formatPercent(pnlPercent)})
                                     </p>
                                   </div>
-                                  <button onClick={() => deleteStockHolding(stock.id)} className="p-1 rounded-lg text-th-faint hover:text-danger-400 hover:bg-danger-500/10 opacity-0 group-hover/stock:opacity-100 transition-all">
+                                  <button onClick={() => { deleteStockHolding(stock.id); toast('Stock position removed'); }} className="p-1 rounded-lg text-th-faint hover:text-danger-400 hover:bg-danger-500/10 opacity-0 group-hover/stock:opacity-100 transition-all">
                                     <Trash2 className="w-3 h-3" />
                                   </button>
                                 </div>
@@ -371,7 +373,7 @@ export default function AccountsPage() {
                           <>
                             <p className="text-sm font-bold text-th-heading num">{formatCurrency(acc.balance)}</p>
                             <button onClick={() => startEdit(acc.id, acc.balance)} className="p-1.5 rounded-lg text-th-faint hover:text-primary-500 hover:bg-primary-500/10 opacity-0 group-hover:opacity-100 transition-all"><Edit3 className="w-3.5 h-3.5" /></button>
-                            <button onClick={() => deleteAccount(acc.id)} className="p-1.5 rounded-lg text-th-faint hover:text-danger-400 hover:bg-danger-500/10 opacity-0 group-hover:opacity-100 transition-all"><Trash2 className="w-3.5 h-3.5" /></button>
+                            <button onClick={() => { deleteAccount(acc.id); toast('Account deleted'); }} className="p-1.5 rounded-lg text-th-faint hover:text-danger-400 hover:bg-danger-500/10 opacity-0 group-hover:opacity-100 transition-all"><Trash2 className="w-3.5 h-3.5" /></button>
                           </>
                         )}
                       </div>
@@ -414,7 +416,7 @@ export default function AccountsPage() {
                                       {pnl >= 0 ? '+' : ''}{formatCurrency(pnl)} ({formatPercent(pnlPercent)})
                                     </p>
                                   </div>
-                                  <button onClick={() => deleteStockHolding(stock.id)} className="p-1 rounded-lg text-th-faint hover:text-danger-400 hover:bg-danger-500/10 opacity-0 group-hover/stock:opacity-100 transition-all">
+                                  <button onClick={() => { deleteStockHolding(stock.id); toast('Stock position removed'); }} className="p-1 rounded-lg text-th-faint hover:text-danger-400 hover:bg-danger-500/10 opacity-0 group-hover/stock:opacity-100 transition-all">
                                     <Trash2 className="w-3 h-3" />
                                   </button>
                                 </div>
@@ -484,7 +486,7 @@ export default function AccountsPage() {
                     <>
                       <p className="text-sm font-bold text-[var(--text-negative)]">{formatCurrency(acc.balance)}</p>
                       <button onClick={() => startEdit(acc.id, acc.balance)} className="p-1.5 rounded-lg text-th-faint hover:text-primary-500 hover:bg-primary-500/10 opacity-0 group-hover:opacity-100 transition-all"><Edit3 className="w-3.5 h-3.5" /></button>
-                      <button onClick={() => deleteAccount(acc.id)} className="p-1.5 rounded-lg text-th-faint hover:text-danger-400 hover:bg-danger-500/10 opacity-0 group-hover:opacity-100 transition-all"><Trash2 className="w-3.5 h-3.5" /></button>
+                      <button onClick={() => { deleteAccount(acc.id); toast('Account deleted'); }} className="p-1.5 rounded-lg text-th-faint hover:text-danger-400 hover:bg-danger-500/10 opacity-0 group-hover:opacity-100 transition-all"><Trash2 className="w-3.5 h-3.5" /></button>
                     </>
                   )}
                 </div>

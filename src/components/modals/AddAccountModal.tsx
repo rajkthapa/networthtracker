@@ -3,10 +3,12 @@
 import { useState } from 'react';
 import { X, Loader2 } from 'lucide-react';
 import { useApp } from '@/lib/store';
+import { useToast } from '@/lib/toast-context';
 import { ACCOUNT_TYPES, DEBT_TYPES } from '@/lib/utils';
 
 export function AddAccountModal({ onClose }: { onClose: () => void }) {
   const { addAccount } = useApp();
+  const { toast } = useToast();
   const [isDebt, setIsDebt] = useState(false);
   const [name, setName] = useState('');
   const [type, setType] = useState('');
@@ -38,6 +40,7 @@ export function AddAccountModal({ onClose }: { onClose: () => void }) {
         isDebt,
         interestRate: interestRate ? parseFloat(interestRate) : undefined,
       });
+      toast(`${isDebt ? 'Debt' : 'Account'} "${name}" added`);
       onClose();
     } catch {
       setError('Failed to save account. Please try again.');

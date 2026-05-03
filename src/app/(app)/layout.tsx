@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { AppProvider } from '@/lib/store';
 import { SubscriptionProvider } from '@/lib/subscription-context';
+import { ToastProvider } from '@/lib/toast-context';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { TopBar } from '@/components/layout/TopBar';
 import { MobileNav } from '@/components/layout/MobileNav';
@@ -38,16 +39,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <AppProvider>
       <SubscriptionProvider>
-        <div className="flex h-screen overflow-hidden bg-th-base">
-          <Sidebar />
-          <div className="flex-1 flex flex-col overflow-hidden">
-            <TopBar />
-            <main className="flex-1 overflow-y-auto pb-20 md:pb-6 px-4 md:px-8 pt-4">
-              {children}
-            </main>
+        <ToastProvider>
+          <div className="flex h-screen overflow-hidden bg-th-base">
+            <Sidebar />
+            <div className="flex-1 flex flex-col overflow-hidden">
+              <TopBar />
+              <main className="flex-1 overflow-y-auto pb-20 md:pb-6 px-4 md:px-8 pt-4">
+                {children}
+              </main>
+            </div>
           </div>
-        </div>
-        <MobileNav />
+          <MobileNav />
+        </ToastProvider>
       </SubscriptionProvider>
     </AppProvider>
   );

@@ -3,9 +3,11 @@
 import { useState } from 'react';
 import { X, Loader2 } from 'lucide-react';
 import { useApp } from '@/lib/store';
+import { useToast } from '@/lib/toast-context';
 
 export function AddTransactionModal({ onClose }: { onClose: () => void }) {
   const { addTransaction, expenseCategories, incomeCategories } = useApp();
+  const { toast } = useToast();
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
@@ -36,6 +38,7 @@ export function AddTransactionModal({ onClose }: { onClose: () => void }) {
         type,
         category,
       });
+      toast(`${type === 'expense' ? 'Expense' : 'Income'} added`);
       onClose();
     } catch {
       setError('Failed to save transaction. Please try again.');

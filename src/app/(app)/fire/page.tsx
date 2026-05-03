@@ -9,9 +9,11 @@ import { UpgradeModal } from '@/components/subscription/UpgradeModal';
 import { useState } from 'react';
 
 export default function FIREPage() {
-  const { netWorth, monthIncome, monthExpenses, monthlyData, availableMonths, getMonthTotals } = useApp();
+  const { netWorth, liquidNetWorth, monthIncome, monthExpenses, monthlyData, availableMonths, getMonthTotals } = useApp();
   const { isPro } = useSubscription();
   const [showUpgrade, setShowUpgrade] = useState(false);
+  const [excludeIlliquid, setExcludeIlliquid] = useState(false);
+  const fireNetWorth = excludeIlliquid ? liquidNetWorth : netWorth;
 
   if (!isPro) {
     return (
@@ -70,15 +72,15 @@ export default function FIREPage() {
   const fatFireNumber = (annualExpenses * 1.5) * 25;
   const coastFireNumber = fireNumber > 0 ? fireNumber / Math.pow(1.07, 30) : 0;
 
-  const fireProgress = fireNumber > 0 ? (netWorth / fireNumber) * 100 : 0;
-  const leanFireProgress = leanFireNumber > 0 ? (netWorth / leanFireNumber) * 100 : 0;
-  const fatFireProgress = fatFireNumber > 0 ? (netWorth / fatFireNumber) * 100 : 0;
-  const coastFireProgress = coastFireNumber > 0 ? (netWorth / coastFireNumber) * 100 : 0;
+  const fireProgress = fireNumber > 0 ? (fireNetWorth / fireNumber) * 100 : 0;
+  const leanFireProgress = leanFireNumber > 0 ? (fireNetWorth / leanFireNumber) * 100 : 0;
+  const fatFireProgress = fatFireNumber > 0 ? (fireNetWorth / fatFireNumber) * 100 : 0;
+  const coastFireProgress = coastFireNumber > 0 ? (fireNetWorth / coastFireNumber) * 100 : 0;
 
   // Years to FIRE
   const returnRate = 0.07;
   let yearsToFire = 0;
-  let projected = netWorth;
+  let projected = fireNetWorth;
   if (fireNumber > 0 && annualSavings > 0) {
     while (projected < fireNumber && yearsToFire < 100) {
       projected = projected * (1 + returnRate) + annualSavings;
@@ -87,14 +89,14 @@ export default function FIREPage() {
   }
 
   // Monthly passive income at 4% withdrawal
-  const monthlyPassiveIncome = (netWorth * 0.04) / 12;
+  const monthlyPassiveIncome = (fireNetWorth * 0.04) / 12;
 
   // Expense coverage: what % of expenses can passive income cover
   const expenseCoverage = monthlyAvgExpenses > 0 ? (monthlyPassiveIncome / monthlyAvgExpenses) * 100 : 0;
 
   // Projection data
   const projectionData = [];
-  let projNW = netWorth;
+  let projNW = fireNetWorth;
   const projYears = Math.min(yearsToFire > 0 ? yearsToFire + 5 : 30, 40);
   for (let i = 0; i <= projYears; i++) {
     projectionData.push({
@@ -144,6 +146,38 @@ export default function FIREPage() {
                 <div className="h-full bg-[var(--hero-progress-fill)] rounded-full transition-all duration-1000" style={{ width: `${Math.min(fireProgress, 100)}%` }} />
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Net Worth for FIRE */}
+      <div className="stat-card">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="section-header">Net Worth Used for FIRE</h3>
+          <button
+            onClick={() => setExcludeIlliquid(!excludeIlliquid)}
+            className={`relative inline-flex h-7 w-[200px] items-center rounded-xl p-1 transition-colors ${excludeIlliquid ? 'bg-primary-500' : 'bg-[var(--bg-hover-strong)]'}`}
+          >
+            <span className={`absolute left-1 text-[10px] font-semibold transition-opacity ${excludeIlliquid ? 'opacity-0' : 'opacity-100 text-th-heading'}`} style={{ width: '94px', textAlign: 'center' }}>All Assets</span>
+            <span className={`absolute right-1 text-[10px] font-semibold transition-opacity ${excludeIlliquid ? 'opacity-100 text-white' : 'opacity-0'}`} style={{ width: '94px', textAlign: 'center' }}>Liquid Only</span>
+            <span className={`h-5 w-[96px] rounded-lg bg-white shadow-sm transition-transform ${excludeIlliquid ? 'translate-x-[98px]' : 'translate-x-0'}`} />
+          </button>
+        </div>
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <p className="text-[10px] text-th-faint uppercase font-semibold">Current Net Worth</p>
+            <p className="text-2xl font-bold text-th-heading num">{formatCurrency(fireNetWorth)}</p>
+            {excludeIlliquid && (
+              <p className="text-[10px] text-th-faint mt-0.5">Total: {formatCurrency(netWorth)}</p>
+            )}
+          </div>
+          <div>
+            <p className="text-[10px] text-th-faint uppercase font-semibold">FIRE Target</p>
+            <p className="text-2xl font-bold text-[var(--text-accent)] num">{formatCurrency(fireNumber)}</p>
+          </div>
+          <div>
+            <p className="text-[10px] text-th-faint uppercase font-semibold">Remaining</p>
+            <p className="text-2xl font-bold text-th-heading num">{formatCurrency(Math.max(fireNumber - fireNetWorth, 0))}</p>
           </div>
         </div>
       </div>
@@ -260,7 +294,7 @@ export default function FIREPage() {
             </div>
             <div className="flex justify-between items-center p-3 bg-th-card/80 rounded-xl">
               <span className="text-sm text-th-body">Remaining to FIRE</span>
-              <span className="text-sm font-bold text-th-heading">{formatCurrency(Math.max(fireNumber - netWorth, 0))}</span>
+              <span className="text-sm font-bold text-th-heading">{formatCurrency(Math.max(fireNumber - fireNetWorth, 0))}</span>
             </div>
           </div>
         </div>
@@ -300,7 +334,7 @@ export default function FIREPage() {
               <span className="text-xl">📊</span>
               <div>
                 <p className="text-sm font-semibold text-th-heading">Coast FIRE {coastFireProgress >= 100 ? 'achieved!' : 'is close'}</p>
-                <p className="text-xs text-th-muted">{coastFireProgress >= 100 ? 'You could stop saving and still retire by 65' : `${formatCurrency(Math.max(coastFireNumber - netWorth, 0))} more to reach Coast FIRE`}</p>
+                <p className="text-xs text-th-muted">{coastFireProgress >= 100 ? 'You could stop saving and still retire by 65' : `${formatCurrency(Math.max(coastFireNumber - fireNetWorth, 0))} more to reach Coast FIRE`}</p>
               </div>
             </div>
           </div>

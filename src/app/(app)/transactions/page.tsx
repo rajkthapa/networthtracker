@@ -9,9 +9,11 @@ import { AddTransactionModal } from '@/components/modals/AddTransactionModal';
 import { EditTransactionModal } from '@/components/modals/EditTransactionModal';
 import { CategoryDrilldownModal } from '@/components/modals/CategoryDrilldownModal';
 import { ManageCategoriesModal } from '@/components/modals/ManageCategoriesModal';
+import { useToast } from '@/lib/toast-context';
 
 export default function TransactionsPage() {
   const { transactions, deleteTransaction, getMonthTotals, availableMonths, selectedMonth, setSelectedMonth, expenseCategories, incomeCategories } = useApp();
+  const { toast } = useToast();
   const [filter, setFilter] = useState<'all' | 'income' | 'expense'>('all');
   const [search, setSearch] = useState('');
   const [viewMonth, setViewMonth] = useState(selectedMonth);
@@ -201,7 +203,7 @@ export default function TransactionsPage() {
                         <Pencil className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => deleteTransaction(txn.id)}
+                        onClick={() => { deleteTransaction(txn.id); toast('Transaction deleted'); }}
                         className="p-2 rounded-lg text-th-faint hover:text-danger-400 hover:bg-danger-500/10 transition-all opacity-0 group-hover:opacity-100"
                       >
                         <Trash2 className="w-4 h-4" />
