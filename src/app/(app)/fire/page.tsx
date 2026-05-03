@@ -9,7 +9,7 @@ import { UpgradeModal } from '@/components/subscription/UpgradeModal';
 import { useState } from 'react';
 
 export default function FIREPage() {
-  const { netWorth, monthIncome, monthExpenses, monthlyData } = useApp();
+  const { netWorth, monthIncome, monthExpenses, monthlyData, availableMonths, getMonthTotals } = useApp();
   const { isPro } = useSubscription();
   const [showUpgrade, setShowUpgrade] = useState(false);
 
@@ -42,10 +42,27 @@ export default function FIREPage() {
     );
   }
 
-  const annualExpenses = monthExpenses * 12;
-  const monthlySavings = monthIncome - monthExpenses;
+  // Trailing average: use completed months only (exclude current incomplete month)
+  const currentYearMonth = new Date().toISOString().slice(0, 7);
+  const completedMonths = availableMonths
+    .filter(m => m < currentYearMonth)
+    .sort()
+    .slice(-12);
+
+  const trailingMonthCount = completedMonths.length;
+  const { avgExpenses, avgIncome } = trailingMonthCount > 0
+    ? completedMonths.reduce((acc, m) => {
+        const t = getMonthTotals(m);
+        return { avgExpenses: acc.avgExpenses + t.expenses, avgIncome: acc.avgIncome + t.income };
+      }, { avgExpenses: 0, avgIncome: 0 })
+    : { avgExpenses: monthExpenses, avgIncome: monthIncome };
+
+  const monthlyAvgExpenses = trailingMonthCount > 0 ? avgExpenses / trailingMonthCount : avgExpenses;
+  const monthlyAvgIncome = trailingMonthCount > 0 ? avgIncome / trailingMonthCount : avgIncome;
+  const annualExpenses = monthlyAvgExpenses * 12;
+  const monthlySavings = monthlyAvgIncome - monthlyAvgExpenses;
   const annualSavings = monthlySavings * 12;
-  const savingsRate = monthIncome > 0 ? (monthlySavings / monthIncome) * 100 : 0;
+  const savingsRate = monthlyAvgIncome > 0 ? (monthlySavings / monthlyAvgIncome) * 100 : 0;
 
   // FIRE calculations (4% rule)
   const fireNumber = annualExpenses * 25;
@@ -73,7 +90,7 @@ export default function FIREPage() {
   const monthlyPassiveIncome = (netWorth * 0.04) / 12;
 
   // Expense coverage: what % of expenses can passive income cover
-  const expenseCoverage = monthExpenses > 0 ? (monthlyPassiveIncome / monthExpenses) * 100 : 0;
+  const expenseCoverage = monthlyAvgExpenses > 0 ? (monthlyPassiveIncome / monthlyAvgExpenses) * 100 : 0;
 
   // Projection data
   const projectionData = [];
@@ -113,7 +130,7 @@ export default function FIREPage() {
             <div>
               <p className="text-white/70 text-sm font-medium mb-1">Your FIRE Number</p>
               <h2 className="text-3xl md:text-4xl font-bold num">{formatCurrency(fireNumber, true)}</h2>
-              <p className="text-white/60 text-xs mt-1">Based on {formatCurrency(annualExpenses, true)}/yr expenses x 25</p>
+              <p className="text-white/60 text-xs mt-1">Based on {formatCurrency(annualExpenses, true)}/yr expenses x 25 ({trailingMonthCount > 0 ? `${trailingMonthCount}mo avg` : 'current month'})</p>
             </div>
             <div>
               <p className="text-white/70 text-sm font-medium mb-1">Years to FIRE</p>
@@ -214,15 +231,15 @@ export default function FIREPage() {
           <h3 className="section-header mb-4">Key Metrics</h3>
           <div className="space-y-3">
             <div className="flex justify-between items-center p-3 bg-th-card/80 rounded-xl">
-              <span className="text-sm text-th-body">Monthly Income</span>
-              <span className="text-sm font-bold text-th-heading">{formatCurrency(monthIncome)}</span>
+              <span className="text-sm text-th-body">Avg Monthly Income</span>
+              <span className="text-sm font-bold text-th-heading">{formatCurrency(monthlyAvgIncome)}</span>
             </div>
             <div className="flex justify-between items-center p-3 bg-th-card/80 rounded-xl">
-              <span className="text-sm text-th-body">Monthly Expenses</span>
-              <span className="text-sm font-bold text-[var(--text-negative)]">{formatCurrency(monthExpenses)}</span>
+              <span className="text-sm text-th-body">Avg Monthly Expenses</span>
+              <span className="text-sm font-bold text-[var(--text-negative)]">{formatCurrency(monthlyAvgExpenses)}</span>
             </div>
             <div className="flex justify-between items-center p-3 bg-th-card/80 rounded-xl">
-              <span className="text-sm text-th-body">Monthly Savings</span>
+              <span className="text-sm text-th-body">Avg Monthly Savings</span>
               <span className="text-sm font-bold text-[var(--text-positive)]">{formatCurrency(monthlySavings)}</span>
             </div>
             <div className="flex justify-between items-center p-3 bg-th-card/80 rounded-xl">
