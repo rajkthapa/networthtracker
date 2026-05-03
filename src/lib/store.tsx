@@ -209,6 +209,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const [loading, setLoading] = useState(true);
   const [pricesLoading, setPricesLoading] = useState(false);
+  const [pricesReady, setPricesReady] = useState(false);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [cryptoHoldings, setCryptoHoldings] = useState<CryptoHolding[]>([]);
@@ -276,7 +277,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [pricesRefreshed, setPricesRefreshed] = useState(false);
   useEffect(() => {
     if (loading || pricesRefreshed) return;
-    if (stockHoldings.length === 0 && cryptoHoldings.length === 0) return;
+    if (stockHoldings.length === 0 && cryptoHoldings.length === 0) {
+      setPricesReady(true);
+      return;
+    }
     setPricesRefreshed(true);
 
     async function autoRefresh() {
@@ -338,6 +342,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         console.error('Auto-refresh prices failed:', err);
       }
       setPricesLoading(false);
+      setPricesReady(true);
     }
     autoRefresh();
   }, [loading, stockHoldings.length, cryptoHoldings.length, pricesRefreshed]);
@@ -613,8 +618,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const effectiveNetWorthHistory = useMemo(() => {
     if (netWorthHistory.length > 0) {
-      const dbDates = new Set(netWorthHistory.map(s => s.date));
-      const extra = derivedNetWorthHistory.filter(d => !dbDates.has(d.date));
+      const dbDates = new Set(netWorthHistory.map(s => s.date.slice(0, 7)));
+      const extra = derivedNetWorthHistory.filter(d => !dbDates.has(d.date.slice(0, 7)));
       return [...netWorthHistory, ...extra].sort((a, b) => a.date.localeCompare(b.date));
     }
     return derivedNetWorthHistory;
@@ -674,15 +679,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   );
   const liquidNetWorth = totalLiquidAssets - totalDebts;
 
-  // Auto-create net worth snapshot for current month
+  // Auto-upsert net worth snapshot for current month (waits for prices to be ready)
   const snapshotCreated = useRef(false);
   useEffect(() => {
-    if (loading || snapshotCreated.current || !user || accounts.length === 0) return;
+    if (loading || !pricesReady || snapshotCreated.current || !user || accounts.length === 0) return;
     snapshotCreated.current = true;
     const currentMonth = getCurrentMonth();
-    const exists = netWorthHistory.some(s => s.date.startsWith(currentMonth)) ||
-                   derivedNetWorthHistory.some(s => s.date === currentMonth);
-    if (exists) return;
     (async () => {
       const { data, error } = await supabase.from('net_worth_snapshots').upsert({
         user_id: user.id,
@@ -692,10 +694,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
         net_worth: netWorth,
       }, { onConflict: 'user_id,date' }).select().single();
       if (!error && data) {
-        setNetWorthHistory(prev => [...prev, mapSnapshot(data)].sort((a, b) => a.date.localeCompare(b.date)));
+        const mapped = mapSnapshot(data);
+        setNetWorthHistory(prev => {
+          const filtered = prev.filter(s => s.date.slice(0, 7) !== currentMonth);
+          return [...filtered, mapped].sort((a, b) => a.date.localeCompare(b.date));
+        });
       }
     })();
-  }, [loading, user, accounts.length, totalAssets, totalDebts, netWorth, supabase, netWorthHistory, derivedNetWorthHistory]);
+  }, [loading, pricesReady, user, accounts.length, totalAssets, totalDebts, netWorth, supabase]);
 
   const availableMonths = useMemo(() => {
     const set = new Set(transactions.map(t => t.date.slice(0, 7)));
