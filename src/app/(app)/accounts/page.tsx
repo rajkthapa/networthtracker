@@ -539,7 +539,8 @@ function MonthlyBalanceTracker({ accounts, accountSnapshots, snapshotMonths, get
     return Array.from(set).sort().reverse();
   }, [snapshotMonths, currentMonthStr]);
 
-  const nonDebtAccounts = accounts.filter(a => !a.isDebt);
+  const assetAccounts = accounts.filter(a => !a.isDebt);
+  const debtAccounts = accounts.filter(a => a.isDebt);
 
   const startEdit = (accountId: string, currentBalance: number | null) => {
     setEditingCell(accountId);
@@ -569,7 +570,7 @@ function MonthlyBalanceTracker({ accounts, accountSnapshots, snapshotMonths, get
     const curIdx = sortedMs.indexOf(selectedSnapMonth);
     const prevM = curIdx > 0 ? sortedMs[curIdx - 1] : null;
 
-    for (const acc of nonDebtAccounts) {
+    for (const acc of accounts) {
       const existingBal = getAccountBalanceForMonth(acc.id, selectedSnapMonth);
       if (existingBal !== null) continue;
 
@@ -588,22 +589,32 @@ function MonthlyBalanceTracker({ accounts, accountSnapshots, snapshotMonths, get
   };
 
   // Calculate totals per month for comparison
-  const monthTotal = nonDebtAccounts.reduce((sum, acc) => {
+  const monthAssetTotal = assetAccounts.reduce((sum, acc) => {
     const bal = getAccountBalanceForMonth(acc.id, selectedSnapMonth);
     return sum + (bal ?? 0);
   }, 0);
+  const monthDebtTotal = debtAccounts.reduce((sum, acc) => {
+    const bal = getAccountBalanceForMonth(acc.id, selectedSnapMonth);
+    return sum + (bal ?? 0);
+  }, 0);
+  const monthNetWorth = monthAssetTotal - monthDebtTotal;
 
   // Check if any accounts are missing data for this month
-  const missingCount = nonDebtAccounts.filter(acc => getAccountBalanceForMonth(acc.id, selectedSnapMonth) === null).length;
+  const missingCount = accounts.filter(acc => getAccountBalanceForMonth(acc.id, selectedSnapMonth) === null).length;
 
   // Find previous month for comparison
   const sortedMonths = [...allMonths].sort();
   const currentIdx = sortedMonths.indexOf(selectedSnapMonth);
   const prevMonth = currentIdx > 0 ? sortedMonths[currentIdx - 1] : null;
-  const prevTotal = prevMonth ? nonDebtAccounts.reduce((sum, acc) => {
+  const prevAssetTotal = prevMonth ? assetAccounts.reduce((sum, acc) => {
     const bal = getAccountBalanceForMonth(acc.id, prevMonth);
     return sum + (bal ?? 0);
   }, 0) : null;
+  const prevDebtTotal = prevMonth ? debtAccounts.reduce((sum, acc) => {
+    const bal = getAccountBalanceForMonth(acc.id, prevMonth);
+    return sum + (bal ?? 0);
+  }, 0) : null;
+  const prevNetWorth = prevAssetTotal !== null && prevDebtTotal !== null ? prevAssetTotal - prevDebtTotal : null;
 
   if (accounts.length === 0) return null;
 
@@ -676,17 +687,25 @@ function MonthlyBalanceTracker({ accounts, accountSnapshots, snapshotMonths, get
       )}
 
       {/* Summary */}
-      <div className="flex items-center gap-4 mb-4 p-3 rounded-xl bg-[var(--bg-subtle)]">
+      <div className="flex flex-wrap items-center gap-4 mb-4 p-3 rounded-xl bg-[var(--bg-subtle)]">
         <div>
-          <p className="text-[10px] text-th-faint uppercase font-semibold">Total (Non-Debt)</p>
-          <p className="text-lg font-bold text-th-heading num">{formatCurrency(monthTotal)}</p>
+          <p className="text-[10px] text-th-faint uppercase font-semibold">Assets</p>
+          <p className="text-sm font-bold text-[var(--text-positive)] num">{formatCurrency(monthAssetTotal)}</p>
         </div>
-        {prevTotal !== null && prevTotal > 0 && (
+        <div>
+          <p className="text-[10px] text-th-faint uppercase font-semibold">Debts</p>
+          <p className="text-sm font-bold text-[var(--text-negative)] num">{formatCurrency(monthDebtTotal)}</p>
+        </div>
+        <div>
+          <p className="text-[10px] text-th-faint uppercase font-semibold">Net Worth</p>
+          <p className="text-lg font-bold text-th-heading num">{formatCurrency(monthNetWorth)}</p>
+        </div>
+        {prevNetWorth !== null && prevNetWorth !== 0 && (
           <div>
             <p className="text-[10px] text-th-faint uppercase font-semibold">Change</p>
-            <p className={`text-sm font-bold num ${monthTotal - prevTotal >= 0 ? 'text-[var(--text-positive)]' : 'text-[var(--text-negative)]'}`}>
-              {monthTotal - prevTotal >= 0 ? '+' : ''}{formatCurrency(monthTotal - prevTotal)}
-              <span className="text-xs ml-1">({((monthTotal - prevTotal) / prevTotal * 100).toFixed(1)}%)</span>
+            <p className={`text-sm font-bold num ${monthNetWorth - prevNetWorth >= 0 ? 'text-[var(--text-positive)]' : 'text-[var(--text-negative)]'}`}>
+              {monthNetWorth - prevNetWorth >= 0 ? '+' : ''}{formatCurrency(monthNetWorth - prevNetWorth)}
+              <span className="text-xs ml-1">({((monthNetWorth - prevNetWorth) / Math.abs(prevNetWorth) * 100).toFixed(1)}%)</span>
             </p>
           </div>
         )}
@@ -704,7 +723,81 @@ function MonthlyBalanceTracker({ accounts, accountSnapshots, snapshotMonths, get
             </tr>
           </thead>
           <tbody>
-            {nonDebtAccounts.map(acc => {
+            {assetAccounts.length > 0 && (
+              <tr>
+                <td colSpan={prevMonth ? 4 : 3} className="pt-3 pb-1 px-2">
+                  <span className="text-[10px] font-semibold text-[var(--text-positive)] uppercase tracking-wider">Assets</span>
+                </td>
+              </tr>
+            )}
+            {assetAccounts.map(acc => {
+              const bal = getAccountBalanceForMonth(acc.id, selectedSnapMonth);
+              const prevBal = prevMonth ? getAccountBalanceForMonth(acc.id, prevMonth) : null;
+              const change = bal !== null && prevBal !== null ? bal - prevBal : null;
+
+              return (
+                <tr key={acc.id} className="border-b border-[var(--border-color)] group">
+                  <td className="py-3 px-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">{acc.icon}</span>
+                      <span className="text-sm font-medium text-th-heading">{acc.name}</span>
+                    </div>
+                  </td>
+                  <td className="py-3 px-2 text-right">
+                    {editingCell === acc.id ? (
+                      <div className="flex items-center justify-end gap-1">
+                        <input
+                          type="number"
+                          value={editValue}
+                          onChange={e => setEditValue(e.target.value)}
+                          onKeyDown={e => { if (e.key === 'Enter') saveEdit(acc.id); if (e.key === 'Escape') setEditingCell(null); }}
+                          className="input-field w-32 py-1 text-sm text-right"
+                          autoFocus
+                        />
+                        <button onClick={() => saveEdit(acc.id)} className="p-1 rounded text-[var(--text-positive)] hover:bg-[var(--bg-positive-subtle)]"><Check className="w-3.5 h-3.5" /></button>
+                        <button onClick={() => setEditingCell(null)} className="p-1 rounded text-th-faint hover:bg-[var(--bg-hover)]"><X className="w-3.5 h-3.5" /></button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => startEdit(acc.id, bal)}
+                        className={`text-sm font-semibold num cursor-pointer hover:underline ${bal !== null ? 'text-th-heading' : 'text-th-faint italic'}`}
+                      >
+                        {bal !== null ? formatCurrency(bal) : 'Add balance'}
+                      </button>
+                    )}
+                  </td>
+                  {prevMonth && (
+                    <td className="py-3 px-2 text-right">
+                      {change !== null ? (
+                        <span className={`text-xs font-semibold num ${change >= 0 ? 'text-[var(--text-positive)]' : 'text-[var(--text-negative)]'}`}>
+                          {change >= 0 ? '+' : ''}{formatCurrency(change)}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-th-faint">—</span>
+                      )}
+                    </td>
+                  )}
+                  <td className="py-3 px-2 text-right">
+                    {editingCell !== acc.id && (
+                      <button
+                        onClick={() => startEdit(acc.id, bal)}
+                        className="p-1.5 rounded-lg text-th-faint hover:text-[var(--text-accent)] hover:bg-[var(--bg-accent-subtle)] opacity-0 group-hover:opacity-100 transition-all"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+            {debtAccounts.length > 0 && (
+              <tr>
+                <td colSpan={prevMonth ? 4 : 3} className="pt-4 pb-1 px-2">
+                  <span className="text-[10px] font-semibold text-[var(--text-negative)] uppercase tracking-wider">Debts</span>
+                </td>
+              </tr>
+            )}
+            {debtAccounts.map(acc => {
               const bal = getAccountBalanceForMonth(acc.id, selectedSnapMonth);
               const prevBal = prevMonth ? getAccountBalanceForMonth(acc.id, prevMonth) : null;
               const change = bal !== null && prevBal !== null ? bal - prevBal : null;

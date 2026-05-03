@@ -1,8 +1,8 @@
 'use client';
 
-import React, { createContext, useContext, useState, useMemo, useCallback, useEffect, type ReactNode } from 'react';
+import React, { createContext, useContext, useState, useMemo, useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { Account, Transaction, CryptoHolding, StockHolding, NetWorthSnapshot, MonthlyData, AccountSnapshot, Category } from './types';
-import { ACCOUNT_TYPES, DEBT_TYPES } from './utils';
+import { ACCOUNT_TYPES, DEBT_TYPES, LIQUID_ACCOUNT_TYPES } from './utils';
 import { useAuth } from './auth-context';
 import { createClient } from './supabase';
 
@@ -33,6 +33,7 @@ interface AppState {
 
   // Transaction actions
   addTransaction: (transaction: Omit<Transaction, 'id' | 'createdAt'>) => Promise<void>;
+  updateTransaction: (id: string, updates: Partial<Omit<Transaction, 'id' | 'createdAt'>>) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
 
   // Categories
@@ -66,6 +67,8 @@ interface AppState {
   totalDebts: number;
   netWorth: number;
   totalCryptoValue: number;
+  totalLiquidAssets: number;
+  liquidNetWorth: number;
 
   // Month-specific helpers
   selectedMonth: string;
@@ -396,6 +399,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (!error && data) setTransactions(prev => [mapTransaction(data), ...prev]);
   }, [user, supabase]);
 
+  const updateTransaction = useCallback(async (id: string, updates: Partial<Omit<Transaction, 'id' | 'createdAt'>>) => {
+    const dbUpdates: any = {};
+    if (updates.date !== undefined) dbUpdates.date = updates.date;
+    if (updates.description !== undefined) dbUpdates.description = updates.description;
+    if (updates.amount !== undefined) dbUpdates.amount = updates.amount;
+    if (updates.type !== undefined) dbUpdates.type = updates.type;
+    if (updates.category !== undefined) dbUpdates.category = updates.category;
+    if (updates.accountId !== undefined) dbUpdates.account_id = updates.accountId;
+    if (updates.notes !== undefined) dbUpdates.notes = updates.notes;
+    dbUpdates.updated_at = new Date().toISOString();
+
+    const { error } = await supabase.from('transactions').update(dbUpdates).eq('id', id);
+    if (!error) setTransactions(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
+  }, [supabase]);
+
   const deleteTransaction = useCallback(async (id: string) => {
     const { error } = await supabase.from('transactions').delete().eq('id', id);
     if (!error) setTransactions(prev => prev.filter(t => t.id !== id));
@@ -568,6 +586,40 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return Array.from(set).sort().reverse();
   }, [accountSnapshots]);
 
+  // === Derived Net Worth History from Account Snapshots ===
+  const derivedNetWorthHistory = useMemo(() => {
+    if (accountSnapshots.length === 0) return [];
+    const accountDebtMap = new Map(accounts.map(a => [a.id, a.isDebt]));
+    const monthly = new Map<string, { assets: number; debts: number }>();
+    for (const snap of accountSnapshots) {
+      const isDebt = accountDebtMap.get(snap.accountId) ?? false;
+      const entry = monthly.get(snap.month) || { assets: 0, debts: 0 };
+      if (isDebt) {
+        entry.debts += snap.balance;
+      } else {
+        entry.assets += snap.balance;
+      }
+      monthly.set(snap.month, entry);
+    }
+    return Array.from(monthly.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([month, { assets, debts }]) => ({
+        date: month,
+        totalAssets: assets,
+        totalDebts: debts,
+        netWorth: assets - debts,
+      }));
+  }, [accountSnapshots, accounts]);
+
+  const effectiveNetWorthHistory = useMemo(() => {
+    if (netWorthHistory.length > 0) {
+      const dbDates = new Set(netWorthHistory.map(s => s.date));
+      const extra = derivedNetWorthHistory.filter(d => !dbDates.has(d.date));
+      return [...netWorthHistory, ...extra].sort((a, b) => a.date.localeCompare(b.date));
+    }
+    return derivedNetWorthHistory;
+  }, [netWorthHistory, derivedNetWorthHistory]);
+
   // === Price Refresh ===
   const refreshCryptoPrices = useCallback(async () => {
     if (cryptoHoldings.length === 0) return;
@@ -616,6 +668,34 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const totalAssets = useMemo(() => accounts.filter(a => !a.isDebt).reduce((s, a) => s + a.balance, 0) + totalCryptoValue, [accounts, totalCryptoValue]);
   const totalDebts = useMemo(() => accounts.filter(a => a.isDebt).reduce((s, a) => s + a.balance, 0), [accounts]);
   const netWorth = totalAssets - totalDebts;
+  const totalLiquidAssets = useMemo(() =>
+    accounts.filter(a => !a.isDebt && LIQUID_ACCOUNT_TYPES.includes(a.type)).reduce((s, a) => s + a.balance, 0) + totalCryptoValue,
+    [accounts, totalCryptoValue]
+  );
+  const liquidNetWorth = totalLiquidAssets - totalDebts;
+
+  // Auto-create net worth snapshot for current month
+  const snapshotCreated = useRef(false);
+  useEffect(() => {
+    if (loading || snapshotCreated.current || !user || accounts.length === 0) return;
+    snapshotCreated.current = true;
+    const currentMonth = getCurrentMonth();
+    const exists = netWorthHistory.some(s => s.date.startsWith(currentMonth)) ||
+                   derivedNetWorthHistory.some(s => s.date === currentMonth);
+    if (exists) return;
+    (async () => {
+      const { data, error } = await supabase.from('net_worth_snapshots').upsert({
+        user_id: user.id,
+        date: `${currentMonth}-01`,
+        total_assets: totalAssets,
+        total_debts: totalDebts,
+        net_worth: netWorth,
+      }, { onConflict: 'user_id,date' }).select().single();
+      if (!error && data) {
+        setNetWorthHistory(prev => [...prev, mapSnapshot(data)].sort((a, b) => a.date.localeCompare(b.date)));
+      }
+    })();
+  }, [loading, user, accounts.length, totalAssets, totalDebts, netWorth, supabase, netWorthHistory, derivedNetWorthHistory]);
 
   const availableMonths = useMemo(() => {
     const set = new Set(transactions.map(t => t.date.slice(0, 7)));
@@ -705,16 +785,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
   return (
     <AppContext.Provider value={{
       loading,
-      accounts, transactions, cryptoHoldings, stockHoldings, netWorthHistory,
+      accounts, transactions, cryptoHoldings, stockHoldings, netWorthHistory: effectiveNetWorthHistory,
       addAccount, updateAccount, deleteAccount,
-      addTransaction, deleteTransaction,
+      addTransaction, updateTransaction, deleteTransaction,
       defaultCategories, userCategories, hiddenCategoryIds,
       expenseCategories, incomeCategories,
       addCategory, deleteCategory, restoreCategory,
       addCryptoHolding, updateCryptoHolding, deleteCryptoHolding,
       addStockHolding, updateStockHolding, deleteStockHolding, getStocksByAccount,
       refreshCryptoPrices, refreshStockPrices, pricesLoading,
-      totalAssets, totalDebts, netWorth, totalCryptoValue,
+      totalAssets, totalDebts, netWorth, totalCryptoValue, totalLiquidAssets, liquidNetWorth,
       selectedMonth, setSelectedMonth, availableMonths,
       monthIncome: current.income, monthExpenses: current.expenses,
       monthSavings: current.savings, monthSavingsRate: current.savingsRate,

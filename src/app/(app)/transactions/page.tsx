@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { Search, Trash2, Calendar, ChevronDown, ArrowLeftRight, Plus, Settings } from 'lucide-react';
+import { Search, Trash2, Calendar, ChevronDown, ArrowLeftRight, Plus, Settings, Pencil } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { formatCurrency } from '@/lib/utils';
+import { Transaction } from '@/lib/types';
 import { AddTransactionModal } from '@/components/modals/AddTransactionModal';
+import { EditTransactionModal } from '@/components/modals/EditTransactionModal';
 import { CategoryDrilldownModal } from '@/components/modals/CategoryDrilldownModal';
 import { ManageCategoriesModal } from '@/components/modals/ManageCategoriesModal';
 
@@ -14,6 +16,7 @@ export default function TransactionsPage() {
   const [search, setSearch] = useState('');
   const [viewMonth, setViewMonth] = useState(selectedMonth);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
 
   // Sync viewMonth when selectedMonth changes (e.g. auto-select on load)
   useEffect(() => {
@@ -192,6 +195,12 @@ export default function TransactionsPage() {
                         {txn.type === 'income' ? '+' : '-'}{formatCurrency(txn.amount)}
                       </p>
                       <button
+                        onClick={() => setEditingTransaction(txn)}
+                        className="p-2 rounded-lg text-th-faint hover:text-primary-500 hover:bg-primary-500/10 transition-all opacity-0 group-hover:opacity-100"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
                         onClick={() => deleteTransaction(txn.id)}
                         className="p-2 rounded-lg text-th-faint hover:text-danger-400 hover:bg-danger-500/10 transition-all opacity-0 group-hover:opacity-100"
                       >
@@ -207,6 +216,7 @@ export default function TransactionsPage() {
       </div>
 
       {showAddModal && <AddTransactionModal onClose={() => setShowAddModal(false)} />}
+      {editingTransaction && <EditTransactionModal transaction={editingTransaction} onClose={() => setEditingTransaction(null)} />}
       {showCategoryManager && <ManageCategoriesModal onClose={() => setShowCategoryManager(false)} />}
       {drilldown && (
         <CategoryDrilldownModal

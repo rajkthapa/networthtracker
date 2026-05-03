@@ -3,10 +3,10 @@
 import { useApp } from '@/lib/store';
 import { formatCurrency, formatPercent } from '@/lib/utils';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend, Cell } from 'recharts';
-import { ArrowUpRight, Calendar, Target } from 'lucide-react';
+import { ArrowUpRight, Calendar, Target, TrendingUp } from 'lucide-react';
 
 export default function NetWorthPage() {
-  const { netWorthHistory, totalAssets, totalDebts, netWorth, accounts, monthlyData } = useApp();
+  const { netWorthHistory, totalAssets, totalDebts, netWorth, liquidNetWorth, accounts, monthlyData } = useApp();
 
   // Safety: ensure we have at least 2 data points
   const hasHistory = netWorthHistory.length >= 2;
@@ -87,59 +87,74 @@ export default function NetWorthPage() {
           <p className="text-lg font-bold text-[var(--text-accent)] num">{totalAssets > 0 ? ((totalDebts / totalAssets) * 100).toFixed(1) : 0}%</p>
         </div>
         <div className="stat-card border-l-4 border-grape-500/50">
-          <p className="stat-label">Avg Monthly Growth</p>
-          <p className="text-lg font-bold text-[var(--text-accent-secondary)] num">{netWorthHistory.length > 1 ? formatCurrency(totalChange / (netWorthHistory.length - 1)) : '$0'}</p>
+          <p className="stat-label">Liquid Net Worth</p>
+          <p className="text-lg font-bold text-[var(--text-accent-secondary)] num">{formatCurrency(liquidNetWorth)}</p>
         </div>
       </div>
 
       {/* Net Worth History Chart */}
       <div className="chart-container">
         <h3 className="section-header mb-4">Net Worth History</h3>
-        <ResponsiveContainer width="100%" height={400}>
-          <AreaChart data={netWorthHistory}>
-            <defs>
-              <linearGradient id="nwFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#14b8a6" stopOpacity={0} />
-              </linearGradient>
-              <linearGradient id="assetFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#10b981" stopOpacity={0.15} />
-                <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-              </linearGradient>
-              <linearGradient id="debtFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#ef4444" stopOpacity={0.15} />
-                <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} />
-            <XAxis dataKey="date" stroke="var(--chart-axis)" fontSize={12} tickLine={false} />
-            <YAxis stroke="var(--chart-axis)" fontSize={12} tickLine={false} tickFormatter={(v) => formatCurrency(v, true)} />
-            <Tooltip formatter={(value: any, name: any) => [formatCurrency(value), name === 'netWorth' ? 'Net Worth' : name === 'totalAssets' ? 'Assets' : 'Debts']} />
-            <Legend />
-            <Area type="monotone" dataKey="totalAssets" stroke="#10b981" fill="url(#assetFill)" strokeWidth={2} name="totalAssets" />
-            <Area type="monotone" dataKey="totalDebts" stroke="#ef4444" fill="url(#debtFill)" strokeWidth={2} name="totalDebts" />
-            <Area type="monotone" dataKey="netWorth" stroke="#14b8a6" fill="url(#nwFill)" strokeWidth={3} name="netWorth" />
-          </AreaChart>
-        </ResponsiveContainer>
+        {netWorthHistory.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <TrendingUp className="w-12 h-12 text-th-faint mb-3" />
+            <p className="text-th-heading font-semibold mb-1">No history yet</p>
+            <p className="text-sm text-th-muted max-w-xs">Enter monthly balances on the Accounts page to track your net worth over time</p>
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height={400}>
+            <AreaChart data={netWorthHistory}>
+              <defs>
+                <linearGradient id="nwFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#14b8a6" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="assetFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="debtFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} />
+              <XAxis dataKey="date" stroke="var(--chart-axis)" fontSize={12} tickLine={false} />
+              <YAxis stroke="var(--chart-axis)" fontSize={12} tickLine={false} tickFormatter={(v) => formatCurrency(v, true)} />
+              <Tooltip formatter={(value: any, name: any) => [formatCurrency(value), name === 'netWorth' ? 'Net Worth' : name === 'totalAssets' ? 'Assets' : 'Debts']} />
+              <Legend />
+              <Area type="monotone" dataKey="totalAssets" stroke="#10b981" fill="url(#assetFill)" strokeWidth={2} name="totalAssets" />
+              <Area type="monotone" dataKey="totalDebts" stroke="#ef4444" fill="url(#debtFill)" strokeWidth={2} name="totalDebts" />
+              <Area type="monotone" dataKey="netWorth" stroke="#14b8a6" fill="url(#nwFill)" strokeWidth={3} name="netWorth" />
+            </AreaChart>
+          </ResponsiveContainer>
+        )}
       </div>
 
       {/* Growth + Asset Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="chart-container">
           <h3 className="section-header mb-4">Monthly Net Worth Change</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={yoyData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} />
-              <XAxis dataKey="date" stroke="var(--chart-axis)" fontSize={11} tickLine={false} />
-              <YAxis stroke="var(--chart-axis)" fontSize={12} tickLine={false} tickFormatter={(v) => formatCurrency(v, true)} />
-              <Tooltip formatter={(value: any) => formatCurrency(value)} />
-              <Bar dataKey="change" radius={[6, 6, 0, 0]}>
-                {yoyData.map((entry, i) => (
-                  <Cell key={i} fill={entry.change >= 0 ? '#10b981' : '#ef4444'} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+          {yoyData.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <TrendingUp className="w-10 h-10 text-th-faint mb-2" />
+              <p className="text-sm text-th-muted">Track at least 2 months to see changes</p>
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={yoyData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} />
+                <XAxis dataKey="date" stroke="var(--chart-axis)" fontSize={11} tickLine={false} />
+                <YAxis stroke="var(--chart-axis)" fontSize={12} tickLine={false} tickFormatter={(v) => formatCurrency(v, true)} />
+                <Tooltip formatter={(value: any) => formatCurrency(value)} />
+                <Bar dataKey="change" radius={[6, 6, 0, 0]}>
+                  {yoyData.map((entry, i) => (
+                    <Cell key={i} fill={entry.change >= 0 ? '#10b981' : '#ef4444'} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </div>
 
         <div className="chart-container">
