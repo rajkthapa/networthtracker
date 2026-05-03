@@ -6,7 +6,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { ArrowUpRight, Calendar, Target, TrendingUp } from 'lucide-react';
 
 export default function NetWorthPage() {
-  const { netWorthHistory, totalAssets, totalDebts, netWorth, liquidNetWorth, accounts, monthlyData } = useApp();
+  const { netWorthHistory, totalAssets, totalDebts, netWorth, totalLiquidAssets, accounts, monthlyData } = useApp();
 
   // Safety: ensure we have at least 2 data points
   const hasHistory = netWorthHistory.length >= 2;
@@ -87,8 +87,8 @@ export default function NetWorthPage() {
           <p className="text-lg font-bold text-[var(--text-accent)] num">{totalAssets > 0 ? ((totalDebts / totalAssets) * 100).toFixed(1) : 0}%</p>
         </div>
         <div className="stat-card border-l-4 border-grape-500/50">
-          <p className="stat-label">Liquid Net Worth</p>
-          <p className="text-lg font-bold text-[var(--text-accent-secondary)] num">{formatCurrency(liquidNetWorth)}</p>
+          <p className="stat-label">Liquid Assets</p>
+          <p className="text-lg font-bold text-[var(--text-accent-secondary)] num">{formatCurrency(totalLiquidAssets)}</p>
         </div>
       </div>
 

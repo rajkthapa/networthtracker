@@ -9,11 +9,11 @@ import { UpgradeModal } from '@/components/subscription/UpgradeModal';
 import { useState } from 'react';
 
 export default function FIREPage() {
-  const { netWorth, liquidNetWorth, monthIncome, monthExpenses, monthlyData, availableMonths, getMonthTotals } = useApp();
+  const { netWorth, totalLiquidAssets, monthIncome, monthExpenses, monthlyData, availableMonths, getMonthTotals } = useApp();
   const { isPro } = useSubscription();
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [excludeIlliquid, setExcludeIlliquid] = useState(false);
-  const fireNetWorth = excludeIlliquid ? liquidNetWorth : netWorth;
+  const fireNetWorth = excludeIlliquid ? totalLiquidAssets : netWorth;
 
   if (!isPro) {
     return (

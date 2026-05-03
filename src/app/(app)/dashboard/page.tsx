@@ -260,7 +260,7 @@ function EmptyDashboard() {
 
 export default function Dashboard() {
   const {
-    loading, totalAssets, totalDebts, netWorth, liquidNetWorth,
+    loading, totalAssets, totalDebts, netWorth, totalLiquidAssets,
     monthIncome, monthExpenses, monthSavingsRate,
     incomeChange, expenseChange,
     selectedMonth, accounts, transactions,
@@ -338,7 +338,7 @@ export default function Dashboard() {
           <div className="w-px bg-[var(--border-color)] self-stretch" />
           <div className="text-center">
             <p className="text-th-faint text-xs font-medium uppercase tracking-wider mb-1">Liquid</p>
-            <p className="text-xl md:text-2xl font-bold text-th-heading num">{formatCurrency(liquidNetWorth)}</p>
+            <p className="text-xl md:text-2xl font-bold text-th-heading num">{formatCurrency(totalLiquidAssets)}</p>
           </div>
         </div>
       </div>
