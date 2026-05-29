@@ -413,10 +413,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (updates.category !== undefined) dbUpdates.category = updates.category;
     if (updates.accountId !== undefined) dbUpdates.account_id = updates.accountId;
     if (updates.notes !== undefined) dbUpdates.notes = updates.notes;
-    dbUpdates.updated_at = new Date().toISOString();
 
     const { error } = await supabase.from('transactions').update(dbUpdates).eq('id', id);
-    if (!error) setTransactions(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
+    if (error) throw error;
+    setTransactions(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
   }, [supabase]);
 
   const deleteTransaction = useCallback(async (id: string) => {
