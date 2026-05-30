@@ -7,6 +7,9 @@ import { NetWorthChart } from '@/components/charts/NetWorthChart';
 import { IncomeExpenseChart } from '@/components/charts/IncomeExpenseChart';
 import { CategoryPieChart } from '@/components/charts/CategoryPieChart';
 import { SavingsRateChart } from '@/components/charts/SavingsRateChart';
+import { CumulativeChart } from '@/components/charts/CumulativeChart';
+import { YearComparisonChart } from '@/components/charts/YearComparisonChart';
+import { MonthlyNetCashFlowChart } from '@/components/charts/MonthlyNetCashFlowChart';
 import { Delta } from '@/components/ui/Delta';
 
 function MonthSelector() {
@@ -375,6 +378,17 @@ export default function Dashboard() {
         <IncomeExpenseChart />
       </div>
 
+      {/* Cumulative & Cash Flow */}
+      <CumulativeChart />
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <MonthlyNetCashFlowChart />
+        <SavingsRateChart />
+      </div>
+
+      {/* Year-over-Year */}
+      <YearComparisonChart />
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <CategoryPieChart type="expense" />
         <CategoryPieChart type="income" />
@@ -390,8 +404,6 @@ export default function Dashboard() {
           <AccountsSummary />
         </div>
       </div>
-
-      <SavingsRateChart />
     </div>
   );
 }
