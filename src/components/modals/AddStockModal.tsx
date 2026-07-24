@@ -3,18 +3,27 @@
 import { useState } from 'react';
 import { X, Loader2 } from 'lucide-react';
 import { useApp } from '@/lib/store';
+import { ACCOUNT_TYPES, INVESTMENT_ACCOUNT_TYPES } from '@/lib/utils';
 
-export function AddStockModal({ onClose, accountId, accountName }: { onClose: () => void; accountId: string; accountName: string }) {
-  const { addStockHolding } = useApp();
+export function AddStockModal({ onClose, accountId, accountName }: { onClose: () => void; accountId?: string; accountName?: string }) {
+  const { addStockHolding, accounts } = useApp();
   const [ticker, setTicker] = useState('');
   const [shares, setShares] = useState('');
   const [avgCostBasis, setAvgCostBasis] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
+  const investmentAccounts = accounts.filter(a => !a.isDebt && INVESTMENT_ACCOUNT_TYPES.includes(a.type));
+  const eligibleAccounts = investmentAccounts.length > 0 ? investmentAccounts : accounts.filter(a => !a.isDebt);
+  const [selectedAccountId, setSelectedAccountId] = useState(accountId || eligibleAccounts[0]?.id || '');
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    if (!selectedAccountId) {
+      setError('Add an account first, then attach stock positions to it');
+      return;
+    }
     if (!ticker || !shares || !avgCostBasis) {
       setError('Please fill all fields');
       return;
@@ -22,7 +31,7 @@ export function AddStockModal({ onClose, accountId, accountName }: { onClose: ()
     setSaving(true);
     try {
       await addStockHolding({
-        accountId,
+        accountId: selectedAccountId,
         ticker: ticker.toUpperCase(),
         name: ticker.toUpperCase(),
         shares: parseFloat(shares),
@@ -44,7 +53,7 @@ export function AddStockModal({ onClose, accountId, accountName }: { onClose: ()
         <div className="flex items-center justify-between p-6 pb-4">
           <div>
             <h2 className="text-xl font-bold text-th-heading">Add Stock Position</h2>
-            <p className="text-xs text-th-faint mt-0.5">to {accountName}</p>
+            {accountName && <p className="text-xs text-th-faint mt-0.5">to {accountName}</p>}
           </div>
           <button onClick={onClose} className="p-2 rounded-xl hover:bg-[var(--bg-hover-strong)] transition-colors">
             <X className="w-5 h-5 text-th-muted" />
@@ -55,6 +64,21 @@ export function AddStockModal({ onClose, accountId, accountName }: { onClose: ()
           {error && (
             <div className="p-3 rounded-xl bg-danger-500/10 border border-danger-500/30 text-[var(--text-negative)] text-sm">
               {error}
+            </div>
+          )}
+
+          {!accountId && (
+            <div>
+              <label className="block text-sm font-medium text-th-body mb-1.5">Account</label>
+              {eligibleAccounts.length > 0 ? (
+                <select value={selectedAccountId} onChange={e => setSelectedAccountId(e.target.value)} className="input-field" required>
+                  {eligibleAccounts.map(a => (
+                    <option key={a.id} value={a.id}>{a.name} ({ACCOUNT_TYPES.find(t => t.id === a.type)?.name || a.type})</option>
+                  ))}
+                </select>
+              ) : (
+                <p className="text-xs text-th-faint">No accounts yet — add an account on the Accounts page first.</p>
+              )}
             </div>
           )}
 

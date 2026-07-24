@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { LayoutDashboard, ArrowLeftRight, Landmark, TrendingUp, MoreHorizontal, Bitcoin, Flame, Upload, X } from 'lucide-react';
+import { LayoutDashboard, ArrowLeftRight, Landmark, TrendingUp, MoreHorizontal, Bitcoin, LineChart, Flame, Upload, X } from 'lucide-react';
 
 const primaryNav = [
   { href: '/dashboard', label: 'Home', icon: LayoutDashboard },
@@ -14,6 +14,7 @@ const primaryNav = [
 
 const moreNav = [
   { href: '/crypto', label: 'Crypto Portfolio', icon: Bitcoin },
+  { href: '/stocks', label: 'Stock Portfolio', icon: LineChart },
   { href: '/fire', label: 'FIRE Calculator', icon: Flame },
   { href: '/import', label: 'Import Data', icon: Upload },
 ];

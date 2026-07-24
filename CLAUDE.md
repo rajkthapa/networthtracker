@@ -19,7 +19,7 @@ No test framework is configured.
 
 ### Route Groups
 - `src/app/(marketing)/` — Public landing page at `/`, no auth required
-- `src/app/(app)/` — Authenticated pages: `/dashboard`, `/accounts`, `/transactions`, `/networth`, `/crypto`, `/fire`, `/import`
+- `src/app/(app)/` — Authenticated pages: `/dashboard`, `/accounts`, `/transactions`, `/networth`, `/crypto`, `/stocks`, `/fire`, `/import`
 - `src/app/auth/` — Login/signup pages
 - `src/app/api/` — API routes for Stripe (checkout, portal, webhook), Plaid (link-token, exchange-token, sync, connections), and price fetching
 

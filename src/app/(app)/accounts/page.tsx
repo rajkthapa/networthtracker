@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { Plus, Trash2, TrendingUp, TrendingDown, Building2, Edit3, Check, X, ChevronDown, ChevronRight, RefreshCcw, Calendar } from 'lucide-react';
 import { useApp } from '@/lib/store';
-import { formatCurrency, formatPercent, ACCOUNT_TYPES, LIQUID_ACCOUNT_TYPES } from '@/lib/utils';
+import { formatCurrency, formatPercent, ACCOUNT_TYPES, LIQUID_ACCOUNT_TYPES, INVESTMENT_ACCOUNT_TYPES } from '@/lib/utils';
 import type { Account, AccountSnapshot } from '@/lib/types';
 import { AddAccountModal } from '@/components/modals/AddAccountModal';
 import { AddStockModal } from '@/components/modals/AddStockModal';
@@ -12,7 +12,7 @@ import { useSubscription } from '@/lib/subscription-context';
 import { useToast } from '@/lib/toast-context';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 
-const INVESTMENT_TYPES = ['401k', 'ira', 'roth_ira', 'brokerage', 'hsa'];
+const INVESTMENT_TYPES = INVESTMENT_ACCOUNT_TYPES;
 
 export default function AccountsPage() {
   const { accounts, totalAssets, totalDebts, netWorth, totalCryptoValue, deleteAccount, updateAccount, getStocksByAccount, deleteStockHolding, refreshStockPrices, pricesLoading, accountSnapshots, upsertAccountSnapshot, getAccountBalanceForMonth, snapshotMonths } = useApp();

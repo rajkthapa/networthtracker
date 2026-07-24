@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, ArrowLeftRight, Landmark, TrendingUp, Bitcoin, Flame, Upload, PanelLeft } from 'lucide-react';
+import { LayoutDashboard, ArrowLeftRight, Landmark, TrendingUp, Bitcoin, LineChart, Flame, Upload, PanelLeft } from 'lucide-react';
 import { useState } from 'react';
 import { PlanBadge } from '@/components/subscription/PlanBadge';
 
@@ -12,6 +12,7 @@ const navItems = [
   { href: '/accounts', label: 'Accounts', icon: Landmark },
   { href: '/networth', label: 'Net Worth', icon: TrendingUp },
   { href: '/crypto', label: 'Crypto', icon: Bitcoin },
+  { href: '/stocks', label: 'Stocks', icon: LineChart },
   { href: '/fire', label: 'FIRE', icon: Flame },
   { href: '/import', label: 'Import', icon: Upload },
 ];
