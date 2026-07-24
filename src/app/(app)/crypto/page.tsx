@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useApp } from '@/lib/store';
 import { useToast } from '@/lib/toast-context';
 import { formatCurrency, formatPercent } from '@/lib/utils';
 import { CryptoHolding } from '@/lib/types';
-import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, RefreshCcw, Bitcoin, Plus, Trash2, Pencil } from 'lucide-react';
+import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, RefreshCcw, Bitcoin, Plus, Trash2, Pencil, ChevronUp, ChevronDown } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { AddCryptoModal } from '@/components/modals/AddCryptoModal';
 import { EditCryptoModal } from '@/components/modals/EditCryptoModal';
@@ -18,11 +18,24 @@ const CRYPTO_ICONS: Record<string, string> = {
   BTC: '₿', ETH: 'Ξ', SOL: '◎', ADA: '₳', LINK: '⬡', DOT: '●',
 };
 
+type SortKey = 'symbol' | 'price' | 'change24h' | 'quantity' | 'value' | 'pnl' | 'pnlPercent';
+
 export default function CryptoPage() {
   const { cryptoHoldings, deleteCryptoHolding, refreshCryptoPrices, pricesLoading } = useApp();
   const { toast } = useToast();
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingHolding, setEditingHolding] = useState<CryptoHolding | null>(null);
+  const [sortKey, setSortKey] = useState<SortKey>('value');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+
+  const handleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDir(d => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortKey(key);
+      setSortDir(key === 'symbol' ? 'asc' : 'desc');
+    }
+  };
 
   const totalValue = cryptoHoldings.reduce((s, h) => s + h.quantity * h.currentPrice, 0);
   const totalCost = cryptoHoldings.reduce((s, h) => s + h.quantity * h.avgBuyPrice, 0);
@@ -46,6 +59,37 @@ export default function CryptoPage() {
   const btcHolding = cryptoHoldings.find(h => h.symbol === 'BTC');
   const btcValue = btcHolding ? btcHolding.quantity * btcHolding.currentPrice : 0;
   const btcDominance = totalValue > 0 ? (btcValue / totalValue) * 100 : 0;
+
+  const enrichedHoldings = useMemo(() => cryptoHoldings.map(h => {
+    const value = h.quantity * h.currentPrice;
+    const cost = h.quantity * h.avgBuyPrice;
+    const pnl = value - cost;
+    const pnlPercent = cost > 0 ? (pnl / cost) * 100 : 0;
+    return { ...h, value, cost, pnl, pnlPercent };
+  }), [cryptoHoldings]);
+
+  const sortedHoldings = useMemo(() => {
+    const arr = [...enrichedHoldings];
+    arr.sort((a, b) => {
+      let cmp = 0;
+      switch (sortKey) {
+        case 'symbol': cmp = a.symbol.localeCompare(b.symbol); break;
+        case 'price': cmp = a.currentPrice - b.currentPrice; break;
+        case 'change24h': cmp = a.priceChange24h - b.priceChange24h; break;
+        case 'quantity': cmp = a.quantity - b.quantity; break;
+        case 'value': cmp = a.value - b.value; break;
+        case 'pnl': cmp = a.pnl - b.pnl; break;
+        case 'pnlPercent': cmp = a.pnlPercent - b.pnlPercent; break;
+      }
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+    return arr;
+  }, [enrichedHoldings, sortKey, sortDir]);
+
+  const SortIcon = ({ active }: { active: boolean }) => {
+    if (!active) return null;
+    return sortDir === 'asc' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />;
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -135,21 +179,50 @@ export default function CryptoPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[var(--border-color)]">
-                  <th className="text-left text-xs font-semibold text-th-faint uppercase tracking-wider py-3 px-2">Asset</th>
-                  <th className="text-right text-xs font-semibold text-th-faint uppercase tracking-wider py-3 px-2">Price</th>
-                  <th className="text-right text-xs font-semibold text-th-faint uppercase tracking-wider py-3 px-2 hidden sm:table-cell">24h</th>
-                  <th className="text-right text-xs font-semibold text-th-faint uppercase tracking-wider py-3 px-2">Holdings</th>
-                  <th className="text-right text-xs font-semibold text-th-faint uppercase tracking-wider py-3 px-2">Value</th>
-                  <th className="text-right text-xs font-semibold text-th-faint uppercase tracking-wider py-3 px-2">P&L</th>
+                  <th className="text-left text-xs font-semibold text-th-faint uppercase tracking-wider py-3 px-2">
+                    <button onClick={() => handleSort('symbol')} className="inline-flex items-center gap-1 hover:text-th-heading transition-colors">
+                      Asset <SortIcon active={sortKey === 'symbol'} />
+                    </button>
+                  </th>
+                  <th className="text-right text-xs font-semibold text-th-faint uppercase tracking-wider py-3 px-2">
+                    <button onClick={() => handleSort('price')} className="inline-flex items-center gap-1 hover:text-th-heading transition-colors">
+                      Price <SortIcon active={sortKey === 'price'} />
+                    </button>
+                  </th>
+                  <th className="text-right text-xs font-semibold text-th-faint uppercase tracking-wider py-3 px-2 hidden sm:table-cell">
+                    <button onClick={() => handleSort('change24h')} className="inline-flex items-center gap-1 hover:text-th-heading transition-colors">
+                      24h <SortIcon active={sortKey === 'change24h'} />
+                    </button>
+                  </th>
+                  <th className="text-right text-xs font-semibold text-th-faint uppercase tracking-wider py-3 px-2">
+                    <button onClick={() => handleSort('quantity')} className="inline-flex items-center gap-1 hover:text-th-heading transition-colors">
+                      Holdings <SortIcon active={sortKey === 'quantity'} />
+                    </button>
+                  </th>
+                  <th className="text-right text-xs font-semibold text-th-faint uppercase tracking-wider py-3 px-2">
+                    <button onClick={() => handleSort('value')} className="inline-flex items-center gap-1 hover:text-th-heading transition-colors">
+                      Value <SortIcon active={sortKey === 'value'} />
+                    </button>
+                  </th>
+                  <th className="text-right text-xs font-semibold text-th-faint uppercase tracking-wider py-3 px-2">
+                    <div className="inline-flex items-center gap-2">
+                      <button onClick={() => handleSort('pnlPercent')} className="inline-flex items-center gap-1 hover:text-th-heading transition-colors">
+                        % <SortIcon active={sortKey === 'pnlPercent'} />
+                      </button>
+                      <button onClick={() => handleSort('pnl')} className="inline-flex items-center gap-1 hover:text-th-heading transition-colors">
+                        P&L <SortIcon active={sortKey === 'pnl'} />
+                      </button>
+                    </div>
+                  </th>
                   <th className="py-3 px-2 w-10"></th>
                 </tr>
               </thead>
               <tbody>
-                {cryptoHoldings.map(holding => {
-                  const value = holding.quantity * holding.currentPrice;
-                  const cost = holding.quantity * holding.avgBuyPrice;
-                  const pnl = value - cost;
-                  const pnlPercent = cost > 0 ? (pnl / cost) * 100 : 0;
+                {sortedHoldings.map(holding => {
+                  const value = holding.value;
+                  const cost = holding.cost;
+                  const pnl = holding.pnl;
+                  const pnlPercent = holding.pnlPercent;
                   const color = CRYPTO_COLORS[holding.symbol] || '#868e96';
 
                   return (

@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useApp } from '@/lib/store';
 import { useToast } from '@/lib/toast-context';
 import { formatCurrency, formatPercent } from '@/lib/utils';
 import { StockHolding } from '@/lib/types';
-import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, RefreshCcw, LineChart, Plus, Trash2, Pencil } from 'lucide-react';
+import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, RefreshCcw, LineChart, Plus, Trash2, Pencil, ChevronUp, ChevronDown } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { AddStockModal } from '@/components/modals/AddStockModal';
 import { EditStockModal } from '@/components/modals/EditStockModal';
@@ -18,11 +18,24 @@ function colorForTicker(ticker: string): string {
   return STOCK_PALETTE[Math.abs(hash) % STOCK_PALETTE.length];
 }
 
+type SortKey = 'ticker' | 'price' | 'change24h' | 'shares' | 'value' | 'pnl' | 'pnlPercent';
+
 export default function StocksPage() {
   const { stockHoldings, accounts, deleteStockHolding, refreshStockPrices, pricesLoading } = useApp();
   const { toast } = useToast();
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingHolding, setEditingHolding] = useState<StockHolding | null>(null);
+  const [sortKey, setSortKey] = useState<SortKey>('value');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+
+  const handleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDir(d => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortKey(key);
+      setSortDir(key === 'ticker' ? 'asc' : 'desc');
+    }
+  };
 
   const accountName = (accountId: string) => accounts.find(a => a.id === accountId)?.name || 'Unknown account';
 
@@ -48,6 +61,37 @@ export default function StocksPage() {
   const positionsByValue = [...stockHoldings].sort((a, b) => (b.shares * b.currentPrice) - (a.shares * a.currentPrice));
   const topHolding = positionsByValue[0];
   const topConcentration = topHolding && totalValue > 0 ? ((topHolding.shares * topHolding.currentPrice) / totalValue) * 100 : 0;
+
+  const enrichedHoldings = useMemo(() => stockHoldings.map(h => {
+    const value = h.shares * h.currentPrice;
+    const cost = h.shares * h.avgCostBasis;
+    const pnl = value - cost;
+    const pnlPercent = cost > 0 ? (pnl / cost) * 100 : 0;
+    return { ...h, value, cost, pnl, pnlPercent };
+  }), [stockHoldings]);
+
+  const sortedHoldings = useMemo(() => {
+    const arr = [...enrichedHoldings];
+    arr.sort((a, b) => {
+      let cmp = 0;
+      switch (sortKey) {
+        case 'ticker': cmp = a.ticker.localeCompare(b.ticker); break;
+        case 'price': cmp = a.currentPrice - b.currentPrice; break;
+        case 'change24h': cmp = a.priceChange24h - b.priceChange24h; break;
+        case 'shares': cmp = a.shares - b.shares; break;
+        case 'value': cmp = a.value - b.value; break;
+        case 'pnl': cmp = a.pnl - b.pnl; break;
+        case 'pnlPercent': cmp = a.pnlPercent - b.pnlPercent; break;
+      }
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+    return arr;
+  }, [enrichedHoldings, sortKey, sortDir]);
+
+  const SortIcon = ({ active }: { active: boolean }) => {
+    if (!active) return null;
+    return sortDir === 'asc' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />;
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -137,21 +181,50 @@ export default function StocksPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[var(--border-color)]">
-                  <th className="text-left text-xs font-semibold text-th-faint uppercase tracking-wider py-3 px-2">Stock</th>
-                  <th className="text-right text-xs font-semibold text-th-faint uppercase tracking-wider py-3 px-2">Price</th>
-                  <th className="text-right text-xs font-semibold text-th-faint uppercase tracking-wider py-3 px-2 hidden sm:table-cell">24h</th>
-                  <th className="text-right text-xs font-semibold text-th-faint uppercase tracking-wider py-3 px-2">Shares</th>
-                  <th className="text-right text-xs font-semibold text-th-faint uppercase tracking-wider py-3 px-2">Value</th>
-                  <th className="text-right text-xs font-semibold text-th-faint uppercase tracking-wider py-3 px-2">P&L</th>
+                  <th className="text-left text-xs font-semibold text-th-faint uppercase tracking-wider py-3 px-2">
+                    <button onClick={() => handleSort('ticker')} className="inline-flex items-center gap-1 hover:text-th-heading transition-colors">
+                      Stock <SortIcon active={sortKey === 'ticker'} />
+                    </button>
+                  </th>
+                  <th className="text-right text-xs font-semibold text-th-faint uppercase tracking-wider py-3 px-2">
+                    <button onClick={() => handleSort('price')} className="inline-flex items-center gap-1 hover:text-th-heading transition-colors">
+                      Price <SortIcon active={sortKey === 'price'} />
+                    </button>
+                  </th>
+                  <th className="text-right text-xs font-semibold text-th-faint uppercase tracking-wider py-3 px-2 hidden sm:table-cell">
+                    <button onClick={() => handleSort('change24h')} className="inline-flex items-center gap-1 hover:text-th-heading transition-colors">
+                      24h <SortIcon active={sortKey === 'change24h'} />
+                    </button>
+                  </th>
+                  <th className="text-right text-xs font-semibold text-th-faint uppercase tracking-wider py-3 px-2">
+                    <button onClick={() => handleSort('shares')} className="inline-flex items-center gap-1 hover:text-th-heading transition-colors">
+                      Shares <SortIcon active={sortKey === 'shares'} />
+                    </button>
+                  </th>
+                  <th className="text-right text-xs font-semibold text-th-faint uppercase tracking-wider py-3 px-2">
+                    <button onClick={() => handleSort('value')} className="inline-flex items-center gap-1 hover:text-th-heading transition-colors">
+                      Value <SortIcon active={sortKey === 'value'} />
+                    </button>
+                  </th>
+                  <th className="text-right text-xs font-semibold text-th-faint uppercase tracking-wider py-3 px-2">
+                    <div className="inline-flex items-center gap-2">
+                      <button onClick={() => handleSort('pnlPercent')} className="inline-flex items-center gap-1 hover:text-th-heading transition-colors">
+                        % <SortIcon active={sortKey === 'pnlPercent'} />
+                      </button>
+                      <button onClick={() => handleSort('pnl')} className="inline-flex items-center gap-1 hover:text-th-heading transition-colors">
+                        P&L <SortIcon active={sortKey === 'pnl'} />
+                      </button>
+                    </div>
+                  </th>
                   <th className="py-3 px-2 w-10"></th>
                 </tr>
               </thead>
               <tbody>
-                {stockHoldings.map(holding => {
-                  const value = holding.shares * holding.currentPrice;
-                  const cost = holding.shares * holding.avgCostBasis;
-                  const pnl = value - cost;
-                  const pnlPercent = cost > 0 ? (pnl / cost) * 100 : 0;
+                {sortedHoldings.map(holding => {
+                  const value = holding.value;
+                  const cost = holding.cost;
+                  const pnl = holding.pnl;
+                  const pnlPercent = holding.pnlPercent;
                   const color = colorForTicker(holding.ticker);
 
                   return (
