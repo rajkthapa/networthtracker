@@ -249,6 +249,8 @@ CREATE POLICY "Authenticated users can read default_categories"
 -- Remove legacy defaults that were superseded: generic "Utilities" bucket
 -- and standalone "Gas" (duplicated car_gas and clashed with utility "Gas").
 DELETE FROM default_categories WHERE id IN ('utilities', 'gas', 'insurance');
+-- Remove the granular business breakdown that briefly shipped; one 'Business' bucket now.
+DELETE FROM default_categories WHERE id LIKE 'business\_%' AND id <> 'business_expense';
 
 -- Seed defaults. ON CONFLICT DO UPDATE lets us tweak the base list by re-running schema.
 INSERT INTO default_categories (id, name, icon, color, type, sort_order) VALUES
@@ -286,20 +288,7 @@ INSERT INTO default_categories (id, name, icon, color, type, sort_order) VALUES
   ('pets',            'Pets',               '🐾', '#ff8787', 'expense', 32),
   ('gifts',           'Gift',               '🎁', '#da77f2', 'expense', 33),
   ('taxes',           'Taxes',              '📋', '#868e96', 'expense', 34),
-  ('business_office', 'Business - Office/Rent', '🏢', '#7950f2', 'expense', 36),
-  ('business_software','Business - Software', '💻', '#4c6ef5', 'expense', 37),
-  ('business_advertising','Business - Advertising', '📣', '#f76707', 'expense', 38),
-  ('business_supplies','Business - Supplies', '📎', '#868e96', 'expense', 39),
-  ('business_equipment','Business - Equipment', '🖥️', '#495057', 'expense', 40),
-  ('business_shipping','Business - Shipping', '📦', '#fd7e14', 'expense', 41),
-  ('business_contractors','Business - Contractors', '🧑‍💻', '#20c997', 'expense', 42),
-  ('business_payroll','Business - Payroll', '💵', '#40c057', 'expense', 43),
-  ('business_professional','Business - Legal & Accounting', '⚖️', '#845ef7', 'expense', 44),
-  ('business_insurance','Business - Insurance', '🛡️', '#be4bdb', 'expense', 45),
-  ('business_travel', 'Business - Travel',  '✈️', '#22b8cf', 'expense', 46),
-  ('business_meals',  'Business - Meals',   '🍽️', '#f06595', 'expense', 47),
-  ('business_fees',   'Business - Fees & Licenses', '🧾', '#adb5bd', 'expense', 48),
-  ('business_other',  'Business - Other',   '🏪', '#f59f00', 'expense', 49),
+  ('business_expense', 'Business',           '🏪', '#f59f00', 'expense', 36),
   ('other_expense',   'Others',             '📦', '#adb5bd', 'expense', 99),
   ('paycheck',        'Paycheck',           '💰', '#4c6ef5', 'income',   1),
   ('w2',              'W-2 Salary',         '💼', '#5c7cfa', 'income',   2),
