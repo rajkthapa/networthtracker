@@ -1,8 +1,9 @@
 'use client';
 
-import { DollarSign, PiggyBank, CreditCard, ArrowUpRight, ArrowDownRight, ChevronDown, Receipt } from 'lucide-react';
+import { DollarSign, PiggyBank, CreditCard, ArrowUpRight, ArrowDownRight, ChevronDown, Receipt, Droplets } from 'lucide-react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { useApp } from '@/lib/store';
-import { formatCurrency, formatPercent } from '@/lib/utils';
+import { formatCurrency, formatPercent, LIQUID_ACCOUNT_TYPES } from '@/lib/utils';
 import { NetWorthChart } from '@/components/charts/NetWorthChart';
 import { IncomeExpenseChart } from '@/components/charts/IncomeExpenseChart';
 import { CategoryPieChart } from '@/components/charts/CategoryPieChart';
@@ -11,6 +12,12 @@ import { CumulativeChart } from '@/components/charts/CumulativeChart';
 import { YearComparisonChart } from '@/components/charts/YearComparisonChart';
 import { MonthlyNetCashFlowChart } from '@/components/charts/MonthlyNetCashFlowChart';
 import { Delta } from '@/components/ui/Delta';
+
+function formatSmallCurrency(amount: number): string {
+  if (amount === 0) return '$0.00';
+  if (Math.abs(amount) < 1) return `$${amount.toFixed(4)}`;
+  return formatCurrency(amount);
+}
 
 function MonthSelector() {
   const { selectedMonth, setSelectedMonth, availableMonths } = useApp();
@@ -194,28 +201,134 @@ function AccountsSummary() {
   );
 }
 
+function LiquidNetWorthSection() {
+  const { accounts, totalLiquidAssets, liquidNetWorth, totalCryptoValue } = useApp();
+
+  const liquidAccounts = accounts
+    .filter(a => !a.isDebt && LIQUID_ACCOUNT_TYPES.includes(a.type))
+    .map(a => ({ id: a.id, name: a.name, value: a.balance, color: a.color, icon: a.icon }));
+
+  const items = [
+    ...liquidAccounts,
+    ...(totalCryptoValue > 0 ? [{ id: 'crypto', name: 'Crypto Holdings', value: totalCryptoValue, color: '#f7931a', icon: '₿' }] : []),
+  ]
+    .filter(i => i.value > 0)
+    .sort((a, b) => b.value - a.value);
+
+  if (items.length === 0) return null;
+
+  return (
+    <div className="chart-container">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="section-header flex items-center gap-2">
+          <Droplets className="w-5 h-5 text-[var(--text-teal)]" />
+          Liquid Net Worth
+        </h3>
+        <a href="/accounts" className="text-sm text-[var(--text-accent)] font-medium hover:opacity-80">View accounts</a>
+      </div>
+      <div className="flex flex-wrap items-baseline gap-x-8 gap-y-1 mb-4">
+        <div>
+          <p className="stat-label">Liquid Assets</p>
+          <p className="text-3xl font-bold text-[var(--text-teal)] num">{formatCurrency(totalLiquidAssets)}</p>
+        </div>
+        <div>
+          <p className="stat-label">Liquid Net Worth (after debts)</p>
+          <p className="text-lg font-semibold text-th-heading num">{formatCurrency(liquidNetWorth)}</p>
+        </div>
+      </div>
+      <div className="flex flex-col lg:flex-row items-center gap-4">
+        <ResponsiveContainer width="100%" height={240}>
+          <PieChart>
+            <Pie data={items} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={55} outerRadius={95} paddingAngle={3} strokeWidth={0}>
+              {items.map((entry, i) => (
+                <Cell key={i} fill={entry.color} />
+              ))}
+            </Pie>
+            <Tooltip formatter={(v: any) => formatCurrency(v)} />
+          </PieChart>
+        </ResponsiveContainer>
+        <div className="w-full lg:w-auto lg:max-w-[280px] min-w-0 space-y-1 max-h-60 overflow-y-auto scrollbar-hide">
+          {items.map(item => (
+            <div key={item.id} className="flex items-center gap-2 text-sm w-full px-2 py-1.5 rounded-lg">
+              <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }} />
+              <span className="text-th-body text-xs flex-shrink-0">{item.icon}</span>
+              <span className="text-th-heading font-medium text-xs truncate min-w-0">{item.name}</span>
+              <span className="text-th-heading text-xs ml-auto pl-3 font-semibold num flex-shrink-0">{formatCurrency(item.value)}</span>
+              <span className="text-th-faint text-[10px] w-10 text-right flex-shrink-0">
+                {totalLiquidAssets > 0 ? ((item.value / totalLiquidAssets) * 100).toFixed(1) : 0}%
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function DividendTracker() {
-  const { totalDividends, monthlyAvgDividend, dividendMonths } = useApp();
-  if (totalDividends === 0) return null;
+  const {
+    totalDividends, monthlyAvgDividend, dividendMonths,
+    projectedAnnualDividendIncome, projectedMonthlyDividendIncome, projectedDailyDividendIncome, projectedHourlyDividendIncome,
+    dividendByHolding,
+  } = useApp();
+  const hasHistorical = totalDividends > 0;
+  const hasProjected = projectedAnnualDividendIncome > 0;
+  if (!hasHistorical && !hasProjected) return null;
 
   return (
     <div className="chart-container">
       <h3 className="section-header mb-3">Dividend Income</h3>
-      <div className="space-y-3">
-        <div>
-          <p className="stat-label">Total Dividends ({dividendMonths} quarters)</p>
-          <p className="text-2xl font-bold text-[var(--text-positive)] num">{formatCurrency(totalDividends)}</p>
-        </div>
-        <div className="flex gap-4">
+      <div className="space-y-4">
+        {hasProjected && (
           <div>
-            <p className="stat-label">Quarterly Avg</p>
-            <p className="text-lg font-bold text-th-heading num">{formatCurrency(monthlyAvgDividend)}</p>
+            <p className="stat-label mb-2">Projected From Holdings</p>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="p-2.5 rounded-xl bg-[var(--bg-positive-subtle)]">
+                <p className="text-[10px] text-th-faint uppercase font-semibold">Yearly</p>
+                <p className="text-sm font-bold text-[var(--text-positive)] num">{formatCurrency(projectedAnnualDividendIncome)}</p>
+              </div>
+              <div className="p-2.5 rounded-xl bg-[var(--bg-hover)]">
+                <p className="text-[10px] text-th-faint uppercase font-semibold">Monthly</p>
+                <p className="text-sm font-bold text-th-heading num">{formatCurrency(projectedMonthlyDividendIncome)}</p>
+              </div>
+              <div className="p-2.5 rounded-xl bg-[var(--bg-hover)]">
+                <p className="text-[10px] text-th-faint uppercase font-semibold">Daily</p>
+                <p className="text-sm font-bold text-th-heading num">{formatSmallCurrency(projectedDailyDividendIncome)}</p>
+              </div>
+              <div className="p-2.5 rounded-xl bg-[var(--bg-hover)]">
+                <p className="text-[10px] text-th-faint uppercase font-semibold">Hourly</p>
+                <p className="text-sm font-bold text-th-heading num">{formatSmallCurrency(projectedHourlyDividendIncome)}</p>
+              </div>
+            </div>
+            {dividendByHolding.length > 0 && (
+              <div className="mt-3 space-y-1.5">
+                {dividendByHolding.slice(0, 5).map(h => (
+                  <div key={h.ticker} className="flex items-center justify-between text-xs gap-2">
+                    <span className="text-th-body font-medium">{h.ticker}</span>
+                    <span className="text-th-faint">{h.yieldPercent.toFixed(2)}% yield</span>
+                    <span className="text-th-heading font-semibold num">{formatCurrency(h.annualIncome)}/yr</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-          <div>
-            <p className="stat-label">Projected Annual</p>
-            <p className="text-lg font-bold text-th-heading num">{formatCurrency(monthlyAvgDividend * 4)}</p>
+        )}
+        {hasHistorical && (
+          <div className={hasProjected ? 'pt-3 border-t border-[var(--border-color)]' : ''}>
+            <p className="stat-label">Total Received ({dividendMonths} quarters)</p>
+            <p className="text-2xl font-bold text-[var(--text-positive)] num">{formatCurrency(totalDividends)}</p>
+            <div className="flex gap-4 mt-2">
+              <div>
+                <p className="stat-label">Quarterly Avg</p>
+                <p className="text-lg font-bold text-th-heading num">{formatCurrency(monthlyAvgDividend)}</p>
+              </div>
+              <div>
+                <p className="stat-label">Projected Annual</p>
+                <p className="text-lg font-bold text-th-heading num">{formatCurrency(monthlyAvgDividend * 4)}</p>
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
@@ -345,6 +458,9 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* Liquid Net Worth */}
+      <LiquidNetWorthSection />
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

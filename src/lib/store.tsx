@@ -97,6 +97,15 @@ interface AppState {
   monthlyAvgDividend: number;
   dividendMonths: number;
 
+  // Live projected dividend income from stock holdings (dividend yield API)
+  dividendYields: Record<string, { annualDividendPerShare: number; yieldPercent: number }>;
+  refreshDividendYields: () => Promise<void>;
+  projectedAnnualDividendIncome: number;
+  projectedMonthlyDividendIncome: number;
+  projectedDailyDividendIncome: number;
+  projectedHourlyDividendIncome: number;
+  dividendByHolding: { ticker: string; name: string; shares: number; annualDividendPerShare: number; yieldPercent: number; annualIncome: number }[];
+
   getCategoryHistory: (category: string) => { month: string; label: string; amount: number }[];
 
   // Account snapshots (month-over-month balances)
@@ -220,6 +229,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [userCategories, setUserCategories] = useState<Category[]>([]);
   const [hiddenCategoryIds, setHiddenCategoryIds] = useState<string[]>([]);
   const [selectedMonth, setSelectedMonth] = useState(getCurrentMonth());
+  const [dividendYields, setDividendYields] = useState<Record<string, { annualDividendPerShare: number; yieldPercent: number }>>({});
 
   // === Fetch all data when user changes ===
   useEffect(() => {
@@ -310,6 +320,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
                   }));
                 }
               })
+          );
+          promises.push(
+            fetch(`/api/dividends?symbols=${tickers.join(',')}`)
+              .then(r => r.json())
+              .then(({ dividends }) => {
+                if (dividends) setDividendYields(prev => ({ ...prev, ...dividends }));
+              })
+              .catch(err => console.error('Failed to fetch dividend yields:', err))
           );
         }
         if (cryptoHoldings.length > 0) {
@@ -647,13 +665,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setPricesLoading(false);
   }, [cryptoHoldings, updateCryptoHolding]);
 
+  const refreshDividendYields = useCallback(async () => {
+    if (stockHoldings.length === 0) return;
+    try {
+      const tickers = Array.from(new Set(stockHoldings.map(h => h.ticker)));
+      const res = await fetch(`/api/dividends?symbols=${tickers.join(',')}`);
+      const { dividends } = await res.json();
+      if (dividends) setDividendYields(prev => ({ ...prev, ...dividends }));
+    } catch (err) {
+      console.error('Failed to refresh dividend yields:', err);
+    }
+  }, [stockHoldings]);
+
   const refreshStockPrices = useCallback(async () => {
     if (stockHoldings.length === 0) return;
     setPricesLoading(true);
     try {
       const tickers = Array.from(new Set(stockHoldings.map(h => h.ticker)));
-      const res = await fetch(`/api/prices?type=stock&symbols=${tickers.join(',')}`);
-      const { prices } = await res.json();
+      const [priceRes] = await Promise.all([
+        fetch(`/api/prices?type=stock&symbols=${tickers.join(',')}`),
+        refreshDividendYields(),
+      ]);
+      const { prices } = await priceRes.json();
       if (prices) {
         for (const holding of stockHoldings) {
           const p = prices[holding.ticker];
@@ -666,7 +699,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       console.error('Failed to refresh stock prices:', err);
     }
     setPricesLoading(false);
-  }, [stockHoldings, updateStockHolding]);
+  }, [stockHoldings, updateStockHolding, refreshDividendYields]);
 
   // === Computed ===
   const totalCryptoValue = useMemo(() => cryptoHoldings.reduce((s, h) => s + h.quantity * h.currentPrice, 0), [cryptoHoldings]);
@@ -788,6 +821,33 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return { totalDividends: total, monthlyAvgDividend: total / numMonths, dividendMonths: numMonths };
   }, [transactions]);
 
+  // === Live projected dividend income (from stock holdings + dividend yield API) ===
+  const dividendByHolding = useMemo(() => {
+    return stockHoldings
+      .map(h => {
+        const d = dividendYields[h.ticker];
+        if (!d || d.annualDividendPerShare <= 0) return null;
+        return {
+          ticker: h.ticker,
+          name: h.name,
+          shares: h.shares,
+          annualDividendPerShare: d.annualDividendPerShare,
+          yieldPercent: d.yieldPercent,
+          annualIncome: h.shares * d.annualDividendPerShare,
+        };
+      })
+      .filter((x): x is NonNullable<typeof x> => x !== null)
+      .sort((a, b) => b.annualIncome - a.annualIncome);
+  }, [stockHoldings, dividendYields]);
+
+  const projectedAnnualDividendIncome = useMemo(() =>
+    dividendByHolding.reduce((s, h) => s + h.annualIncome, 0),
+    [dividendByHolding]
+  );
+  const projectedMonthlyDividendIncome = projectedAnnualDividendIncome / 12;
+  const projectedDailyDividendIncome = projectedAnnualDividendIncome / 365;
+  const projectedHourlyDividendIncome = projectedAnnualDividendIncome / (365 * 24);
+
   return (
     <AppContext.Provider value={{
       loading,
@@ -809,6 +869,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       incomeChange, expenseChange, savingsChange,
       monthlyData, getCategoryBreakdown, getMonthTotals,
       totalDividends, monthlyAvgDividend, dividendMonths, getCategoryHistory,
+      dividendYields, refreshDividendYields,
+      projectedAnnualDividendIncome, projectedMonthlyDividendIncome, projectedDailyDividendIncome, projectedHourlyDividendIncome, dividendByHolding,
       accountSnapshots, upsertAccountSnapshot, getAccountBalanceForMonth, snapshotMonths,
     }}>
       {children}
