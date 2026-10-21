@@ -20,55 +20,90 @@ async function recordPriceHistory(entries: { symbol: string; assetType: 'crypto'
 }
 
 // CoinGecko free API for crypto prices
-async function fetchCryptoPrices(symbols: string[]): Promise<Record<string, { price: number; change24h: number }>> {
-  const result: Record<string, { price: number; change24h: number }> = {};
 
-  // Cached CoinGecko symbol -> id map (uppercased symbols)
-  let COINGECKO_SYMBOL_MAP: Record<string, string> | null = null;
-  let COINGECKO_MAP_TS = 0;
-  const COINGECKO_MAP_TTL = 24 * 60 * 60 * 1000; // 24 hours
+// Preferred ids for symbols CoinGecko shares across many tokens
+const COINGECKO_OVERRIDES: Record<string, string> = {
+  BTC: 'bitcoin', ETH: 'ethereum', BNB: 'binancecoin', SOL: 'solana', ADA: 'cardano',
+  LINK: 'chainlink', DOT: 'polkadot', DOGE: 'dogecoin', XRP: 'ripple',
+  AVAX: 'avalanche-2', MATIC: 'matic-network', ATOM: 'cosmos',
+  UNI: 'uniswap', AAVE: 'aave', LTC: 'litecoin', NEAR: 'near', CRO: 'crypto-com-chain',
+  APT: 'aptos', SUI: 'sui', ARB: 'arbitrum', OP: 'optimism',
+  FIL: 'filecoin', ALGO: 'algorand', HBAR: 'hedera-hashgraph', USDC: 'usd-coin', USDT: 'tether',
+  ORCA: 'orca', RENDER: 'render-token', PEPE: 'pepe', SHIB: 'shiba-inu', FLOKI: 'floki', BONK: 'bonk',
+  ROSE: 'oasis-network', MANA: 'decentraland', MON: 'monad',
+};
 
-  async function getCoingeckoSymbolMap(): Promise<Record<string, string>> {
-    if (COINGECKO_SYMBOL_MAP && (Date.now() - COINGECKO_MAP_TS) < COINGECKO_MAP_TTL) {
-      return COINGECKO_SYMBOL_MAP;
-    }
-    try {
-      const res = await fetch('https://api.coingecko.com/api/v3/coins/list', { next: { revalidate: 86400 } });
-      const list = await res.json();
-      const map: Record<string, string> = {};
-      if (Array.isArray(list)) {
-        for (const c of list) {
-          if (c && c.symbol && c.id) {
-            map[(c.symbol || '').toUpperCase()] = c.id;
-          }
+// Cached CoinGecko symbol -> candidate ids (uppercased symbols)
+let COINGECKO_SYMBOL_MAP: Record<string, string[]> | null = null;
+let COINGECKO_MAP_TS = 0;
+const COINGECKO_MAP_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
+async function getCoingeckoSymbolMap(): Promise<Record<string, string[]>> {
+  if (COINGECKO_SYMBOL_MAP && (Date.now() - COINGECKO_MAP_TS) < COINGECKO_MAP_TTL) {
+    return COINGECKO_SYMBOL_MAP;
+  }
+  try {
+    const res = await fetch('https://api.coingecko.com/api/v3/coins/list', { next: { revalidate: 86400 } });
+    const list = await res.json();
+    const map: Record<string, string[]> = {};
+    if (Array.isArray(list)) {
+      for (const c of list) {
+        if (c && c.symbol && c.id) {
+          (map[c.symbol.toUpperCase()] ||= []).push(c.id);
         }
       }
-      // Add some reliable overrides (preferred ids / fix collisions)
-      Object.assign(map, {
-        BTC: 'bitcoin', ETH: 'ethereum', BNB: 'binancecoin', SOL: 'solana', ADA: 'cardano',
-        MATIC: 'matic-network', AVAX: 'avalanche-2', AAVE: 'aave', NEAR: 'near', CRO: 'crypto-com-chain',
-        USDC: 'usd-coin', USDT: 'tether', ORCA: 'orca', RENDER: 'render-token',
-        PEPE: 'pepe', DOGE: 'dogecoin', SHIB: 'shiba-inu', FLOKI: 'floki', BONK: 'bonk',
-      });
-      COINGECKO_SYMBOL_MAP = map;
-      COINGECKO_MAP_TS = Date.now();
-      return map;
+    }
+    if (Object.keys(map).length === 0) throw new Error('Empty CoinGecko coin list');
+    COINGECKO_SYMBOL_MAP = map;
+    COINGECKO_MAP_TS = Date.now();
+    return map;
+  } catch (err) {
+    console.error('Failed fetching CoinGecko coin list:', err);
+    return {};
+  }
+}
+
+// Resolve each symbol to one id: override first, else the candidate with the largest market cap
+async function resolveCoingeckoIds(symbols: string[]): Promise<Record<string, string>> {
+  const map = await getCoingeckoSymbolMap();
+  const resolved: Record<string, string> = {};
+  const ambiguous: Record<string, string[]> = {};
+
+  for (const raw of symbols) {
+    const symbol = raw.toUpperCase();
+    const candidates = map[symbol] || [];
+    if (COINGECKO_OVERRIDES[symbol]) resolved[symbol] = COINGECKO_OVERRIDES[symbol];
+    else if (candidates.length === 1) resolved[symbol] = candidates[0];
+    else if (candidates.length > 1) ambiguous[symbol] = candidates;
+  }
+
+  const candidateIds = Object.values(ambiguous).flat();
+  if (candidateIds.length > 0) {
+    try {
+      const res = await fetch(
+        `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${candidateIds.join(',')}&per_page=250`,
+        { next: { revalidate: 86400 } }
+      );
+      if (!res.ok) throw new Error(`CoinGecko markets error: ${res.status}`);
+      const markets: { id: string; market_cap: number | null }[] = await res.json();
+      const caps = new Map(markets.map(m => [m.id, m.market_cap || 0]));
+      for (const [symbol, ids] of Object.entries(ambiguous)) {
+        resolved[symbol] = ids.reduce((best, id) => ((caps.get(id) || 0) > (caps.get(best) || 0) ? id : best), ids[0]);
+      }
     } catch (err) {
-      console.error('Failed fetching CoinGecko coin list:', err);
-      // Fallback to minimal static map
-      return {
-        BTC: 'bitcoin', ETH: 'ethereum', BNB: 'binancecoin', SOL: 'solana', ADA: 'cardano',
-        LINK: 'chainlink', DOT: 'polkadot', DOGE: 'dogecoin', XRP: 'ripple',
-        AVAX: 'avalanche-2', MATIC: 'matic-network', ATOM: 'cosmos',
-        UNI: 'uniswap', AAVE: 'aave', LTC: 'litecoin', NEAR: 'near', CRO: 'crypto-com-chain',
-        APT: 'aptos', SUI: 'sui', ARB: 'arbitrum', OP: 'optimism',
-        FIL: 'filecoin', ALGO: 'algorand', HBAR: 'hedera-hashgraph', USDC: 'usd-coin', USDT: 'tether',
-      };
+      console.error('CoinGecko market cap lookup failed:', err);
+      for (const [symbol, ids] of Object.entries(ambiguous)) resolved[symbol] = ids[0];
     }
   }
 
-  const map = await getCoingeckoSymbolMap();
-  const ids = symbols.map(s => map[s.toUpperCase()]).filter(Boolean);
+  return resolved;
+}
+
+async function fetchCryptoPrices(symbols: string[]): Promise<Record<string, { price: number; change24h: number }>> {
+  const result: Record<string, { price: number; change24h: number }> = {};
+
+  const map = await resolveCoingeckoIds(symbols);
+  const ids = Array.from(new Set(Object.values(map)));
   if (ids.length === 0) return result;
 
   try {
