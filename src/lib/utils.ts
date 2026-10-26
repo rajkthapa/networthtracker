@@ -73,8 +73,7 @@ export const EXPENSE_CATEGORIES = [
 ];
 
 export const INCOME_CATEGORIES = [
-  { id: 'paycheck', name: 'Paycheck', icon: '💰', color: '#4c6ef5' },
-  { id: 'w2', name: 'W-2 Salary', icon: '💼', color: '#5c7cfa' },
+  { id: 'w2', name: 'Salary / Paycheck', icon: '💼', color: '#4c6ef5' },
   { id: 'freelance', name: 'Freelance', icon: '💻', color: '#7950f2' },
   { id: 'business', name: 'Business Income', icon: '🏪', color: '#f59f00' },
   { id: 'dividend', name: 'Dividend Income', icon: '📈', color: '#40c057' },

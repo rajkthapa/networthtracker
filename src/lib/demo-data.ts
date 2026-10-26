@@ -38,7 +38,7 @@ const generateTransactions = (): Transaction[] => {
     const v = variances[mi];
 
     // === INCOME ===
-    // W-2 Salary (bi-monthly)
+    // Salary / Paycheck (bi-monthly)
     txns.push({ id: `inc-${mi}-1`, date: `${month}-01`, description: 'Salary Direct Deposit', amount: 7500, type: 'income', category: 'w2', createdAt: `${month}-01` });
     txns.push({ id: `inc-${mi}-2`, date: `${month}-15`, description: 'Salary Direct Deposit', amount: 7500, type: 'income', category: 'w2', createdAt: `${month}-15` });
 
