@@ -1,10 +1,13 @@
 'use client';
 
-import { useMemo } from 'react';
-import { X, TrendingUp, TrendingDown } from 'lucide-react';
+import { useMemo, useState, useEffect } from 'react';
+import { X, TrendingUp, TrendingDown, Pencil } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { useApp } from '@/lib/store';
 import { formatCurrency } from '@/lib/utils';
+import { MonthRange, Transaction } from '@/lib/types';
+import { inRange, monthLabel, rangeLabel, clickedIndex } from '@/lib/periods';
+import { EditTransactionModal } from '@/components/modals/EditTransactionModal';
 
 interface Props {
   category: string;
@@ -12,12 +15,22 @@ interface Props {
   icon: string;
   color: string;
   type: 'income' | 'expense';
+  /** Period the user was looking at when they opened this; its transactions are listed by default. */
+  range?: MonthRange;
   onClose: () => void;
 }
 
-export function CategoryDrilldownModal({ category, name, icon, color, type, onClose }: Props) {
+export function CategoryDrilldownModal({ category, name, icon, color, type, range, onClose }: Props) {
   const { getCategoryHistory, transactions } = useApp();
   const history = getCategoryHistory(category);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [editing, setEditing] = useState<Transaction | null>(null);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape' && !editing) onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose, editing]);
 
   const stats = useMemo(() => {
     const amounts = history.map(h => h.amount).filter(a => a > 0);
@@ -38,13 +51,15 @@ export function CategoryDrilldownModal({ category, name, icon, color, type, onCl
     return { total, avg, max, min, maxMonth, minMonth, trendPercent, monthCount: amounts.length };
   }, [history]);
 
-  // Recent transactions in this category
-  const recentTxns = useMemo(() => {
+  // Clicked bar month → that month; otherwise the period the user came from; otherwise all time
+  const listRange: MonthRange | null = selected ? { from: selected, to: selected } : range || null;
+  const listTxns = useMemo(() => {
     return transactions
-      .filter(t => t.category === category)
-      .sort((a, b) => b.date.localeCompare(a.date))
-      .slice(0, 10);
-  }, [transactions, category]);
+      .filter(t => t.category === category && (!listRange || inRange(t.date, listRange)))
+      .sort((a, b) => b.date.localeCompare(a.date));
+  }, [transactions, category, listRange?.from, listRange?.to]); // eslint-disable-line react-hooks/exhaustive-deps
+  const listTotal = listTxns.reduce((s, t) => s + t.amount, 0);
+  const sign = type === 'income' ? '+' : '-';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -77,17 +92,17 @@ export function CategoryDrilldownModal({ category, name, icon, color, type, onCl
               <p className="text-lg font-bold text-th-heading num">{formatCurrency(stats.total)}</p>
             </div>
             <div className="stat-card border-l-4 border-primary-500">
-              <p className="stat-label">Monthly Avg</p>
+              <p className="stat-label">Avg / Active Month</p>
               <p className="text-lg font-bold text-[var(--text-accent)] num">{formatCurrency(stats.avg)}</p>
             </div>
-            <div className="stat-card border-l-4 border-danger-500">
+            <div className={`stat-card border-l-4 ${type === 'income' ? 'border-success-500' : 'border-danger-500'}`}>
               <p className="stat-label">Highest</p>
-              <p className="text-lg font-bold text-[var(--text-negative)] num">{formatCurrency(stats.max)}</p>
+              <p className={`text-lg font-bold num ${type === 'income' ? 'text-[var(--text-positive)]' : 'text-[var(--text-negative)]'}`}>{formatCurrency(stats.max)}</p>
               {stats.maxMonth && <p className="text-[10px] text-th-faint mt-0.5">{stats.maxMonth.label}</p>}
             </div>
-            <div className="stat-card border-l-4 border-success-500">
+            <div className={`stat-card border-l-4 ${type === 'income' ? 'border-danger-500' : 'border-success-500'}`}>
               <p className="stat-label">Lowest</p>
-              <p className="text-lg font-bold text-[var(--text-positive)] num">{formatCurrency(stats.min)}</p>
+              <p className={`text-lg font-bold num ${type === 'income' ? 'text-[var(--text-negative)]' : 'text-[var(--text-positive)]'}`}>{formatCurrency(stats.min)}</p>
               {stats.minMonth && <p className="text-[10px] text-th-faint mt-0.5">{stats.minMonth.label}</p>}
             </div>
           </div>
@@ -114,14 +129,27 @@ export function CategoryDrilldownModal({ category, name, icon, color, type, onCl
 
           {/* Bar Chart */}
           <div>
-            <h3 className="section-header mb-3">Monthly Spending</h3>
+            <div className="flex items-baseline justify-between mb-3">
+              <h3 className="section-header">{type === 'income' ? 'Monthly Income' : 'Monthly Spending'}</h3>
+              <span className="text-[11px] text-th-faint">Click a bar to see that month</span>
+            </div>
             {history.length > 0 ? (
               <ResponsiveContainer width="100%" height={260}>
-                <BarChart data={history} barSize={history.length > 12 ? undefined : 32}>
+                <BarChart
+                  data={history}
+                  barSize={history.length > 12 ? undefined : 32}
+                  style={{ cursor: 'pointer' }}
+                  onClick={(state: any) => {
+                    const i = clickedIndex(state);
+                    if (i === null || !history[i]) return;
+                    setSelected(prev => (prev === history[i].month ? null : history[i].month));
+                  }}
+                >
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} />
                   <XAxis dataKey="label" stroke="var(--chart-axis)" fontSize={11} tickLine={false} axisLine={false} />
                   <YAxis stroke="var(--chart-axis)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => formatCurrency(v, true)} />
                   <Tooltip
+                    cursor={{ fill: 'var(--bg-hover)' }}
                     content={({ active, payload }) => {
                       if (!active || !payload?.length) return null;
                       const d = payload[0].payload;
@@ -135,7 +163,11 @@ export function CategoryDrilldownModal({ category, name, icon, color, type, onCl
                   />
                   <Bar dataKey="amount" radius={[6, 6, 0, 0]}>
                     {history.map((entry, i) => (
-                      <Cell key={i} fill={entry.amount > 0 ? color : 'rgba(255,255,255,0.04)'} fillOpacity={entry.amount > 0 ? 0.85 : 0.3} />
+                      <Cell
+                        key={i}
+                        fill={entry.amount > 0 ? color : 'rgba(255,255,255,0.04)'}
+                        fillOpacity={entry.amount <= 0 ? 0.3 : !selected || selected === entry.month ? 0.9 : 0.35}
+                      />
                     ))}
                   </Bar>
                 </BarChart>
@@ -145,27 +177,51 @@ export function CategoryDrilldownModal({ category, name, icon, color, type, onCl
             )}
           </div>
 
-          {/* Recent Transactions */}
-          {recentTxns.length > 0 && (
-            <div>
-              <h3 className="section-header mb-3">Recent Transactions</h3>
-              <div className="space-y-2">
-                {recentTxns.map(txn => (
-                  <div key={txn.id} className="flex items-center justify-between p-3 rounded-xl bg-[var(--bg-subtle)]">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-th-heading truncate">{txn.description}</p>
-                      <p className="text-xs text-th-faint">{txn.date}</p>
-                    </div>
-                    <p className={`text-sm font-bold num ml-3 ${type === 'income' ? 'text-[var(--text-positive)]' : 'text-[var(--text-negative)]'}`}>
-                      {type === 'income' ? '+' : '-'}{formatCurrency(txn.amount)}
-                    </p>
-                  </div>
-                ))}
+          {/* Transactions for the clicked month / incoming period */}
+          <div>
+            <div className="flex items-center justify-between mb-3 gap-2">
+              <h3 className="section-header">
+                {listRange ? rangeLabel(listRange) : 'All transactions'}
+              </h3>
+              <div className="flex items-center gap-3">
+                {listTxns.length > 0 && (
+                  <span className={`text-sm font-bold num ${type === 'income' ? 'text-[var(--text-positive)]' : 'text-[var(--text-negative)]'}`}>
+                    {sign}{formatCurrency(listTotal)} · {listTxns.length}
+                  </span>
+                )}
+                {selected && (
+                  <button onClick={() => setSelected(null)} className="text-xs text-[var(--text-accent)] font-medium hover:opacity-80">
+                    {range ? 'Back to period' : 'Show all'}
+                  </button>
+                )}
               </div>
             </div>
-          )}
+            {listTxns.length === 0 ? (
+              <p className="text-sm text-th-faint text-center py-6">No {name} transactions in {selected ? monthLabel(selected, true) : 'this period'}</p>
+            ) : (
+              <div className="space-y-2">
+                {listTxns.map(txn => (
+                  <button
+                    key={txn.id}
+                    onClick={() => setEditing(txn)}
+                    className="w-full flex items-center justify-between p-3 rounded-xl bg-[var(--bg-subtle)] hover:bg-[var(--bg-hover)] transition-colors text-left group"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-th-heading truncate">{txn.description}</p>
+                      <p className="text-xs text-th-faint">{txn.date}{txn.notes ? ` · ${txn.notes}` : ''}</p>
+                    </div>
+                    <p className={`text-sm font-bold num ml-3 ${type === 'income' ? 'text-[var(--text-positive)]' : 'text-[var(--text-negative)]'}`}>
+                      {sign}{formatCurrency(txn.amount)}
+                    </p>
+                    <Pencil className="w-3.5 h-3.5 ml-2 text-th-faint opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
+      {editing && <EditTransactionModal transaction={editing} onClose={() => setEditing(null)} />}
     </div>
   );
 }

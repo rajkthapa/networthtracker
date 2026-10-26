@@ -391,3 +391,11 @@
   background: #ffffff;
   color: #18181b;
 }
+
+/* Clickable charts: no browser focus ring on the SVG after a drill-down click */
+.recharts-wrapper:focus,
+.recharts-wrapper:focus-visible,
+.recharts-surface:focus,
+.recharts-surface:focus-visible {
+  outline: none;
+}

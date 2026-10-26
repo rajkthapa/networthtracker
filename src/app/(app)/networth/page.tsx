@@ -3,10 +3,13 @@
 import { useApp } from '@/lib/store';
 import { formatCurrency, formatPercent } from '@/lib/utils';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend, Cell } from 'recharts';
-import { ArrowUpRight, Calendar, Target, TrendingUp } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Calendar, Target, TrendingUp } from 'lucide-react';
+import { useDrilldown } from '@/lib/drilldown-context';
+import { clickedIndex, singleMonth } from '@/lib/periods';
 
 export default function NetWorthPage() {
   const { netWorthHistory, totalAssets, totalDebts, netWorth, totalLiquidAssets, accounts, monthlyData } = useApp();
+  const { openTransactions, openNetWorthMonth } = useDrilldown();
 
   // Safety: ensure we have at least 2 data points
   const hasHistory = netWorthHistory.length >= 2;
@@ -57,7 +60,9 @@ export default function NetWorthPage() {
             {hasHistory && (
               <>
                 <div className="flex items-center gap-2 bg-[var(--hero-badge-bg)] backdrop-blur-sm rounded-xl px-4 py-2">
-                  <ArrowUpRight className="w-4 h-4 text-success-300" />
+                  {monthlyChange >= 0
+                    ? <ArrowUpRight className="w-4 h-4 text-success-300" />
+                    : <ArrowDownRight className="w-4 h-4 text-danger-300" />}
                   <span className="text-sm font-semibold">{formatCurrency(monthlyChange)} this month</span>
                   <span className="text-xs text-white/60">({formatPercent(monthlyChangePercent)})</span>
                 </div>
@@ -94,7 +99,10 @@ export default function NetWorthPage() {
 
       {/* Net Worth History Chart */}
       <div className="chart-container">
-        <h3 className="section-header mb-4">Net Worth History</h3>
+        <div className="flex items-baseline justify-between mb-4">
+          <h3 className="section-header">Net Worth History</h3>
+          {netWorthHistory.length > 0 && <span className="text-[11px] text-th-faint">Click a month for account balances</span>}
+        </div>
         {netWorthHistory.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <TrendingUp className="w-12 h-12 text-th-faint mb-3" />
@@ -103,7 +111,14 @@ export default function NetWorthPage() {
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={400}>
-            <AreaChart data={netWorthHistory}>
+            <AreaChart
+              data={netWorthHistory}
+              style={{ cursor: 'pointer' }}
+              onClick={(state: any) => {
+                const i = clickedIndex(state);
+                if (i !== null && netWorthHistory[i]) openNetWorthMonth(netWorthHistory[i].date);
+              }}
+            >
               <defs>
                 <linearGradient id="nwFill" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.3} />
@@ -142,11 +157,18 @@ export default function NetWorthPage() {
             </div>
           ) : (
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={yoyData}>
+              <BarChart
+                data={yoyData}
+                style={{ cursor: 'pointer' }}
+                onClick={(state: any) => {
+                  const i = clickedIndex(state);
+                  if (i !== null && yoyData[i]) openNetWorthMonth(yoyData[i].date);
+                }}
+              >
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} />
                 <XAxis dataKey="date" stroke="var(--chart-axis)" fontSize={11} tickLine={false} />
                 <YAxis stroke="var(--chart-axis)" fontSize={12} tickLine={false} tickFormatter={(v) => formatCurrency(v, true)} />
-                <Tooltip formatter={(value: any) => formatCurrency(value)} />
+                <Tooltip cursor={{ fill: 'var(--bg-hover)' }} formatter={(value: any) => formatCurrency(value)} />
                 <Bar dataKey="change" radius={[6, 6, 0, 0]}>
                   {yoyData.map((entry, i) => (
                     <Cell key={i} fill={entry.change >= 0 ? '#10b981' : '#ef4444'} />
@@ -179,11 +201,19 @@ export default function NetWorthPage() {
       <div className="chart-container">
         <h3 className="section-header mb-4">Income vs Expenses (from Transactions)</h3>
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={monthlyData} barGap={4}>
+          <BarChart
+            data={monthlyData}
+            barGap={4}
+            style={{ cursor: 'pointer' }}
+            onClick={(state: any) => {
+              const i = clickedIndex(state);
+              if (i !== null && monthlyData[i]) openTransactions({ range: singleMonth(monthlyData[i].key) });
+            }}
+          >
             <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} />
             <XAxis dataKey="month" stroke="var(--chart-axis)" fontSize={11} tickLine={false} />
             <YAxis stroke="var(--chart-axis)" fontSize={12} tickLine={false} tickFormatter={(v) => formatCurrency(v, true)} />
-            <Tooltip formatter={(value: any, name: any) => [formatCurrency(value), name]} />
+            <Tooltip cursor={{ fill: 'var(--bg-hover)' }} formatter={(value: any, name: any) => [formatCurrency(value), name]} />
             <Legend />
             <Bar dataKey="income" fill="#10b981" radius={[6, 6, 0, 0]} name="Income" />
             <Bar dataKey="expenses" fill="#ef4444" radius={[6, 6, 0, 0]} name="Expenses" />

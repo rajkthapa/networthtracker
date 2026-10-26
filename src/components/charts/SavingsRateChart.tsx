@@ -3,9 +3,12 @@
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useApp } from '@/lib/store';
 import { PiggyBank } from 'lucide-react';
+import { useDrilldown } from '@/lib/drilldown-context';
+import { clickedIndex, singleMonth } from '@/lib/periods';
 
 export function SavingsRateChart({ height = 250 }: { height?: number }) {
   const { monthlyData } = useApp();
+  const { openTransactions } = useDrilldown();
 
   if (monthlyData.length === 0) {
     return (
@@ -26,7 +29,14 @@ export function SavingsRateChart({ height = 250 }: { height?: number }) {
     <div className="chart-container">
       <h3 className="section-header mb-4">Savings Rate Trend</h3>
       <ResponsiveContainer width="100%" height={height}>
-        <AreaChart data={monthlyData}>
+        <AreaChart
+          data={monthlyData}
+          style={{ cursor: 'pointer' }}
+          onClick={(state: any) => {
+            const i = clickedIndex(state);
+            if (i !== null && monthlyData[i]) openTransactions({ range: singleMonth(monthlyData[i].key) });
+          }}
+        >
           <defs>
             <linearGradient id="savingsRateGrad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.15} />

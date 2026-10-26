@@ -4,9 +4,12 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { useApp } from '@/lib/store';
 import { formatCurrency } from '@/lib/utils';
 import { ArrowLeftRight } from 'lucide-react';
+import { useDrilldown } from '@/lib/drilldown-context';
+import { clickedIndex, singleMonth } from '@/lib/periods';
 
 export function IncomeExpenseChart({ height = 300 }: { height?: number }) {
   const { monthlyData } = useApp();
+  const { openTransactions } = useDrilldown();
 
   if (monthlyData.length === 0) {
     return (
@@ -25,9 +28,20 @@ export function IncomeExpenseChart({ height = 300 }: { height?: number }) {
 
   return (
     <div className="chart-container">
-      <h3 className="section-header mb-4">Income vs Expenses</h3>
+      <div className="flex items-baseline justify-between mb-4">
+        <h3 className="section-header">Income vs Expenses</h3>
+        <span className="text-[11px] text-th-faint">Click a month for details</span>
+      </div>
       <ResponsiveContainer width="100%" height={height}>
-        <BarChart data={monthlyData} barGap={4}>
+        <BarChart
+          data={monthlyData}
+          barGap={4}
+          style={{ cursor: 'pointer' }}
+          onClick={(state: any) => {
+            const i = clickedIndex(state);
+            if (i !== null && monthlyData[i]) openTransactions({ range: singleMonth(monthlyData[i].key) });
+          }}
+        >
           <CartesianGrid horizontal={true} vertical={false} stroke="var(--chart-grid)" strokeOpacity={0.6} />
           <XAxis dataKey="month" stroke="var(--chart-axis)" fontSize={11} tickLine={false} axisLine={false} />
           <YAxis stroke="var(--chart-axis)" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => formatCurrency(v, true)} />

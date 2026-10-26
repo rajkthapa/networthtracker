@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Search, Trash2, Calendar, ChevronDown, ArrowLeftRight, Plus, Settings, Pencil } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { formatCurrency } from '@/lib/utils';
@@ -10,33 +11,84 @@ import { EditTransactionModal } from '@/components/modals/EditTransactionModal';
 import { CategoryDrilldownModal } from '@/components/modals/CategoryDrilldownModal';
 import { ManageCategoriesModal } from '@/components/modals/ManageCategoriesModal';
 import { useToast } from '@/lib/toast-context';
+import { MonthRange } from '@/lib/types';
+import { inRange, rangeLabel, singleMonth } from '@/lib/periods';
 
 export default function TransactionsPage() {
-  const { transactions, deleteTransaction, getMonthTotals, availableMonths, selectedMonth, setSelectedMonth, expenseCategories, incomeCategories } = useApp();
+  return (
+    <Suspense>
+      <TransactionsView />
+    </Suspense>
+  );
+}
+
+function TransactionsView() {
+  const searchParams = useSearchParams();
+  const { transactions, deleteTransaction, availableMonths, selectedMonth, setSelectedMonth, getCategoryInfo } = useApp();
   const { toast } = useToast();
   const [filter, setFilter] = useState<'all' | 'income' | 'expense'>('all');
   const [search, setSearch] = useState('');
+  // A yyyy-mm month, 'all', or 'custom' (a range deep-linked from a dashboard drill-down)
   const [viewMonth, setViewMonth] = useState(selectedMonth);
+  const [customRange, setCustomRange] = useState<MonthRange | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
 
-  // Sync viewMonth when selectedMonth changes (e.g. auto-select on load)
+  // Sync viewMonth when selectedMonth changes (e.g. auto-select on load), unless a custom/all view is active
   useEffect(() => {
-    setViewMonth(selectedMonth);
+    setViewMonth(v => (v === 'all' || v === 'custom' ? v : selectedMonth));
   }, [selectedMonth]);
+
+  // Deep links: /transactions?from=2026-01&to=2026-06&type=income&category=business
+  useEffect(() => {
+    const q = searchParams;
+    const from = q.get('from');
+    const to = q.get('to') || from;
+    const type = q.get('type');
+    const category = q.get('category');
+    if (from && to) {
+      if (from === to) { setViewMonth(from); setSelectedMonth(from); }
+      else { setCustomRange({ from, to }); setViewMonth('custom'); }
+    }
+    if (!from && !type && !category) return;
+    setFilter(type === 'income' || type === 'expense' ? type : 'all');
+    setCategoryFilter(category || '');
+  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
   const [drilldown, setDrilldown] = useState<{ category: string; name: string; icon: string; color: string; type: 'income' | 'expense' } | null>(null);
   const [showCategoryManager, setShowCategoryManager] = useState(false);
 
-  const allCategories = [...incomeCategories, ...expenseCategories];
-  const monthTotals = getMonthTotals(viewMonth);
+  const viewRange: MonthRange | null =
+    viewMonth === 'all' ? null : viewMonth === 'custom' ? customRange : singleMonth(viewMonth);
+
+  const periodTxns = useMemo(
+    () => transactions.filter(t => !viewRange || inRange(t.date, viewRange)),
+    [transactions, viewRange?.from, viewRange?.to] // eslint-disable-line react-hooks/exhaustive-deps
+  );
+
+  const monthTotals = useMemo(() => {
+    const income = periodTxns.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+    const expenses = periodTxns.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+    const savings = income - expenses;
+    return { income, expenses, savings, savingsRate: income > 0 ? (savings / income) * 100 : 0 };
+  }, [periodTxns]);
+
+  // Categories that actually occur in this period (incl. hidden/legacy ones), for the filter dropdown
+  const periodCategories = useMemo(() => {
+    const ids = Array.from(new Set(periodTxns.filter(t => filter === 'all' || t.type === filter).map(t => t.category)));
+    return ids.map(id => ({ id, ...getCategoryInfo(id) })).sort((a, b) => a.name.localeCompare(b.name));
+  }, [periodTxns, filter, getCategoryInfo]);
 
   const filtered = useMemo(() => {
-    return transactions
-      .filter(t => t.date.startsWith(viewMonth))
+    const q = search.toLowerCase();
+    return periodTxns
       .filter(t => filter === 'all' || t.type === filter)
-      .filter(t => !search || t.description.toLowerCase().includes(search.toLowerCase()) || t.category.toLowerCase().includes(search.toLowerCase()))
+      .filter(t => !categoryFilter || t.category === categoryFilter)
+      .filter(t => !q || t.description.toLowerCase().includes(q) || getCategoryInfo(t.category).name.toLowerCase().includes(q) || (t.notes || '').toLowerCase().includes(q))
       .sort((a, b) => b.date.localeCompare(a.date));
-  }, [transactions, filter, search, viewMonth]);
+  }, [periodTxns, filter, categoryFilter, search, getCategoryInfo]);
+
+  const filteredTotal = filtered.reduce((s, t) => s + (t.type === 'income' ? t.amount : -t.amount), 0);
 
   const groupedByDate = useMemo(() => {
     const groups: Record<string, typeof filtered> = {};
@@ -60,7 +112,7 @@ export default function TransactionsPage() {
 
   const handleMonthChange = (m: string) => {
     setViewMonth(m);
-    setSelectedMonth(m);
+    if (m !== 'all' && m !== 'custom') setSelectedMonth(m);
   };
 
   return (
@@ -68,7 +120,14 @@ export default function TransactionsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="page-header">Transactions</h1>
-          <p className="text-sm text-th-muted mt-1">{filtered.length} transactions</p>
+          <p className="text-sm text-th-muted mt-1">
+            {filtered.length} transactions · {viewRange ? rangeLabel(viewRange) : 'All time'}
+            {(filter !== 'all' || categoryFilter || search) && filtered.length > 0 && (
+              <span className={`ml-1 num font-medium ${filteredTotal >= 0 ? 'text-[var(--text-positive)]' : 'text-[var(--text-negative)]'}`}>
+                ({filteredTotal >= 0 ? '+' : '-'}{formatCurrency(Math.abs(filteredTotal))})
+              </span>
+            )}
+          </p>
         </div>
         <div className="flex gap-2">
           <button onClick={() => setShowCategoryManager(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[var(--border-strong)] text-sm font-medium text-th-body hover:bg-[var(--bg-hover)] transition-all">
@@ -114,12 +173,12 @@ export default function TransactionsPage() {
             className="input-field pl-10"
           />
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <div className="flex bg-th-card/80 rounded-xl border border-[var(--border-strong)] p-1">
             {(['all', 'income', 'expense'] as const).map(f => (
               <button
                 key={f}
-                onClick={() => setFilter(f)}
+                onClick={() => { setFilter(f); setCategoryFilter(''); }}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   filter === f
                     ? f === 'income' ? 'bg-success-500 text-white' : f === 'expense' ? 'bg-danger-500 text-white' : 'bg-primary-500 text-white'
@@ -136,11 +195,27 @@ export default function TransactionsPage() {
               onChange={e => handleMonthChange(e.target.value)}
               className="appearance-none bg-th-card/80 border border-[var(--border-strong)] rounded-xl px-4 py-2.5 pr-8 text-sm font-medium text-th-heading cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500/30"
             >
+              <option value="all">All months</option>
+              {customRange && <option value="custom">{rangeLabel(customRange)}</option>}
               {availableMonths.map(m => {
                 const [y, mo] = m.split('-');
                 const label = new Date(parseInt(y), parseInt(mo) - 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
                 return <option key={m} value={m}>{label}</option>;
               })}
+            </select>
+            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-th-faint pointer-events-none" />
+          </div>
+          <div className="relative">
+            <select
+              value={categoryFilter}
+              onChange={e => setCategoryFilter(e.target.value)}
+              className="appearance-none bg-th-card/80 border border-[var(--border-strong)] rounded-xl px-4 py-2.5 pr-8 text-sm font-medium text-th-heading cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500/30"
+            >
+              <option value="">All categories</option>
+              {categoryFilter && !periodCategories.some(c => c.id === categoryFilter) && (
+                <option value={categoryFilter}>{getCategoryInfo(categoryFilter).name}</option>
+              )}
+              {periodCategories.map(c => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
             </select>
             <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-th-faint pointer-events-none" />
           </div>
@@ -173,23 +248,23 @@ export default function TransactionsPage() {
               </div>
               <div className="space-y-2">
                 {txns.map(txn => {
-                  const cat = allCategories.find(c => c.id === txn.category);
+                  const cat = getCategoryInfo(txn.category);
                   return (
                     <div key={txn.id} className="flex items-center gap-3 p-4 bg-th-card/80 backdrop-blur-sm rounded-2xl border border-[var(--border-color)] shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] transition-all group">
                       <div
                         className="w-11 h-11 rounded-2xl flex items-center justify-center text-lg flex-shrink-0"
-                        style={{ backgroundColor: (cat?.color || '#868e96') + '18' }}
+                        style={{ backgroundColor: cat.color + '18' }}
                       >
-                        {cat?.icon || '📦'}
+                        {cat.icon}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-th-heading truncate">{txn.description}</p>
                         <div className="flex items-center gap-2 mt-0.5">
                           <button
-                            onClick={() => cat && setDrilldown({ category: txn.category, name: cat.name, icon: cat.icon, color: cat.color, type: txn.type })}
+                            onClick={() => setDrilldown({ category: txn.category, name: cat.name, icon: cat.icon, color: cat.color, type: txn.type })}
                             className="text-xs text-th-faint hover:text-[var(--text-accent)] hover:underline transition-colors"
                           >
-                            {cat?.name || txn.category}
+                            {cat.name}
                           </button>
                         </div>
                       </div>
@@ -227,6 +302,7 @@ export default function TransactionsPage() {
           icon={drilldown.icon}
           color={drilldown.color}
           type={drilldown.type}
+          range={viewRange || undefined}
           onClose={() => setDrilldown(null)}
         />
       )}

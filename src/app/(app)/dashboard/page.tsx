@@ -12,6 +12,11 @@ import { CumulativeChart } from '@/components/charts/CumulativeChart';
 import { YearComparisonChart } from '@/components/charts/YearComparisonChart';
 import { MonthlyNetCashFlowChart } from '@/components/charts/MonthlyNetCashFlowChart';
 import { Delta } from '@/components/ui/Delta';
+import { EditTransactionModal } from '@/components/modals/EditTransactionModal';
+import { useDrilldown } from '@/lib/drilldown-context';
+import { singleMonth, shiftMonth } from '@/lib/periods';
+import { Transaction } from '@/lib/types';
+import { useState } from 'react';
 
 function formatSmallCurrency(amount: number): string {
   if (amount === 0) return '$0.00';
@@ -44,14 +49,15 @@ function MonthComparison() {
   const { monthIncome, monthExpenses, monthSavings, monthSavingsRate,
     prevMonthIncome, prevMonthExpenses, prevMonthSavings, prevMonthSavingsRate,
     selectedMonth } = useApp();
+  const { openTransactions } = useDrilldown();
 
   const [y, m] = selectedMonth.split('-').map(Number);
   const prevLabel = new Date(m === 1 ? y - 1 : y, m === 1 ? 11 : m - 2).toLocaleDateString('en-US', { month: 'short' });
   const currLabel = new Date(y, m - 1).toLocaleDateString('en-US', { month: 'short' });
 
   const rows = [
-    { label: 'Income', current: monthIncome, previous: prevMonthIncome, color: 'text-[var(--text-positive)]' },
-    { label: 'Expenses', current: monthExpenses, previous: prevMonthExpenses, color: 'text-[var(--text-negative)]' },
+    { label: 'Income', current: monthIncome, previous: prevMonthIncome, color: 'text-[var(--text-positive)]', type: 'income' as const },
+    { label: 'Expenses', current: monthExpenses, previous: prevMonthExpenses, color: 'text-[var(--text-negative)]', type: 'expense' as const },
     { label: 'Savings', current: monthSavings, previous: prevMonthSavings, color: 'text-[var(--text-accent)]' },
     { label: 'Savings Rate', current: monthSavingsRate, previous: prevMonthSavingsRate, color: 'text-[var(--text-accent-secondary)]', isPercent: true },
   ];
@@ -83,10 +89,20 @@ function MonthComparison() {
                 <tr key={row.label} className="border-b border-[var(--border-color)]">
                   <td className="py-3 px-2 text-sm font-medium text-th-heading">{row.label}</td>
                   <td className="py-3 px-2 text-sm text-right text-th-muted num">
-                    {row.isPercent ? `${row.previous.toFixed(1)}%` : formatCurrency(row.previous)}
+                    <button
+                      onClick={() => openTransactions({ range: singleMonth(shiftMonth(selectedMonth, -1)), type: 'type' in row ? row.type : undefined })}
+                      className="hover:underline"
+                    >
+                      {row.isPercent ? `${row.previous.toFixed(1)}%` : formatCurrency(row.previous)}
+                    </button>
                   </td>
                   <td className={`py-3 px-2 text-sm text-right font-semibold num ${row.color}`}>
-                    {row.isPercent ? `${row.current.toFixed(1)}%` : formatCurrency(row.current)}
+                    <button
+                      onClick={() => openTransactions({ range: singleMonth(selectedMonth), type: 'type' in row ? row.type : undefined })}
+                      className="hover:underline"
+                    >
+                      {row.isPercent ? `${row.current.toFixed(1)}%` : formatCurrency(row.current)}
+                    </button>
                   </td>
                   <td className="py-3 px-2 text-right">
                     {row.previous > 0 && (
@@ -107,7 +123,10 @@ function MonthComparison() {
 }
 
 function RecentTransactions() {
-  const { transactions, selectedMonth } = useApp();
+  const { transactions, selectedMonth, getCategoryInfo } = useApp();
+  const { openTransactions } = useDrilldown();
+  const [editing, setEditing] = useState<Transaction | null>(null);
+  const monthCount = transactions.filter(t => t.date.startsWith(selectedMonth)).length;
   const monthTxns = transactions
     .filter(t => t.date.startsWith(selectedMonth))
     .sort((a, b) => b.date.localeCompare(a.date))
@@ -117,7 +136,9 @@ function RecentTransactions() {
     <div className="chart-container">
       <div className="flex items-center justify-between mb-4">
         <h3 className="section-header">Recent Transactions</h3>
-        <a href="/transactions" className="text-sm text-[var(--text-accent)] font-medium hover:opacity-80">View all</a>
+        <button onClick={() => openTransactions({ range: singleMonth(selectedMonth) })} className="text-sm text-[var(--text-accent)] font-medium hover:opacity-80">
+          View all{monthCount > 10 ? ` ${monthCount}` : ''}
+        </button>
       </div>
       <div className="space-y-1">
         {monthTxns.length === 0 && (
@@ -130,7 +151,7 @@ function RecentTransactions() {
           </div>
         )}
         {monthTxns.map((txn) => (
-          <div key={txn.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--bg-hover)] transition-colors">
+          <button key={txn.id} onClick={() => setEditing(txn)} className="w-full text-left flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--bg-hover)] transition-colors">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
               txn.type === 'income' ? 'bg-[var(--bg-positive-subtle)] text-[var(--text-positive)]' : 'bg-[var(--bg-negative-subtle)] text-[var(--text-negative)]'
             }`}>
@@ -138,14 +159,15 @@ function RecentTransactions() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-th-heading truncate">{txn.description}</p>
-              <p className="text-xs text-th-faint">{txn.date}</p>
+              <p className="text-xs text-th-faint truncate">{txn.date} · {getCategoryInfo(txn.category).icon} {getCategoryInfo(txn.category).name}</p>
             </div>
             <p className={`text-sm font-semibold num ${txn.type === 'income' ? 'text-[var(--text-positive)]' : 'text-[var(--text-negative)]'}`}>
               {txn.type === 'income' ? '+' : '-'}{formatCurrency(txn.amount)}
             </p>
-          </div>
+          </button>
         ))}
       </div>
+      {editing && <EditTransactionModal transaction={editing} onClose={() => setEditing(null)} />}
     </div>
   );
 }
@@ -269,8 +291,9 @@ function DividendTracker() {
   const {
     totalDividends, monthlyAvgDividend, dividendMonths,
     projectedAnnualDividendIncome, projectedMonthlyDividendIncome, projectedDailyDividendIncome, projectedHourlyDividendIncome,
-    dividendByHolding,
+    dividendByHolding, availableMonths, selectedMonth,
   } = useApp();
+  const { openTransactions } = useDrilldown();
   const hasHistorical = totalDividends > 0;
   const hasProjected = projectedAnnualDividendIncome > 0;
   if (!hasHistorical && !hasProjected) return null;
@@ -316,7 +339,12 @@ function DividendTracker() {
         {hasHistorical && (
           <div className={hasProjected ? 'pt-3 border-t border-[var(--border-color)]' : ''}>
             <p className="stat-label">Total Received ({dividendMonths} quarters)</p>
-            <p className="text-2xl font-bold text-[var(--text-positive)] num">{formatCurrency(totalDividends)}</p>
+            <button
+              onClick={() => openTransactions({ title: 'Dividends', category: 'dividend', type: 'income', range: { from: availableMonths[availableMonths.length - 1] || selectedMonth, to: availableMonths[0] || selectedMonth } })}
+              className="text-2xl font-bold text-[var(--text-positive)] num hover:underline"
+            >
+              {formatCurrency(totalDividends)}
+            </button>
             <div className="flex gap-4 mt-2">
               <div>
                 <p className="stat-label">Quarterly Avg</p>
@@ -382,6 +410,7 @@ export default function Dashboard() {
     selectedMonth, accounts, transactions,
     netWorthHistory,
   } = useApp();
+  const { openTransactions, openNetWorthMonth } = useDrilldown();
 
   if (loading) {
     return (
@@ -411,9 +440,9 @@ export default function Dashboard() {
     : 0;
 
   const stats = [
-    { title: 'Monthly Income', value: formatCurrency(monthIncome), change: incomeChange, icon: DollarSign, iconBg: 'bg-[var(--bg-positive-subtle)] text-[var(--text-accent)]' },
-    { title: 'Monthly Expenses', value: formatCurrency(monthExpenses), change: expenseChange, icon: CreditCard, iconBg: 'bg-[var(--bg-negative-subtle)] text-[var(--text-negative)]' },
-    { title: 'Savings Rate', value: `${monthSavingsRate.toFixed(1)}%`, change: undefined, icon: PiggyBank, iconBg: 'bg-grape-500/10 text-[var(--text-accent-secondary)]' },
+    { title: 'Monthly Income', value: formatCurrency(monthIncome), change: incomeChange, icon: DollarSign, iconBg: 'bg-[var(--bg-positive-subtle)] text-[var(--text-accent)]', type: 'income' as const },
+    { title: 'Monthly Expenses', value: formatCurrency(monthExpenses), change: expenseChange, icon: CreditCard, iconBg: 'bg-[var(--bg-negative-subtle)] text-[var(--text-negative)]', type: 'expense' as const },
+    { title: 'Savings Rate', value: `${monthSavingsRate.toFixed(1)}%`, change: undefined, icon: PiggyBank, iconBg: 'bg-grape-500/10 text-[var(--text-accent-secondary)]', type: undefined },
   ];
 
   return (
@@ -435,10 +464,14 @@ export default function Dashboard() {
             {formatCurrency(netWorth)}
           </p>
           {hasNWHistory && (
-            <div className="mt-4 inline-flex items-center gap-1.5 bg-[var(--bg-positive-subtle)] text-[var(--text-accent)] px-4 py-1.5 rounded-full text-sm font-semibold">
+            <button
+              onClick={() => openNetWorthMonth(netWorthHistory[netWorthHistory.length - 1].date)}
+              className={`mt-4 inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-semibold hover:opacity-80 ${nwChange >= 0 ? 'bg-[var(--bg-positive-subtle)] text-[var(--text-accent)]' : 'bg-[var(--bg-negative-subtle)] text-[var(--text-negative)]'}`}
+              title="See what changed this month"
+            >
               {nwChangePercent >= 0 ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
               {nwChangePercent >= 0 ? '+' : ''}{nwChangePercent.toFixed(2)}%
-            </div>
+            </button>
           )}
         </div>
         <div className="flex justify-center gap-8 md:gap-12">
@@ -467,9 +500,10 @@ export default function Dashboard() {
         {stats.map((stat, i) => {
           const Icon = stat.icon;
           return (
-            <div
+            <button
               key={stat.title}
-              className="stat-card animate-slide-up"
+              onClick={() => openTransactions({ range: singleMonth(selectedMonth), type: stat.type })}
+              className="stat-card animate-slide-up text-left hover:shadow-[var(--shadow-card-hover)] transition-shadow"
               style={{ animationDelay: `${i * 75}ms`, animationFillMode: 'both' }}
             >
               <div className="flex items-start justify-between mb-3">
@@ -480,7 +514,7 @@ export default function Dashboard() {
               </div>
               <p className="stat-label mb-1">{stat.title}</p>
               <p className="text-2xl font-bold text-th-heading num">{stat.value}</p>
-            </div>
+            </button>
           );
         })}
       </div>

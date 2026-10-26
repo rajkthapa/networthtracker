@@ -54,6 +54,7 @@ export interface NetWorthSnapshot {
 }
 
 export interface MonthlyData {
+  key: string; // yyyy-mm
   month: string;
   income: number;
   expenses: number;
@@ -97,4 +98,10 @@ export interface FIREData {
   coastFireNumber: number;
   leanFireNumber: number;
   fatFireNumber: number;
+}
+
+// Inclusive yyyy-mm range used for drill-downs and period filters
+export interface MonthRange {
+  from: string;
+  to: string;
 }

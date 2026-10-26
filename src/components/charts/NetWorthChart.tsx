@@ -4,9 +4,12 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { useApp } from '@/lib/store';
 import { formatCurrency } from '@/lib/utils';
 import { TrendingUp } from 'lucide-react';
+import { useDrilldown } from '@/lib/drilldown-context';
+import { clickedIndex } from '@/lib/periods';
 
 export function NetWorthChart({ height = 300 }: { height?: number }) {
   const { netWorthHistory } = useApp();
+  const { openNetWorthMonth } = useDrilldown();
 
   if (netWorthHistory.length === 0) {
     return (
@@ -27,7 +30,14 @@ export function NetWorthChart({ height = 300 }: { height?: number }) {
     <div className="chart-container">
       <h3 className="section-header mb-4">Net Worth Over Time</h3>
       <ResponsiveContainer width="100%" height={height}>
-        <AreaChart data={netWorthHistory}>
+        <AreaChart
+          data={netWorthHistory}
+          style={{ cursor: 'pointer' }}
+          onClick={(state: any) => {
+            const i = clickedIndex(state);
+            if (i !== null && netWorthHistory[i]) openNetWorthMonth(netWorthHistory[i].date);
+          }}
+        >
           <defs>
             <linearGradient id="netWorthGrad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#14b8a6" stopOpacity={0.15} />

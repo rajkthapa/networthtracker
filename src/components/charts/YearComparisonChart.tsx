@@ -5,6 +5,8 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { useApp } from '@/lib/store';
 import { formatCurrency } from '@/lib/utils';
 import { CalendarDays } from 'lucide-react';
+import { useDrilldown } from '@/lib/drilldown-context';
+import { clickedIndex } from '@/lib/periods';
 
 type ViewMode = 'monthly' | 'quarterly' | 'yearly';
 
@@ -13,6 +15,7 @@ const QUARTER_NAMES = ['Q1', 'Q2', 'Q3', 'Q4'];
 
 export function YearComparisonChart({ height = 380 }: { height?: number }) {
   const { transactions } = useApp();
+  const { openTransactions } = useDrilldown();
   const [viewMode, setViewMode] = useState<ViewMode>('monthly');
   const [metric, setMetric] = useState<'income' | 'expenses' | 'net'>('net');
 
@@ -117,6 +120,21 @@ export function YearComparisonChart({ height = 380 }: { height?: number }) {
 
   const isYearly = viewMode === 'yearly';
 
+  const handleClick = (state: any) => {
+    const i = clickedIndex(state);
+    if (i === null) return;
+    const type = metric === 'income' ? 'income' : metric === 'expenses' ? 'expense' : undefined;
+    const mm = (n: number) => String(n).padStart(2, '0');
+    if (viewMode === 'yearly') {
+      const y = years[i];
+      if (y) openTransactions({ range: { from: `${y}-01`, to: `${y}-12` }, type });
+    } else if (viewMode === 'quarterly') {
+      openTransactions({ title: `Q${i + 1} ${currentYear}`, range: { from: `${currentYear}-${mm(i * 3 + 1)}`, to: `${currentYear}-${mm(i * 3 + 3)}` }, type });
+    } else {
+      openTransactions({ range: { from: `${currentYear}-${mm(i + 1)}`, to: `${currentYear}-${mm(i + 1)}` }, type });
+    }
+  };
+
   return (
     <div className="chart-container">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
@@ -184,7 +202,7 @@ export function YearComparisonChart({ height = 380 }: { height?: number }) {
       </div>
 
       <ResponsiveContainer width="100%" height={height}>
-        <BarChart data={data} barGap={4}>
+        <BarChart data={data} barGap={4} style={{ cursor: 'pointer' }} onClick={handleClick}>
           <CartesianGrid horizontal vertical={false} stroke="var(--chart-grid)" strokeOpacity={0.6} />
           <XAxis dataKey="name" stroke="var(--chart-axis)" fontSize={11} tickLine={false} axisLine={false} />
           <YAxis stroke="var(--chart-axis)" fontSize={11} tickLine={false} axisLine={false} tickFormatter={v => formatCurrency(v, true)} />

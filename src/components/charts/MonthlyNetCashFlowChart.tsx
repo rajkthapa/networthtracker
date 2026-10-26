@@ -4,9 +4,12 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { useApp } from '@/lib/store';
 import { formatCurrency } from '@/lib/utils';
 import { ArrowDownUp } from 'lucide-react';
+import { useDrilldown } from '@/lib/drilldown-context';
+import { clickedIndex, singleMonth } from '@/lib/periods';
 
 export function MonthlyNetCashFlowChart({ height = 300 }: { height?: number }) {
   const { monthlyData } = useApp();
+  const { openTransactions } = useDrilldown();
 
   if (monthlyData.length === 0) {
     return (
@@ -24,6 +27,7 @@ export function MonthlyNetCashFlowChart({ height = 300 }: { height?: number }) {
   }
 
   const data = monthlyData.map(d => ({
+    key: d.key,
     month: d.month,
     net: Math.round((d.income - d.expenses) * 100) / 100,
   }));
@@ -49,15 +53,22 @@ export function MonthlyNetCashFlowChart({ height = 300 }: { height?: number }) {
         </div>
         <div>
           <p className="stat-label">Best</p>
-          <p className="text-base font-bold text-[var(--text-positive)] num">{bestMonth.month}: {formatCurrency(bestMonth.net)}</p>
+          <button onClick={() => openTransactions({ range: singleMonth(bestMonth.key) })} className="text-base font-bold text-[var(--text-positive)] num hover:underline">{bestMonth.month}: {formatCurrency(bestMonth.net)}</button>
         </div>
         <div>
           <p className="stat-label">Worst</p>
-          <p className="text-base font-bold text-[var(--text-negative)] num">{worstMonth.month}: {formatCurrency(worstMonth.net)}</p>
+          <button onClick={() => openTransactions({ range: singleMonth(worstMonth.key) })} className="text-base font-bold text-[var(--text-negative)] num hover:underline">{worstMonth.month}: {formatCurrency(worstMonth.net)}</button>
         </div>
       </div>
       <ResponsiveContainer width="100%" height={height}>
-        <BarChart data={data}>
+        <BarChart
+          data={data}
+          style={{ cursor: 'pointer' }}
+          onClick={(state: any) => {
+            const i = clickedIndex(state);
+            if (i !== null && data[i]) openTransactions({ range: singleMonth(data[i].key) });
+          }}
+        >
           <CartesianGrid horizontal vertical={false} stroke="var(--chart-grid)" strokeOpacity={0.6} />
           <XAxis dataKey="month" stroke="var(--chart-axis)" fontSize={11} tickLine={false} axisLine={false} />
           <YAxis stroke="var(--chart-axis)" fontSize={11} tickLine={false} axisLine={false} tickFormatter={v => formatCurrency(v, true)} />

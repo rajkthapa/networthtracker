@@ -5,9 +5,12 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { useApp } from '@/lib/store';
 import { formatCurrency } from '@/lib/utils';
 import { TrendingUp } from 'lucide-react';
+import { useDrilldown } from '@/lib/drilldown-context';
+import { clickedIndex } from '@/lib/periods';
 
 export function CumulativeChart({ height = 340 }: { height?: number }) {
   const { monthlyData } = useApp();
+  const { openTransactions } = useDrilldown();
   const [showNet, setShowNet] = useState(true);
 
   if (monthlyData.length === 0) {
@@ -74,7 +77,16 @@ export function CumulativeChart({ height = 340 }: { height?: number }) {
         </div>
       </div>
       <ResponsiveContainer width="100%" height={height}>
-        <AreaChart data={data}>
+        <AreaChart
+          data={data}
+          style={{ cursor: 'pointer' }}
+          onClick={(state: any) => {
+            const i = clickedIndex(state);
+            if (i !== null && monthlyData[i]) {
+              openTransactions({ title: `Cumulative through ${monthlyData[i].month}`, range: { from: monthlyData[0].key, to: monthlyData[i].key } });
+            }
+          }}
+        >
           <defs>
             <linearGradient id="cumIncomeGrad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#10b981" stopOpacity={0.12} />

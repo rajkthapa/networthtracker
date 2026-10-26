@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useMemo, useCallback, useEffect, useRef, type ReactNode } from 'react';
-import { Account, Transaction, CryptoHolding, StockHolding, NetWorthSnapshot, MonthlyData, AccountSnapshot, Category } from './types';
+import { Account, Transaction, CryptoHolding, StockHolding, NetWorthSnapshot, MonthlyData, AccountSnapshot, Category, MonthRange } from './types';
 import { ACCOUNT_TYPES, DEBT_TYPES, LIQUID_ACCOUNT_TYPES } from './utils';
 import { useAuth } from './auth-context';
 import { createClient } from './supabase';
@@ -90,7 +90,8 @@ interface AppState {
   savingsChange: number;
 
   monthlyData: MonthlyData[];
-  getCategoryBreakdown: (type: 'income' | 'expense', month?: string) => CategoryBreakdownItem[];
+  getCategoryBreakdown: (type: 'income' | 'expense', period?: string | MonthRange) => CategoryBreakdownItem[];
+  getCategoryInfo: (id: string) => { name: string; color: string; icon: string };
   getMonthTotals: (month: string) => { income: number; expenses: number; savings: number; savingsRate: number };
 
   totalDividends: number;
@@ -777,6 +778,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return sorted.map(m => {
       const totals = getMonthTotals(m);
       return {
+        key: m,
         month: getMonthLabel(m),
         income: Math.round(totals.income * 100) / 100,
         expenses: Math.round(totals.expenses * 100) / 100,
@@ -786,22 +788,33 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
   }, [availableMonths, getMonthTotals]);
 
-  const getCategoryBreakdown = useCallback((type: 'income' | 'expense', month?: string): CategoryBreakdownItem[] => {
-    const m = month || selectedMonth;
-    const filteredTxns = transactions.filter(t => t.type === type && t.date.startsWith(m));
-    const total = filteredTxns.reduce((s, t) => s + t.amount, 0);
-    const grouped: Record<string, number> = {};
-    filteredTxns.forEach(t => { grouped[t.category] = (grouped[t.category] || 0) + t.amount; });
+  const categoryLookup = useMemo(() => {
     const lookup: Record<string, { name: string; color: string; icon: string }> = {};
     for (const c of Object.values(allCategoriesLookup)) lookup[c.id] = { name: c.name, color: c.color, icon: c.icon };
     for (const c of ACCOUNT_AND_DEBT_TYPES) if (!lookup[c.id]) lookup[c.id] = { name: c.name, color: c.color, icon: c.icon };
+    return lookup;
+  }, [allCategoriesLookup]);
+
+  const getCategoryInfo = useCallback((id: string) => {
+    return categoryLookup[id] || { name: id, color: '#868e96', icon: '📦' };
+  }, [categoryLookup]);
+
+  const getCategoryBreakdown = useCallback((type: 'income' | 'expense', period?: string | MonthRange): CategoryBreakdownItem[] => {
+    const p = period || selectedMonth;
+    const inPeriod = typeof p === 'string'
+      ? (t: Transaction) => t.date.startsWith(p)
+      : (t: Transaction) => { const m = t.date.slice(0, 7); return m >= p.from && m <= p.to; };
+    const filteredTxns = transactions.filter(t => t.type === type && inPeriod(t));
+    const total = filteredTxns.reduce((s, t) => s + t.amount, 0);
+    const grouped: Record<string, number> = {};
+    filteredTxns.forEach(t => { grouped[t.category] = (grouped[t.category] || 0) + t.amount; });
     return Object.entries(grouped)
       .map(([cat, amount]) => {
-        const catInfo = lookup[cat] || { name: cat, color: '#868e96', icon: '📦' };
+        const catInfo = getCategoryInfo(cat);
         return { category: cat, name: catInfo.name, amount: Math.round(amount * 100) / 100, percentage: total > 0 ? Math.round((amount / total) * 1000) / 10 : 0, color: catInfo.color, icon: catInfo.icon };
       })
       .sort((a, b) => b.amount - a.amount);
-  }, [transactions, selectedMonth, allCategoriesLookup]);
+  }, [transactions, selectedMonth, getCategoryInfo]);
 
   const getCategoryHistory = useCallback((category: string) => {
     const sorted = [...availableMonths].sort();
@@ -867,7 +880,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       prevMonthIncome: prev.income, prevMonthExpenses: prev.expenses,
       prevMonthSavings: prev.savings, prevMonthSavingsRate: prev.savingsRate,
       incomeChange, expenseChange, savingsChange,
-      monthlyData, getCategoryBreakdown, getMonthTotals,
+      monthlyData, getCategoryBreakdown, getCategoryInfo, getMonthTotals,
       totalDividends, monthlyAvgDividend, dividendMonths, getCategoryHistory,
       dividendYields, refreshDividendYields,
       projectedAnnualDividendIncome, projectedMonthlyDividendIncome, projectedDailyDividendIncome, projectedHourlyDividendIncome, dividendByHolding,

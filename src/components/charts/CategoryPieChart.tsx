@@ -6,23 +6,49 @@ import { useApp } from '@/lib/store';
 import { formatCurrency } from '@/lib/utils';
 import { PieChart as PieIcon } from 'lucide-react';
 import { CategoryDrilldownModal } from '@/components/modals/CategoryDrilldownModal';
+import { PERIOD_OPTIONS, PeriodKey, periodToRange, rangeLabel } from '@/lib/periods';
 
-export function CategoryPieChart({ type, height = 280 }: { type: 'income' | 'expense'; height?: number }) {
-  const { getCategoryBreakdown } = useApp();
-  const data = getCategoryBreakdown(type);
+export function CategoryPieChart({ type, height = 280, defaultPeriod = '12m' }: { type: 'income' | 'expense'; height?: number; defaultPeriod?: PeriodKey }) {
+  const { getCategoryBreakdown, selectedMonth, availableMonths } = useApp();
+  const [period, setPeriod] = useState<PeriodKey>(defaultPeriod);
+  const range = periodToRange(period, selectedMonth, availableMonths[availableMonths.length - 1]);
+  const data = getCategoryBreakdown(type, range);
+  const total = data.reduce((s, d) => s + d.amount, 0);
   const title = type === 'income' ? 'Income' : 'Expense';
   const [drilldown, setDrilldown] = useState<{ category: string; name: string; icon: string; color: string } | null>(null);
+
+  const header = (
+    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 mb-2">
+      <div>
+        <h3 className="section-header">{title} Breakdown</h3>
+        <p className="text-xs text-th-faint mt-0.5">
+          {rangeLabel(range)}{data.length > 0 && <> · <span className="num">{formatCurrency(total)}</span> · {data.length} {data.length === 1 ? 'category' : 'categories'}</>}
+        </p>
+      </div>
+      <div className="flex bg-[var(--bg-subtle)] rounded-lg p-0.5 w-fit">
+        {PERIOD_OPTIONS.map(o => (
+          <button
+            key={o.key}
+            onClick={() => setPeriod(o.key)}
+            className={`text-xs px-2.5 py-1 rounded-md font-medium transition-colors ${period === o.key ? 'bg-th-card text-th-heading shadow-sm' : 'text-th-muted hover:text-th-body'}`}
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 
   if (data.length === 0) {
     return (
       <div className="chart-container">
-        <h3 className="section-header mb-2">{title} Breakdown</h3>
+        {header}
         <div className="flex flex-col items-center justify-center py-16 gap-3">
           <div className="w-14 h-14 rounded-2xl bg-[var(--bg-subtle)] flex items-center justify-center">
             <PieIcon className="w-7 h-7 text-th-faint" />
           </div>
-          <p className="text-sm font-medium text-th-body">No {type} data this month</p>
-          <p className="text-xs text-th-muted text-center max-w-[200px]">Add {type === 'income' ? 'income' : 'expenses'} to see your category breakdown</p>
+          <p className="text-sm font-medium text-th-body">No {type} data in this period</p>
+          <p className="text-xs text-th-muted text-center max-w-[200px]">Try a longer period, or add {type === 'income' ? 'income' : 'expenses'} to see your category breakdown</p>
         </div>
       </div>
     );
@@ -35,7 +61,7 @@ export function CategoryPieChart({ type, height = 280 }: { type: 'income' | 'exp
   return (
     <>
       <div className="chart-container">
-        <h3 className="section-header mb-2">{title} Breakdown</h3>
+        {header}
         <div className="flex flex-col lg:flex-row items-center gap-4">
           <ResponsiveContainer width="100%" height={height}>
             <PieChart>
@@ -75,18 +101,18 @@ export function CategoryPieChart({ type, height = 280 }: { type: 'income' | 'exp
               />
             </PieChart>
           </ResponsiveContainer>
-          <div className="w-full lg:w-auto space-y-1 max-h-60 overflow-y-auto scrollbar-hide">
+          <div className="w-full lg:w-auto lg:max-w-[300px] min-w-0 space-y-1 max-h-60 overflow-y-auto scrollbar-hide">
             {data.map((item) => (
               <button
                 key={item.category}
                 onClick={() => handleCategoryClick(item)}
-                className="flex items-center gap-2 text-sm whitespace-nowrap w-full text-left px-2 py-1.5 rounded-lg hover:bg-[var(--bg-hover)] transition-colors group"
+                className="flex items-center gap-2 text-sm w-full text-left px-2 py-1.5 rounded-lg hover:bg-[var(--bg-hover)] transition-colors group"
               >
                 <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }} />
-                <span className="text-th-body text-xs">{item.icon}</span>
-                <span className="text-th-heading font-medium text-xs group-hover:text-[var(--text-accent)] transition-colors">{item.name}</span>
-                <span className="text-th-heading text-xs ml-auto pl-3 font-semibold num">{formatCurrency(item.amount)}</span>
-                <span className="text-th-faint text-[10px] w-10 text-right">{item.percentage.toFixed(1)}%</span>
+                <span className="text-th-body text-xs flex-shrink-0">{item.icon}</span>
+                <span className="text-th-heading font-medium text-xs truncate min-w-0 group-hover:text-[var(--text-accent)] transition-colors">{item.name}</span>
+                <span className="text-th-heading text-xs ml-auto pl-3 font-semibold num flex-shrink-0">{formatCurrency(item.amount)}</span>
+                <span className="text-th-faint text-[10px] w-10 text-right flex-shrink-0">{item.percentage.toFixed(1)}%</span>
               </button>
             ))}
           </div>
@@ -100,6 +126,7 @@ export function CategoryPieChart({ type, height = 280 }: { type: 'income' | 'exp
           icon={drilldown.icon}
           color={drilldown.color}
           type={type}
+          range={range}
           onClose={() => setDrilldown(null)}
         />
       )}
