@@ -486,19 +486,39 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (!error) setHiddenCategoryIds(next);
   }, [user, supabase, hiddenCategoryIds]);
 
+  // How often each category was used in the last 6 months — most-used categories sort first
+  const categoryUsage = useMemo(() => {
+    const cutoff = new Date();
+    cutoff.setMonth(cutoff.getMonth() - 6);
+    const cutoffStr = cutoff.toISOString().slice(0, 10);
+    const counts: Record<string, number> = {};
+    for (const t of transactions) {
+      if (t.category && t.date && t.date.slice(0, 10) >= cutoffStr) {
+        counts[t.category] = (counts[t.category] || 0) + 1;
+      }
+    }
+    return counts;
+  }, [transactions]);
+
+  const byUsage = useCallback(
+    (a: Category, b: Category) =>
+      (categoryUsage[b.id] || 0) - (categoryUsage[a.id] || 0) || a.sortOrder - b.sortOrder,
+    [categoryUsage],
+  );
+
   const expenseCategories = useMemo(() => {
     const hidden = new Set(hiddenCategoryIds);
     const visibleDefaults = defaultCategories.filter(c => c.type === 'expense' && !hidden.has(c.id));
     const additions = userCategories.filter(c => c.type === 'expense');
-    return [...visibleDefaults, ...additions].sort((a, b) => a.sortOrder - b.sortOrder);
-  }, [defaultCategories, userCategories, hiddenCategoryIds]);
+    return [...visibleDefaults, ...additions].sort(byUsage);
+  }, [defaultCategories, userCategories, hiddenCategoryIds, byUsage]);
 
   const incomeCategories = useMemo(() => {
     const hidden = new Set(hiddenCategoryIds);
     const visibleDefaults = defaultCategories.filter(c => c.type === 'income' && !hidden.has(c.id));
     const additions = userCategories.filter(c => c.type === 'income');
-    return [...visibleDefaults, ...additions].sort((a, b) => a.sortOrder - b.sortOrder);
-  }, [defaultCategories, userCategories, hiddenCategoryIds]);
+    return [...visibleDefaults, ...additions].sort(byUsage);
+  }, [defaultCategories, userCategories, hiddenCategoryIds, byUsage]);
 
   // Full lookup (includes hidden defaults) for rendering historical transactions
   const allCategoriesLookup = useMemo(() => {
